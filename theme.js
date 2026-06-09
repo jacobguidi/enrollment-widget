@@ -1,5 +1,10 @@
 (function () {
+  // ── Directory: company list ───────────────────
   const DIR_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?output=csv';
+
+  // ── Broker Config tab: one row per broker ─────
+  // Publish separately: Sheets → File → Share → Publish to web → "Broker Config" tab → CSV
+  const BROKER_CONFIG_URL = 'YOUR_BROKER_CONFIG_TAB_URL_HERE';
 
   // ── Color helpers ─────────────────────────────
   function hexToRgb(h) {
@@ -28,104 +33,105 @@
     });
   }
 
+  // ── Fetch broker config row ───────────────────
+  async function fetchBrokerConfig(broker) {
+    if (!BROKER_CONFIG_URL || BROKER_CONFIG_URL.startsWith('YOUR_')) {
+      console.warn('[Theme] Broker Config URL not set — skipping theme');
+      return null;
+    }
+    const resp = await fetch(BROKER_CONFIG_URL);
+    if (!resp.ok) throw new Error(`Broker Config fetch failed: HTTP ${resp.status}`);
+    const rows = parseCSV(await resp.text());
+    if (rows.length < 2) return null;
+
+    const headers = rows[0].map(v => v.trim().toLowerCase());
+    const col = name => headers.findIndex(v => v === name.toLowerCase());
+
+    const iBroker    = col('broker id');
+    const iPrimary   = col('primary color');
+    const iSecond    = col('secondary color');
+    const iLogo      = col('logo url');
+    const iBrand     = col('brand name');
+    const iEnrollUrl = col('enroll url');
+    const iCustomUrl = col('customize url');
+
+    const row = rows.slice(1).find(r =>
+      (r[iBroker] || '').trim().toLowerCase() === broker.toLowerCase()
+    );
+    if (!row) { console.warn('[Theme] No broker config row found for:', broker); return null; }
+
+    const enrollUrl = iEnrollUrl >= 0 ? (row[iEnrollUrl] || '').trim() : '';
+    return {
+      primary   : iPrimary   >= 0 ? (row[iPrimary]   || '').trim() : '',
+      secondary : iSecond    >= 0 ? (row[iSecond]    || '').trim() : '',
+      logoUrl   : iLogo      >= 0 ? (row[iLogo]      || '').trim() : '',
+      brand     : iBrand     >= 0 ? (row[iBrand]     || '').trim() : '',
+      enrollUrl,
+      customUrl : iCustomUrl >= 0 ? (row[iCustomUrl] || '').trim() : enrollUrl,
+    };
+  }
+
+  // ── Apply theme to page ───────────────────────
+  function applyTheme(cfg) {
+    const root = document.documentElement;
+    const pageParams = new URLSearchParams(window.location.search);
+
+    if (isHex(cfg.primary)) {
+      root.style.setProperty('--forest',    cfg.primary);
+      root.style.setProperty('--forest-d',  darken(cfg.primary, 0.15));
+      root.style.setProperty('--forest-lt', lighten(cfg.primary, 0.92));
+      const tm = document.querySelector('meta[name="theme-color"]');
+      if (tm) tm.content = cfg.primary;
+    }
+    if (isHex(cfg.secondary)) {
+      root.style.setProperty('--teal',     cfg.secondary);
+      root.style.setProperty('--teal-lt',  lighten(cfg.secondary, 0.92));
+      root.style.setProperty('--teal-mid', hexToRgba(cfg.secondary, 0.13));
+    }
+    if (cfg.logoUrl) {
+      document.querySelectorAll(
+        'img[src*="filesafe.space"], img[src*="thrivebg"], img[data-broker-logo]'
+      ).forEach(img => {
+        img.src = cfg.logoUrl;
+        if (cfg.brand) img.alt = cfg.brand;
+      });
+      document.querySelectorAll('.logo-mark').forEach(el => {
+        el.innerHTML = `<img src="${cfg.logoUrl}" alt="${cfg.brand}" style="height:100%;width:100%;object-fit:contain;border-radius:inherit">`;
+      });
+    }
+    if (cfg.brand) {
+      document.querySelectorAll('[data-broker-brand]').forEach(el => {
+        el.textContent = cfg.brand;
+      });
+    }
+    if (cfg.enrollUrl) {
+      document.querySelectorAll('[data-broker-cta="enroll"]').forEach(a => {
+        const url = new URL(cfg.enrollUrl);
+        pageParams.forEach((v, k) => url.searchParams.set(k, v));
+        a.href = url.toString();
+      });
+    }
+    if (cfg.customUrl) {
+      document.querySelectorAll('[data-broker-cta="customize"]').forEach(a => {
+        const url = new URL(cfg.customUrl);
+        pageParams.forEach((v, k) => url.searchParams.set(k, v));
+        a.href = url.toString();
+      });
+    }
+  }
+
   // ── Main ──────────────────────────────────────
   async function applyBrokerTheme() {
     const broker = new URLSearchParams(window.location.search).get('broker');
     if (!broker) return;
-
     try {
-      const resp = await fetch(DIR_URL);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const rows = parseCSV(await resp.text());
-      if (rows.length < 2) return;
-
-      const headers = rows[0].map(v => v.trim().toLowerCase());
-      const col = name => headers.findIndex(v => v === name.toLowerCase());
-
-      const iBroker    = col('broker id');
-      const iPrimary   = col('primary color');
-      const iSecond    = col('secondary color');
-      const iLogo      = col('logo url');
-      const iBrand     = col('brand name');
-      const iEnrollUrl = col('enroll url');
-      const iCustomUrl = col('customize url');
-
-      // Find first row belonging to this broker (any active company row works for theme data)
-      const row = rows.slice(1).find(r =>
-        (r[iBroker] || '').trim().toLowerCase() === broker.toLowerCase()
-      );
-      if (!row) { console.warn('[Theme] No row found for broker:', broker); return; }
-
-      const primary    = iPrimary   >= 0 ? (row[iPrimary]   || '').trim() : '';
-      const second     = iSecond    >= 0 ? (row[iSecond]    || '').trim() : '';
-      const logoUrl    = iLogo      >= 0 ? (row[iLogo]      || '').trim() : '';
-      const brand      = iBrand     >= 0 ? (row[iBrand]     || '').trim() : '';
-      const enrollUrl  = iEnrollUrl >= 0 ? (row[iEnrollUrl] || '').trim() : '';
-      const customUrl  = iCustomUrl >= 0 ? (row[iCustomUrl] || '').trim() : enrollUrl;
-
-      const root = document.documentElement;
-
-      // Apply primary color + derived variants
-      if (isHex(primary)) {
-        root.style.setProperty('--forest',    primary);
-        root.style.setProperty('--forest-d',  darken(primary, 0.15));
-        root.style.setProperty('--forest-lt', lighten(primary, 0.92));
-        // Update theme-color meta if present
-        const tm = document.querySelector('meta[name="theme-color"]');
-        if (tm) tm.content = primary;
+      const cfg = await fetchBrokerConfig(broker);
+      if (cfg) {
+        applyTheme(cfg);
+        console.log('[Theme] Applied:', broker, cfg);
       }
-
-      // Apply secondary color + derived variants
-      if (isHex(second)) {
-        root.style.setProperty('--teal',     second);
-        root.style.setProperty('--teal-lt',  lighten(second, 0.92));
-        root.style.setProperty('--teal-mid', hexToRgba(second, 0.13));
-      }
-
-      // Swap logos
-      if (logoUrl) {
-        // img tags: TBG CDN images and any tagged with data-broker-logo
-        document.querySelectorAll(
-          'img[src*="filesafe.space"], img[src*="thrivebg"], img[data-broker-logo]'
-        ).forEach(img => {
-          img.src = logoUrl;
-          if (brand) img.alt = brand;
-        });
-        // Logo-mark divs (letter mark used in landing nav/footer)
-        document.querySelectorAll('.logo-mark').forEach(el => {
-          el.innerHTML = `<img src="${logoUrl}" alt="${brand || broker}" style="height:100%;width:100%;object-fit:contain;border-radius:inherit">`;
-        });
-      }
-
-      // Swap brand name in explicitly tagged elements only
-      if (brand) {
-        document.querySelectorAll('[data-broker-brand]').forEach(el => {
-          el.textContent = brand;
-        });
-      }
-
-      // Swap CTA link destinations — preserve existing URL params
-      const pageParams = new URLSearchParams(window.location.search);
-      if (enrollUrl) {
-        document.querySelectorAll('[data-broker-cta="enroll"]').forEach(a => {
-          const url = new URL(enrollUrl);
-          pageParams.forEach((v, k) => url.searchParams.set(k, v));
-          a.href = url.toString();
-        });
-      }
-      if (customUrl) {
-        document.querySelectorAll('[data-broker-cta="customize"]').forEach(a => {
-          const url = new URL(customUrl);
-          pageParams.forEach((v, k) => url.searchParams.set(k, v));
-          a.href = url.toString();
-        });
-      }
-
-      console.log('[Theme] Applied broker theme:', broker,
-        { primary: primary || '(default)', second: second || '(default)', logoUrl: logoUrl || '(none)' });
-
     } catch (e) {
-      console.warn('[Theme] Failed to apply broker theme:', e.message);
+      console.warn('[Theme] Failed:', e.message);
     }
   }
 

@@ -533,9 +533,39 @@
     // COMPANY → GOOGLE SHEET CONFIG
     // ─────────────────────────────────────────────
     // ─── Directory sheet (master company list) ────
-    // Publish your sheet: File → Share → Publish to web → CSV
     const DIRECTORY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?output=csv';
+    // ─── Broker Config tab (one row per broker) ───
+    // Publish separately: same sheet → "Broker Config" tab → CSV
+    const BROKER_CONFIG_URL = 'YOUR_BROKER_CONFIG_TAB_URL_HERE';
     const WHOLE_EMP_MAX_BENEFIT_DEFAULT = 75000;
+
+    // ─── Apply broker theme from Broker Config tab ─
+    async function applyBrokerThemeFromConfig(broker) {
+      if (!BROKER_CONFIG_URL || BROKER_CONFIG_URL.startsWith('YOUR_')) return;
+      try {
+        const resp = await fetch(BROKER_CONFIG_URL);
+        if (!resp.ok) return;
+        const rows = parseCSV(await resp.text());
+        if (rows.length < 2) return;
+        const h = rows[0].map(v => v.trim().toLowerCase());
+        const col = name => h.findIndex(v => v === name.toLowerCase());
+        const iB = col('broker id'), iP = col('primary color'), iS = col('secondary color'), iL = col('logo url');
+        const row = rows.slice(1).find(r => (r[iB]||'').trim().toLowerCase() === broker.toLowerCase());
+        if (!row) return;
+        const isHex = v => /^#[0-9a-f]{6}$/i.test((v||'').trim());
+        const toRgb = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+        const toHex = (r,g,b) => '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+        const dk = (h,a) => { const [r,g,b]=toRgb(h); return toHex(r*(1-a),g*(1-a),b*(1-a)); };
+        const lt = (h,a) => { const [r,g,b]=toRgb(h); return toHex(r+(255-r)*a,g+(255-g)*a,b+(255-b)*a); };
+        const root = document.documentElement;
+        const p = iP >= 0 ? (row[iP]||'').trim() : '';
+        const s = iS >= 0 ? (row[iS]||'').trim() : '';
+        const logo = iL >= 0 ? (row[iL]||'').trim() : '';
+        if (isHex(p)) { root.style.setProperty('--forest', p); root.style.setProperty('--forest-d', dk(p,.15)); root.style.setProperty('--forest-lt', lt(p,.92)); }
+        if (isHex(s)) { root.style.setProperty('--teal', s); root.style.setProperty('--teal-lt', lt(s,.92)); }
+        if (logo) document.querySelectorAll('img[data-broker-logo]').forEach(img => { img.src = logo; });
+      } catch(e) { console.warn('[Theme]', e.message); }
+    }
 
     // Populated at load from DIRECTORY_SHEET_ID; falls back to FALLBACK_COMPANIES
     let COMPANIES = {};
@@ -1135,9 +1165,6 @@
         const iStatus    = col('status');
         const iBroker    = col('broker id');
         const iFormUrl   = col('form url');
-        const iPrimary   = col('primary color');
-        const iSecond    = col('secondary color');
-        const iLogoUrl   = col('logo url');
 
         if (iName < 0)      throw new Error('"Company Name" column not found in directory');
         if (iRateTable < 0) throw new Error('"Rate Table ID" column not found in directory');
@@ -1165,37 +1192,8 @@
           + (brokerParam ? ` for broker "${brokerParam}"` : ''));
         applyList(built);
 
-        // Apply broker theme using the same parsed rows — no second fetch needed
-        if (brokerParam) {
-          const themeRow = rows.slice(1).find(r =>
-            (r[iBroker] || '').trim().toLowerCase() === brokerParam.toLowerCase()
-          );
-          if (themeRow) {
-            const isHex = v => /^#[0-9a-f]{6}$/i.test((v||'').trim());
-            const hexToRgb = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
-            const rgbToHex = (r,g,b) => '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
-            const darken  = (h,a) => { const [r,g,b]=hexToRgb(h); return rgbToHex(r*(1-a),g*(1-a),b*(1-a)); };
-            const lighten = (h,a) => { const [r,g,b]=hexToRgb(h); return rgbToHex(r+(255-r)*a,g+(255-g)*a,b+(255-b)*a); };
-
-            const primary = iPrimary >= 0 ? (themeRow[iPrimary]||'').trim() : '';
-            const second  = iSecond  >= 0 ? (themeRow[iSecond] ||'').trim() : '';
-            const logoUrl = iLogoUrl >= 0 ? (themeRow[iLogoUrl]||'').trim() : '';
-            const root    = document.documentElement;
-
-            if (isHex(primary)) {
-              root.style.setProperty('--forest',    primary);
-              root.style.setProperty('--forest-d',  darken(primary, 0.15));
-              root.style.setProperty('--forest-lt', lighten(primary, 0.92));
-            }
-            if (isHex(second)) {
-              root.style.setProperty('--teal',    second);
-              root.style.setProperty('--teal-lt', lighten(second, 0.92));
-            }
-            if (logoUrl) {
-              document.querySelectorAll('img[data-broker-logo]').forEach(img => { img.src = logoUrl; });
-            }
-          }
-        }
+        // Apply broker theme from the Broker Config tab (separate fetch)
+        if (brokerParam) applyBrokerThemeFromConfig(brokerParam);
 
       } catch (err) {
         console.warn('[Directory]', err.message, '— using fallback list');
