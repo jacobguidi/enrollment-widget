@@ -1100,6 +1100,9 @@
       const sel = document.getElementById('companySelect');
       if (sel) { sel.innerHTML = '<option value="">Loading companies…</option>'; sel.disabled = true; }
 
+      // Broker filter — set by whoever builds the GHL page, never entered by the user
+      const brokerParam = new URLSearchParams(window.location.search).get('broker') || '';
+
       const applyList = (map) => {
         COMPANIES = map;
         if (!sel) return;
@@ -1124,31 +1127,39 @@
         const rows = parseCSV(csv);
         if (rows.length < 2) throw new Error('Directory sheet appears empty');
 
-        // Map column names from header row
         const headers = rows[0].map(h => (h || '').trim().toLowerCase());
         const col = name => headers.findIndex(h => h === name.toLowerCase());
 
         const iName      = col('company name');
         const iRateTable = col('rate table id');
         const iStatus    = col('status');
+        const iBroker    = col('broker id');
+        const iFormUrl   = col('form url');
 
         if (iName < 0)      throw new Error('"Company Name" column not found in directory');
         if (iRateTable < 0) throw new Error('"Rate Table ID" column not found in directory');
 
         const built = {};
         for (let i = 1; i < rows.length; i++) {
-          const row    = rows[i];
-          const name   = (row[iName]      || '').trim();
-          const rateId = (row[iRateTable] || '').trim();
-          const status = iStatus >= 0 ? (row[iStatus] || '').trim().toLowerCase() : 'active';
+          const row      = rows[i];
+          const name     = (row[iName]      || '').trim();
+          const rateId   = (row[iRateTable] || '').trim();
+          const status   = iStatus  >= 0 ? (row[iStatus]  || '').trim().toLowerCase() : 'active';
+          const brokerId = iBroker  >= 0 ? (row[iBroker]  || '').trim().toLowerCase() : '';
+          const formUrl  = iFormUrl >= 0 ? (row[iFormUrl] || '').trim()               : '';
+
           if (!name || !rateId) continue;
           if (iStatus >= 0 && status !== 'active') continue;
-          built[name] = { sheetId: rateId, wholeEmpMaxBenefit: WHOLE_EMP_MAX_BENEFIT_DEFAULT };
+          // Only show companies matching the broker param — if no param, show all active
+          if (brokerParam && brokerId && brokerId !== brokerParam.toLowerCase()) continue;
+
+          built[name] = { sheetId: rateId, formUrl, wholeEmpMaxBenefit: WHOLE_EMP_MAX_BENEFIT_DEFAULT };
         }
 
         if (Object.keys(built).length === 0) throw new Error('No active companies found in directory');
 
-        console.log('[Directory] Loaded', Object.keys(built).length, 'companies');
+        console.log('[Directory] Loaded', Object.keys(built).length, 'companies'
+          + (brokerParam ? ` for broker "${brokerParam}"` : ''));
         applyList(built);
 
       } catch (err) {
@@ -2393,7 +2404,9 @@
         phone:          S.phone,
         benefit_summary: contactNotes,
       });
-      const formSrc = `https://go.thrivebg.com/widget/form/Y5QvdwL7DDeNDVs6MyNl?${params.toString()}`;
+      const companyCfg  = COMPANIES[S.company] || {};
+      const baseFormUrl = companyCfg.formUrl || 'https://go.thrivebg.com/widget/form/Y5QvdwL7DDeNDVs6MyNl';
+      const formSrc     = `${baseFormUrl}?${params.toString()}`;
       const btnRow = document.getElementById('submitBtnRow');
       if (btnRow) btnRow.style.display = 'none';
       const consentArea = document.getElementById('consentFormArea');
@@ -2407,7 +2420,28 @@
             title="Employee Consent">
           </iframe>`;
         consentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        const REDIRECT_URL = 'https://gothrivebg.com/whats-next';
+        // ?redirect= on the widget URL lets each broker set their own post-enrollment page
+        const REDIRECT_URL = new URLSearchParams(window.location.search).get('redirect')
+          || 'https://gothrivebg.com/whats-next';
+
+        const doRedirect = () => {
+          // Pass enrollment data to the parent funnel page before navigating
+          window.parent.postMessage({
+            type: 'enrollment_complete',
+            data: {
+              firstName:    S.firstName,
+              lastName:     S.lastName,
+              email:        S.email,
+              phone:        S.phone,
+              company:      S.company,
+              totalPremium: calcTotal(),
+              empAge:       S.empAge,
+              tobacco:      S.tobacco
+            }
+          }, '*');
+          window.top.location.href = REDIRECT_URL;
+        };
+
         let ghlSubmitted = false;
         const ghlMessageHandler = (event) => {
           if (ghlSubmitted) return;
@@ -2423,7 +2457,7 @@
           if (isSubmit) {
             ghlSubmitted = true;
             window.removeEventListener('message', ghlMessageHandler);
-            window.top.location.href = REDIRECT_URL;
+            doRedirect();
           }
         };
         window.addEventListener('message', ghlMessageHandler);
@@ -2434,7 +2468,7 @@
           if (iframeLoadCount >= 2 && !ghlSubmitted) {
             ghlSubmitted = true;
             window.removeEventListener('message', ghlMessageHandler);
-            window.top.location.href = REDIRECT_URL;
+            doRedirect();
           }
         });
       }
