@@ -4,7 +4,7 @@
 
   // ── Broker Config tab: one row per broker ─────
   // Publish separately: Sheets → File → Share → Publish to web → "Broker Config" tab → CSV
-  const BROKER_CONFIG_URL = 'YOUR_BROKER_CONFIG_TAB_URL_HERE';
+  const BROKER_CONFIG_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?gid=606899757&single=true&output=csv';
 
   // ── Color helpers ─────────────────────────────
   function hexToRgb(h) {
@@ -48,8 +48,8 @@
     const col = name => headers.findIndex(v => v === name.toLowerCase());
 
     const iBroker    = col('broker id');
-    const iPrimary   = col('primary color');
-    const iSecond    = col('secondary color');
+    const iPrimary   = col('primary');
+    const iSecond    = col('secondary');
     const iLogo      = col('logo url');
     const iBrand     = col('brand name');
     const iEnrollUrl = col('enroll url');
