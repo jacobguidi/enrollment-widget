@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Benefits Package — Open Enrollment</title>
+  <meta name="theme-color" content="#1F5C42" />
+  <meta http-equiv="x-dns-prefetch-control" content="on" />
+  <link rel="dns-prefetch" href="https://go.thrivebg.com" />
+  <link rel="dns-prefetch" href="https://gothrivebg.com" />
+  <link rel="prefetch" href="https://gothrivebg.com/opt-in" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500&display=swap" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" /></noscript>
+  <style>
+    /* ── Reset & Base ───────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --forest:    #1F5C42;
+      --forest-d:  #163f2e;
+      --forest-lt: #e8f4ef;
+      --teal:      #2DB89E;
+      --teal-lt:   #e6f7f4;
+      --teal-mid:  rgba(45,184,158,.13);
+      --navy:      #162B3B;
+      --navy-d:    #0e1f2b;
+      --cloud:     #F5F6F8;
+      --white:     #FFFFFF;
+      --body-gray: #4B5563;
+      --mid-gray:  #D1D5DB;
+      --lt-border: #E5E7EB;
+      --black:     #0F1B14;
+      --font-head: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+    html, body {
+      scroll-behavior: smooth;
+      width: 100%;
+      overflow-x: hidden;
+    }
+    body {
+      font-family: var(--font-body);
+      color: var(--body-gray);
+      background: var(--white);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* ── Breakout wrapper for restrictive desktop builders ── */
+    .builder-breakout {
+      width: 100vw !important;
+      position: relative;
+      left: 50%;
+      right: 50%;
+      margin-left: -50vw !important;
+      margin-right: -50vw !important;
+      max-width: none !important;
+    }
+    h1,h2,h3,h4 { font-family: var(--font-head); color: var(--black); line-height: 1.15; }
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container    { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+    .container-sm { max-width: 780px;  margin: 0 auto; padding: 0 40px; }
+    /* ── Buttons ───────────────────────────────────── */
+    .btn-forest {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 48px; padding: 0 26px; border-radius: var(--radius-sm);
+      background: var(--forest); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      border: none; cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 12px rgba(31,92,66,.22);
+      transition: background .18s, box-shadow .18s;
+    }
+    .btn-forest:hover { background: var(--forest-d); box-shadow: 0 4px 20px rgba(31,92,66,.32); text-decoration: none; }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 48px; padding: 0 22px; border-radius: var(--radius-sm);
+      background: transparent; color: var(--black);
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      border: 1.5px solid var(--mid-gray); cursor: pointer; text-decoration: none;
+      transition: border-color .18s, color .18s;
+    }
+    .btn-outline:hover { border-color: var(--forest); color: var(--forest); text-decoration: none; }
+    .btn-white {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 50px; padding: 0 28px; border-radius: var(--radius-sm);
+      background: #fff; color: var(--forest);
+      font-family: var(--font-head); font-weight: 800; font-size: 15px;
+      border: none; cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 14px rgba(0,0,0,.15);
+      transition: background .18s;
+    }
+    .btn-white:hover { background: var(--forest-lt); text-decoration: none; }
+    .btn-white-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 50px; padding: 0 24px; border-radius: var(--radius-sm);
+      background: transparent; color: rgba(255,255,255,.85);
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      border: 1.5px solid rgba(255,255,255,.28); cursor: pointer; text-decoration: none;
+      transition: border-color .18s, color .18s;
+    }
+    .btn-white-outline:hover { border-color: rgba(255,255,255,.7); color: #fff; text-decoration: none; }
+    /* ── Section Patterns ──────────────────────────── */
+    .overline {
+      font-family: var(--font-head); font-size: 11.5px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--teal);
+      margin-bottom: 10px; display: block;
+    }
+    .section-headline {
+      font-family: var(--font-head); font-weight: 800; letter-spacing: -.022em;
+      font-size: clamp(26px, 3vw, 38px); color: var(--black); margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--body-gray); line-height: 1.65; max-width: 520px;
+    }
+    /* ── Check icon helper ─────────────────────────── */
+    .check-circle {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--forest-lt); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .check-circle svg { width: 10px; height: 10px; }
+    /* ══════════════════════════════════════════════════
+       1. NAVIGATION
+    ══════════════════════════════════════════════════ */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--white);
+      border-bottom: 1px solid var(--lt-border);
+    }
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto; padding: 0 40px;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-head); font-weight: 800; font-size: 15px;
+      color: var(--black); text-decoration: none;
+    }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--forest); display: flex; align-items: center;
+      justify-content: center; font-family: var(--font-head);
+      font-weight: 800; font-size: 14px; color: #fff; flex-shrink: 0;
+    }
+    .nav-right {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .nav-question {
+      font-size: 13.5px; color: var(--body-gray); font-weight: 500;
+    }
+    .nav-question a { color: var(--forest); font-weight: 600; }
+    .nav-cta {
+      height: 38px; padding: 0 18px; border-radius: 8px;
+      background: var(--forest); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 13px;
+      border: none; cursor: pointer; display: inline-flex;
+      align-items: center; text-decoration: none; transition: background .18s;
+    }
+    .nav-cta:hover { background: var(--forest-d); text-decoration: none; }
+    /* ── Scroll progress bar (bottom) ── */
+    .progress-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 5px;
+      background: var(--teal); width: 0%; z-index: 9999;
+      margin: 0; padding: 0;
+    }
+    /* ══════════════════════════════════════════════════
+       2. ENROLLMENT BANNER
+    ══════════════════════════════════════════════════ */
+    .enroll-banner {
+      background: var(--teal-lt);
+      border-bottom: 1px solid rgba(45,184,158,.22);
+      padding: 11px 40px; text-align: center;
+    }
+    .enroll-banner p {
+      font-size: 13.5px; font-weight: 500; color: var(--forest-d);
+    }
+    .enroll-banner strong { font-weight: 700; }
+    /* ══════════════════════════════════════════════════
+       3. HERO
+    ══════════════════════════════════════════════════ */
+    .hero {
+      padding: 80px 40px 72px;
+      background: var(--white);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -200px; right: -100px;
+      width: 640px; height: 640px; border-radius: 50%;
+      background: var(--teal-mid); pointer-events: none;
+    }
+    .hero-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 420px;
+      gap: 72px; align-items: center; position: relative; z-index: 1;
+    }
+    /* Badge */
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--forest-lt); border: 1px solid rgba(31,92,66,.18);
+      border-radius: 100px; padding: 5px 14px 5px 8px; margin-bottom: 22px;
+    }
+    .hero-badge .dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--forest); display: flex; align-items: center; justify-content: center;
+    }
+    .hero-badge .dot svg { width: 9px; height: 9px; }
+    .hero-badge span {
+      font-family: var(--font-head); font-size: 11.5px; font-weight: 700;
+      color: var(--forest); letter-spacing: .05em; text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(38px, 4.8vw, 54px); font-weight: 800;
+      letter-spacing: -.027em; color: var(--black); margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: normal; color: var(--teal); }
+    .hero-sub {
+      font-size: 17px; color: var(--body-gray); line-height: 1.65;
+      max-width: 480px; margin-bottom: 34px;
+    }
+    .hero-cta-row {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; margin-bottom: 34px;
+    }
+    .trust-row {
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; font-weight: 500; color: var(--body-gray);
+    }
+    .trust-sep { width: 1px; height: 14px; background: var(--mid-gray); }
+    /* ── Package Card ─────────────────────────────── */
+    .pkg-card {
+      background: var(--white);
+      border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 40px rgba(15,27,20,.09), 0 2px 8px rgba(15,27,20,.04);
+      overflow: hidden;
+    }
+    .pkg-header {
+      background: var(--forest); padding: 22px 26px 20px;
+      position: relative; overflow: hidden;
+    }
+    .pkg-header::after {
+      content: ''; position: absolute; top: -50px; right: -50px;
+      width: 140px; height: 140px; border-radius: 50%;
+      background: rgba(255,255,255,.06); pointer-events: none;
+    }
+    .pkg-lbl {
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: rgba(255,255,255,.6); margin-bottom: 4px;
+    }
+    .pkg-name {
+      font-family: var(--font-head); font-size: 18px; font-weight: 800;
+      color: #fff; margin-bottom: 14px; letter-spacing: -.01em;
+    }
+    .pkg-value-row { display: flex; align-items: center; gap: 10px; }
+    .pkg-val {
+      font-family: var(--font-head); font-size: 40px; font-weight: 800;
+      color: #fff; line-height: 1; letter-spacing: -.03em;
+    }
+    .pkg-val-meta { padding-bottom: 5px; }
+    .pkg-val-meta .mo {
+      font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,.65);
+      display: block; line-height: 1.25;
+    }
+    .pkg-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--teal); border-radius: 100px;
+      padding: 2px 10px; font-family: var(--font-head);
+      font-size: 10.5px; font-weight: 700; color: #fff;
+      letter-spacing: .03em; margin-top: 5px;
+    }
+    .pkg-body { padding: 20px 26px 22px; }
+    .pkg-section-lbl {
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--body-gray); margin-bottom: 13px;
+    }
+    .benefits-list { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+    .benefits-list li { display: flex; align-items: center; gap: 11px; }
+    .bft-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--forest-lt); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .bft-icon svg { width: 13px; height: 13px; }
+    .bft-name {
+      font-family: var(--font-head); font-size: 12.5px;
+      font-weight: 700; color: var(--black); display: block; line-height: 1.2;
+    }
+    .bft-amt { font-size: 11.5px; color: var(--body-gray); }
+    .paycheck-pill {
+      background: var(--teal-lt); border: 1px solid rgba(45,184,158,.22);
+      border-radius: var(--radius-sm); padding: 11px 14px;
+      display: flex; align-items: center; gap: 11px; margin-bottom: 16px;
+    }
+    .paycheck-pill .pill-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--teal); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .paycheck-pill .pill-icon svg { width: 15px; height: 15px; }
+    .pill-num {
+      font-family: var(--font-head); font-size: 13px; font-weight: 800;
+      color: var(--forest); display: block; line-height: 1.25;
+    }
+    .pill-desc { font-size: 11.5px; color: var(--body-gray); }
+    .card-btns { display: flex; flex-direction: column; gap: 8px; }
+    .btn-card-p {
+      width: 100%; height: 44px; border-radius: var(--radius-sm);
+      background: var(--forest); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 14px;
+      border: none; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 7px; transition: background .18s;
+      text-decoration: none;
+    }
+    .btn-card-p:hover { background: var(--forest-d); text-decoration: none; }
+    .btn-card-s {
+      width: 100%; height: 40px; border-radius: var(--radius-sm);
+      background: transparent; color: var(--body-gray);
+      font-family: var(--font-head); font-weight: 600; font-size: 13px;
+      border: 1.5px solid var(--lt-border); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: border-color .18s, color .18s; text-decoration: none;
+    }
+    .btn-card-s:hover { border-color: var(--teal); color: var(--teal); text-decoration: none; }
+    .card-fine { text-align: center; font-size: 11px; color: var(--mid-gray); margin-top: 6px; }
+    /* ══════════════════════════════════════════════════
+       4. STATS STRIP
+    ══════════════════════════════════════════════════ */
+    .stats-strip {
+      background: var(--forest); padding: 38px 40px;
+      position: relative; overflow: hidden;
+    }
+    .stats-strip::before {
+      content: ''; position: absolute; top: -80px; left: -60px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: rgba(255,255,255,.04); pointer-events: none;
+    }
+    .stats-strip::after {
+      content: ''; position: absolute; bottom: -80px; right: -40px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: rgba(255,255,255,.03); pointer-events: none;
+    }
+    .stats-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; position: relative; z-index: 1;
+    }
+    .stat-item {
+      text-align: center; padding: 14px 16px;
+      border-right: 1px solid rgba(255,255,255,.12);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--font-head); font-size: 36px; font-weight: 800;
+      color: #fff; letter-spacing: -.03em; line-height: 1; margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 12.5px; font-weight: 500;
+      color: rgba(255,255,255,.6); line-height: 1.4; max-width: 110px; margin: 0 auto;
+    }
+    /* ══════════════════════════════════════════════════
+       5. EDUCATION — WHAT IS THE ATTENTIVE PROGRAM
+    ══════════════════════════════════════════════════ */
+    .edu-section {
+      padding: 88px 40px;
+      background: var(--white);
+    }
+    .edu-header {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center; margin-bottom: 64px;
+    }
+    .edu-header-copy .section-sub { max-width: 100%; }
+    .simrp-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--navy); border-radius: var(--radius-sm);
+      padding: 8px 16px; margin-bottom: 22px;
+    }
+    .simrp-tag span {
+      font-family: var(--font-head); font-size: 12px; font-weight: 700;
+      color: #fff; letter-spacing: .04em;
+    }
+    .simrp-tag .tag-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--teal);
+    }
+    /* Visual side — income comparison */
+    .income-card {
+      background: var(--cloud); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-lg); padding: 28px 28px 24px; overflow: hidden;
+      position: relative;
+      transition: box-shadow .4s ease;
+    }
+    .income-card::before {
+      content: ''; position: absolute; bottom: -40px; right: -40px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: var(--teal-mid); pointer-events: none;
+    }
+    .lbl-mobile { display: none; }
+    .lbl-desktop { display: inline; }
+    .income-card-lbl {
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--body-gray); margin-bottom: 20px;
+    }
+    .income-rows { display: flex; flex-direction: column; gap: 10px; }
+    .income-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+    }
+    .income-row-label {
+      font-size: 13px; color: var(--body-gray); font-weight: 500;
+      min-width: 120px; flex: 0 0 120px;
+    }
+    .income-row-bar-wrap { flex: 2; background: var(--lt-border); border-radius: 100px; height: 8px; overflow: hidden; }
+    .income-row-bar {
+      width: var(--bar-w);
+      height: 8px;
+      border-radius: 100px;
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 1.4s cubic-bezier(.22,1,.36,1);
+      will-change: transform;
+    }
+    .income-row-bar.animated {
+      transform: scaleX(1);
+    }
+    .income-row-val {
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      color: var(--black); min-width: 110px; flex: 0 0 110px; text-align: right;
+    }
+    .income-delta {
+      margin-top: 16px; background: var(--forest-lt);
+      border: 1px solid rgba(31,92,66,.15); border-radius: var(--radius-sm);
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .income-delta .d-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--forest); display: flex; align-items: center; justify-content: center;
+    }
+    .income-delta .d-icon svg { width: 13px; height: 13px; }
+    .income-delta .d-text {
+      font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--forest);
+    }
+    .income-delta .d-sub { font-size: 11.5px; color: var(--body-gray); display: block; }
+    /* 3 how-it-works cards */
+    .edu-cards {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .edu-card {
+      background: var(--cloud); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 28px 24px;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .edu-card:hover {
+      box-shadow: 0 6px 28px rgba(15,27,20,.07);
+      border-color: rgba(45,184,158,.3);
+    }
+    .edu-num {
+      font-family: var(--font-head); font-size: 11px; font-weight: 700;
+      color: var(--teal); letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 10px; display: block;
+    }
+    .edu-card h3 {
+      font-size: 17px; font-weight: 800; color: var(--black);
+      margin-bottom: 10px; letter-spacing: -.01em;
+    }
+    .edu-card p { font-size: 14px; color: var(--body-gray); line-height: 1.6; }
+    /* ══════════════════════════════════════════════════
+       6. WHAT YOU GET — FULL BENEFITS BREAKDOWN
+    ══════════════════════════════════════════════════ */
+    .benefits-section {
+      padding: 88px 40px;
+      background: var(--cloud);
+    }
+    .benefits-header {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: 40px; margin-bottom: 52px;
+      flex-wrap: wrap;
+    }
+    /* Tab toggle */
+    .tab-toggle {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--lt-border); border-radius: 100px; padding: 4px;
+    }
+    .tab-btn {
+      height: 36px; padding: 0 18px; border-radius: 100px; border: none;
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background .18s, color .18s;
+      background: transparent; color: var(--body-gray);
+    }
+    .tab-btn.active {
+      background: var(--forest); color: #fff;
+    }
+    /* Tab Panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    /* Supplemental grid */
+    .suppl-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    }
+    .suppl-card {
+      background: var(--white); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 24px 22px;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .suppl-card:hover {
+      box-shadow: 0 4px 20px rgba(15,27,20,.07);
+      border-color: rgba(31,92,66,.25);
+    }
+    .suppl-card-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 12px;
+    }
+    .suppl-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--forest-lt); display: flex;
+      align-items: center; justify-content: center;
+    }
+    .suppl-icon svg { width: 18px; height: 18px; }
+    .suppl-amount {
+      font-family: var(--font-head); font-size: 13px; font-weight: 800;
+      color: var(--forest); background: var(--forest-lt);
+      padding: 3px 10px; border-radius: 100px;
+    }
+    .suppl-card h3 {
+      font-size: 15px; font-weight: 800; color: var(--black);
+      margin-bottom: 7px; letter-spacing: -.01em;
+    }
+    .suppl-card p { font-size: 13px; color: var(--body-gray); line-height: 1.55; }
+    .suppl-included {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 12px; font-size: 11.5px; font-weight: 600; color: var(--forest);
+    }
+    .suppl-included svg { width: 10px; height: 10px; }
+    /* Wellness grid */
+    .wellness-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    }
+    .wellness-card {
+      background: var(--white); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 24px 22px;
+      display: flex; gap: 18px; align-items: flex-start;
+      transition: box-shadow .2s;
+    }
+    .wellness-card:hover { box-shadow: 0 4px 20px rgba(15,27,20,.07); }
+    .wellness-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: var(--teal-lt); display: flex; align-items: center; justify-content: center;
+    }
+    .wellness-icon svg { width: 20px; height: 20px; }
+    .wellness-card h3 {
+      font-size: 15px; font-weight: 800; color: var(--black);
+      margin-bottom: 5px; letter-spacing: -.01em;
+    }
+    .wellness-card p { font-size: 13px; color: var(--body-gray); line-height: 1.55; }
+    .wellness-card .tag {
+      display: inline-block; margin-top: 8px;
+      font-size: 11px; font-weight: 700; color: var(--teal);
+      background: var(--teal-lt); padding: 2px 10px; border-radius: 100px;
+    }
+    /* ══════════════════════════════════════════════════
+       7. PACKAGE PRESENTATION — THE DECISION STEP
+    ══════════════════════════════════════════════════ */
+    .decision-section {
+      padding: 88px 40px;
+      background: var(--white);
+    }
+    .decision-inner {
+      max-width: 1280px; margin: 0 auto;
+    }
+    .decision-header {
+      text-align: center; max-width: 640px; margin: 0 auto 52px;
+    }
+    .paths-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+      max-width: 900px; margin: 0 auto;
+    }
+    .path-card {
+      border-radius: var(--radius-lg); overflow: hidden;
+      border: 2px solid var(--lt-border);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .path-card:hover {
+      border-color: rgba(31,92,66,.35);
+      box-shadow: 0 8px 32px rgba(15,27,20,.08);
+    }
+    .path-card.featured { border-color: var(--forest); }
+    .path-card-badge {
+      background: var(--forest); padding: 8px 22px; text-align: center;
+    }
+    .path-card-badge span {
+      font-family: var(--font-head); font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.85);
+    }
+    .path-card-body {
+      padding: 28px 26px 26px;
+    }
+    .path-card h3 {
+      font-size: 20px; font-weight: 800; color: var(--black);
+      margin-bottom: 8px; letter-spacing: -.01em;
+    }
+    .path-card .path-desc {
+      font-size: 14px; color: var(--body-gray); line-height: 1.6; margin-bottom: 20px;
+    }
+    .path-checklist { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px; }
+    .path-checklist li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13.5px; color: var(--body-gray); font-weight: 500;
+    }
+    .path-checklist li svg { flex-shrink: 0; }
+    .path-cta {
+      width: 100%; height: 46px; border-radius: var(--radius-sm);
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      cursor: pointer; border: none; display: flex; align-items: center;
+      justify-content: center; gap: 8px; text-decoration: none;
+      transition: background .18s, border-color .18s, color .18s;
+    }
+    .path-cta.primary { background: var(--forest); color: #fff; }
+    .path-cta.primary:hover { background: var(--forest-d); text-decoration: none; }
+    .path-cta.secondary {
+      background: transparent; color: var(--black);
+      border: 1.5px solid var(--mid-gray);
+    }
+    .path-cta.secondary:hover { border-color: var(--forest); color: var(--forest); text-decoration: none; }
+    /* Timeline note */
+    .timeline-note {
+      max-width: 900px; margin: 28px auto 0;
+      display: flex; align-items: center; gap: 12px;
+      background: var(--cloud); border: 1px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 14px 18px;
+    }
+    .timeline-note svg { flex-shrink: 0; }
+    .timeline-note p { font-size: 13px; color: var(--body-gray); line-height: 1.5; }
+    .timeline-note strong { color: var(--black); font-weight: 600; }
+    /* ══════════════════════════════════════════════════
+       8. FAQ
+    ══════════════════════════════════════════════════ */
+    .faq-section {
+      padding: 88px 40px;
+      background: var(--cloud);
+    }
+    .faq-header {
+      text-align: center; max-width: 560px; margin: 0 auto 48px;
+    }
+    .faq-list {
+      max-width: 740px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .faq-item {
+      background: var(--white); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); overflow: hidden;
+      transition: border-color .2s;
+    }
+    .faq-item.open { border-color: rgba(31,92,66,.3); }
+    .faq-trigger {
+      width: 100%; padding: 18px 22px; display: flex;
+      align-items: center; justify-content: space-between; gap: 16px;
+      background: none; border: none; cursor: pointer; text-align: left;
+    }
+    .faq-trigger-text {
+      font-family: var(--font-head); font-size: 15px; font-weight: 700;
+      color: var(--black); line-height: 1.3;
+    }
+    .faq-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--forest-lt); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      transition: background .2s, transform .25s;
+    }
+    .faq-item.open .faq-icon { background: var(--forest); transform: rotate(45deg); }
+    .faq-icon svg { width: 12px; height: 12px; transition: stroke .2s; }
+    .faq-item.open .faq-icon svg path { stroke: #fff; }
+    .faq-answer {
+      max-height: 0; overflow: hidden;
+      transition: max-height .3s ease, padding .3s ease;
+      padding: 0 22px;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 400px;
+      padding: 0 22px 20px;
+    }
+    .faq-answer p {
+      font-size: 14.5px; color: var(--body-gray); line-height: 1.65;
+      border-top: 1px solid var(--lt-border); padding-top: 16px;
+    }
+    /* ══════════════════════════════════════════════════
+       9. BOTTOM CTA
+    ══════════════════════════════════════════════════ */
+    .bottom-cta {
+      background: var(--navy); padding: 80px 40px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .bottom-cta::before {
+      content: ''; position: absolute; top: -120px; left: 50%;
+      transform: translateX(-50%); width: 500px; height: 500px;
+      border-radius: 50%; background: rgba(45,184,158,.06); pointer-events: none;
+    }
+    .bottom-cta-inner { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; }
+    .bottom-cta h2 {
+      font-family: var(--font-head); font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 800; color: #fff; letter-spacing: -.025em; margin-bottom: 14px;
+    }
+    .bottom-cta p { font-size: 16px; color: rgba(255,255,255,.62); line-height: 1.65; margin-bottom: 32px; }
+    .bottom-cta-btns { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+    /* ══════════════════════════════════════════════════
+       10. FOOTER
+    ══════════════════════════════════════════════════ */
+    footer {
+      background: var(--navy-d); padding: 28px 40px;
+    }
+    .footer-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .footer-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-head); font-weight: 800;
+      font-size: 13px; color: rgba(255,255,255,.55); text-decoration: none;
+    }
+    .footer-logo .logo-mark { width: 24px; height: 24px; border-radius: 6px; font-size: 11px; }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,.28); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a {
+      font-size: 12px; color: rgba(255,255,255,.38); font-weight: 500;
+      transition: color .15s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,.75); text-decoration: none; }
+    /* ══════════════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════════════ */
+    @media (max-width: 960px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+      .hero::before { display: none; }
+      .edu-header { grid-template-columns: 1fr; gap: 36px; }
+      .edu-cards { grid-template-columns: 1fr; }
+      .suppl-grid { grid-template-columns: 1fr 1fr; }
+      .wellness-grid { grid-template-columns: 1fr; }
+      .paths-grid { grid-template-columns: 1fr; max-width: 460px; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .stat-item:nth-child(3) { border-right: none; }
+    }
+    @media (max-width: 600px) {
+      .nav-inner, .hero, .stats-strip, .edu-section, .benefits-section,
+      .decision-section, .faq-section, .bottom-cta, footer {
+        padding-left: 20px; padding-right: 20px;
+      }
+      .enroll-banner { padding-left: 0; padding-right: 0; }
+      .hero { padding-top: 48px; padding-bottom: 48px; }
+      .nav-question { display: none; }
+      .suppl-grid { grid-template-columns: 1fr; }
+      .hero-cta-row { flex-direction: column; align-items: flex-start; }
+      .trust-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .trust-sep { display: none; }
+      .bottom-cta-btns { flex-direction: column; }
+      .footer-inner { justify-content: center; text-align: center; }
+      .benefits-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .lbl-desktop { display: none; }
+      .lbl-mobile { display: inline; }
+      #income-card-lbl { text-align: center; color: var(--teal); }
+      #baseline-val { display: none; }
+      #thrive-val { display: none; }
+    }
+    /* ══════════════════════════════════════════════════
+       PREMIUM ANIMATIONS & GLOW SYSTEM
+    ══════════════════════════════════════════════════ */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    /* ── Scroll-triggered fade-in base ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1);
+    }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .fade-in.visible .fade-child:nth-child(1) { transition-delay: .3s; }
+    .fade-in.visible .fade-child:nth-child(2) { transition-delay: .6s; }
+    .fade-in.visible .fade-child:nth-child(3) { transition-delay: .8s; }
+    /* ── Tab button — neon active glow ── */
+    .tab-btn {
+      transition: background .3s ease, color .3s ease, box-shadow .8s ease !important;
+    }
+    .tab-btn.active {
+      background: var(--teal) !important;
+      color: #fff !important;
+      box-shadow: 0 0 0 2px rgba(45,184,158,.3), 0 0 18px rgba(45,184,158,.38) !important;
+    }
+    .tab-btn:not(.active):hover {
+      color: var(--teal);
+      background: rgba(45,184,158,.07) !important;
+    }
+    /* ── Cards — hover lift + teal border glow ── */
+    .suppl-card, .edu-card {
+      transition: transform .6s cubic-bezier(.22,1,.36,1), border-color .6s ease, box-shadow .6s ease;
+    }
+    .suppl-card:hover, .edu-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(45,184,158,.42) !important;
+      box-shadow: 0 10px 32px rgba(31,92,66,.1), 0 0 0 1px rgba(45,184,158,.18);
+    }
+    /* ── Path cards — hover glow ── */
+    .path-card {
+      transition: border-color .4s ease, box-shadow .4s ease, transform .8s cubic-bezier(.22,1,.36,1);
+    }
+    .path-card:hover {
+      border-color: rgba(45,184,158,.45) !important;
+      box-shadow: 0 12px 40px rgba(31,92,66,.12), 0 0 24px rgba(45,184,158,.1);
+      transform: translateY(-4px);
+    }
+    /* ── FAQ items — hover border glow ── */
+    .faq-item {
+      transition: border-color .35s ease, box-shadow .35s ease;
+    }
+    .faq-item:hover {
+      border-color: rgba(45,184,158,.38) !important;
+      box-shadow: 0 6px 22px rgba(31,92,66,.07);
+    }
+    /* ── Primary buttons — shimmer sweep on hover ── */
+    .btn-forest, .btn-card-p, .path-cta.primary {
+      position: relative; overflow: hidden;
+      transition: background .3s ease, box-shadow .4s ease, transform .3s cubic-bezier(.22,1,.36,1) !important;
+    }
+    .btn-forest::after, .btn-card-p::after, .path-cta.primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.15) 50%, transparent 62%);
+      background-size: 220% 100%;
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+    .btn-forest:hover::after, .btn-card-p:hover::after, .path-cta.primary:hover::after {
+      opacity: 1;
+      animation: shimmer .75s ease forwards;
+    }
+    .btn-forest:hover, .btn-card-p:hover, .path-cta.primary:hover {
+      box-shadow: 0 8px 28px rgba(31,92,66,.3), 0 0 18px rgba(45,184,158,.22) !important;
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    /* ── Stat numbers — fade up on load ── */
+    .stat-item {
+      animation: fadeSlideUp .9s cubic-bezier(.22,1,.36,1) both;
+      will-change: opacity, transform;
+    }
+    .stat-item:nth-child(1) { animation-delay: .15s; }
+    .stat-item:nth-child(2) { animation-delay: .28s; }
+    .stat-item:nth-child(3) { animation-delay: .41s; }
+    .benefits-section, .decision-section,
+    .faq-section, .bottom-cta {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 600px;
+    }
+  </style>
+</head>
+<body>
+<div class="builder-breakout">
+<div class="progress-bar" id="progressBar"></div>
+<div class="enroll-banner">
+  <p><strong>Open Enrollment Is Open.</strong> Your package is ready — accept before the window closes.</p>
+</div>
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-badge">
+        <div class="dot">
+          <svg viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 2.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span>Open Enrollment · Thrive Benefits</span>
+      </div>
+      <h1>More Benefits.<br><em>More Money.</em><br>Nothing Out of Pocket.</h1>
+      <p class="hero-sub">
+        Your employer set it up. You use tax savings for benefits instead of your paycheck. No out-of-pocket expense.
+      </p>
+      <div class="hero-cta-row">
+        <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="btn-forest">
+          Accept My Package
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#how-it-works" class="btn-outline">See How It Works</a>
+      </div>
+    </div>
+    <div>
+      <div class="pkg-card">
+        <div class="pkg-header">
+          <div class="pkg-lbl" id="pkg-lbl-main">A Typical Pre-Built Package</div>
+          <div class="pkg-name">Thrive Benefits Package</div>
+          <div class="pkg-value-row">
+            <div class="pkg-val" id="pkg-val-main">$185</div>
+            <div class="pkg-val-meta">
+              <span class="mo">/mo value</span>
+              <span class="pkg-badge">You pay $0</span>
+            </div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <div class="pkg-section-lbl">Included in your package</div>
+          <ul class="benefits-list">
+            <li id="bft-accident">
+              <div class="bft-icon">
+                <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5L8.2 5.3H12L9 7.7L10.1 11.5L6.5 9.2L2.9 11.5L4 7.7L1 5.3H4.8L6.5 1.5Z" stroke="#1F5C42" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <span class="bft-name">Accident Expense</span>
+                <span class="bft-amt">Coverage for unexpected injuries</span>
+              </div>
+            </li>
+            <li id="bft-critical">
+              <div class="bft-icon">
+                <svg viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#1F5C42" stroke-width="1.2"/><path d="M6.5 4V7M6.5 8.8H6.51" stroke="#1F5C42" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <span class="bft-name">Critical Illness</span>
+                <span class="bft-amt">$30,000 coverage</span>
+              </div>
+            </li>
+            <li id="bft-std">
+              <div class="bft-icon">
+                <svg viewBox="0 0 13 13" fill="none"><rect x="1.5" y="2.5" width="10" height="8" rx="1.5" stroke="#1F5C42" stroke-width="1.2"/><path d="M4.5 6.5H8.5M6.5 4.5V8.5" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <span class="bft-name">Short-Term Disability</span>
+                <span class="bft-amt">$500 / week</span>
+              </div>
+            </li>
+            <li id="bft-hospital">
+              <div class="bft-icon">
+                <svg viewBox="0 0 13 13" fill="none"><path d="M1.5 4H11.5V10.5C11.5 11.05 11.05 11.5 10.5 11.5H2.5C1.95 11.5 1.5 11.05 1.5 10.5V4Z" stroke="#1F5C42" stroke-width="1.2"/><path d="M1.5 4L3.5 1.5H9.5L11.5 4" stroke="#1F5C42" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <span class="bft-name">Hospital Indemnity</span>
+                <span class="bft-amt">$1,000 benefit</span>
+              </div>
+            </li>
+            <li id="bft-term">
+              <div class="bft-icon">
+                <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C6.5 1.5 2 4.2 2 7.2C2 9.4 4.01 11.5 6.5 11.5C8.99 11.5 11 9.4 11 7.2C11 4.2 6.5 1.5 6.5 1.5Z" stroke="#1F5C42" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <span class="bft-name">Term Life Insurance</span>
+                <span class="bft-amt">$150,000 · to age 70</span>
+              </div>
+            </li>
+            <li id="bft-whole">
+              <div class="bft-icon">
+                <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C6.5 1.5 2 4.2 2 7.2C2 9.4 4.01 11.5 6.5 11.5C8.99 11.5 11 9.4 11 7.2C11 4.2 6.5 1.5 6.5 1.5Z" stroke="#1F5C42" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.5 7L6 8.5L8.5 5.5" stroke="#1F5C42" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <span class="bft-name">Whole Life Insurance</span>
+                <span class="bft-amt">$75,000 coverage</span>
+              </div>
+            </li>
+          </ul>
+          <div class="card-btns">
+            <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="btn-card-p">
+              Accept My Package
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7H11.5M8 3.5L11.5 7L8 10.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="https://gothrivebg.com/custom" target="_blank" rel="noopener" class="btn-card-s">Customize My Package</a>
+          </div>
+          <p class="card-fine" id="pkg-disclaimer" style="font-style:italic;">* This is an example package. Refer to your SMS or email for your actual benefits and coverage amounts.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="stats-strip">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-num">$0</div>
+      <div class="stat-label">Copay</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">$0</div>
+      <div class="stat-label">Deductible</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-allotment">$185</div>
+      <div class="stat-label">Avg Monthly Value</div>
+    </div>
+  </div>
+</div>
+<section class="edu-section" id="how-it-works">
+  <div class="edu-header">
+    <div class="edu-header-copy">
+      <span class="overline">Thrive Benefits</span>
+      <h2 class="section-headline">You Just Got a Raise. Have You Claimed It Yet?</h2>
+      <p class="section-sub">
+        Thrive Benefits is a tax-qualified program your employer set up. You use tax savings for benefits instead of your paycheck.<br><br>
+        Translation: better coverage, a little more take-home pay every month, and nothing coming out of your wallet.
+      </p>
+    </div>
+    <div>
+      <div class="income-card">
+        <div class="income-card-lbl" id="income-card-lbl">
+          <span class="lbl-desktop">Paycheck Impact · Monthly Average</span>
+          <span class="lbl-mobile">Paycheck Impact<span id="mobile-allotment-lbl"> · $185/mo Value</span></span>
+        </div>
+        <div class="income-rows">
+          <div class="income-row">
+            <span class="income-row-label">Without Thrive</span>
+            <div class="income-row-bar-wrap">
+              <div class="income-row-bar" style="--bar-w:55%; background: var(--mid-gray);"></div>
+            </div>
+            <span class="income-row-val" id="baseline-val" style="color: var(--body-gray);">Baseline</span>
+          </div>
+          <div class="income-row">
+            <span class="income-row-label">With Thrive Care</span>
+            <div class="income-row-bar-wrap">
+              <div class="income-row-bar" style="--bar-w:93%; background: var(--teal);"></div>
+            </div>
+            <span class="income-row-val" id="thrive-val" style="color: var(--forest);">+$185/mo Value</span>
+          </div>
+        </div>
+        <div class="income-delta">
+          <div class="d-icon">
+            <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 9V4M4 6.5L6.5 4L9 6.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <span class="d-text">More money, same job, zero extra work.</span>
+            <span class="d-sub">The tax math does the heavy lifting for you.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="edu-cards">
+    <div class="edu-card">
+      <span class="edu-num">01 · Thrive Care</span>
+      <h3>$0 Copay. $0 Deductible.</h3>
+      <p>Virtual visits, mental health, diet, fitness, and more. All at $0 copay and $0 deductible. Use it before your major medical plan ever gets involved.</p>
+    </div>
+    <div class="edu-card">
+      <span class="edu-num">02 · More Protection</span>
+      <h3>Six Coverages Working for You</h3>
+      <p>Coverage like accident, critical illness, disability, hospital, term life, and whole life. All funded through the program.</p>
+    </div>
+    <div class="edu-card">
+      <span class="edu-num">03 · Simplicity</span>
+      <h3>Two Minutes to Enroll</h3>
+      <p>Your package is pre-built and ready to go. Review it, accept it or customize, and you're done.</p>
+    </div>
+  </div>
+</section>
+<section class="benefits-section" id="benefits">
+  <div class="benefits-header">
+    <div>
+      <span class="overline">Thrive Benefits</span>
+      <h2 class="section-headline" id="benefits-heading" style="margin-bottom: 0;">Benefits You Can Customize</h2>
+    </div>
+    <div class="tab-toggle">
+      <button class="tab-btn active" onclick="switchTab('supplemental', this)">Supplementals</button>
+      <button class="tab-btn" onclick="switchTab('wellness', this)">Thrive Care</button>
+    </div>
+  </div>
+  <div class="tab-panel active" id="tab-supplemental">
+    <div class="suppl-grid">
+      <div class="suppl-card">
+        <div class="suppl-card-top">
+          <div class="suppl-icon">
+            <svg viewBox="0 0 18 18" fill="none"><path d="M9 2L11.5 7H17L12.5 10.5L14.5 16L9 12.5L3.5 16L5.5 10.5L1 7H6.5L9 2Z" stroke="#1F5C42" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <h3>Accident Expense</h3>
+        <p>Covers ER visits, follow-ups, physical therapy, and more after an accident.</p>
+      </div>
+      <div class="suppl-card">
+        <div class="suppl-card-top">
+          <div class="suppl-icon">
+            <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#1F5C42" stroke-width="1.3"/><path d="M9 5.5V9.5L12 11.5" stroke="#1F5C42" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="suppl-amount">Up to $30,000</span>
+        </div>
+        <h3>Critical Illness</h3>
+        <p>A lump-sum paid to you if you're diagnosed with cancer, a heart attack, stroke, or other covered illness.</p>
+      </div>
+      <div class="suppl-card">
+        <div class="suppl-card-top">
+          <div class="suppl-icon">
+            <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="3.5" width="14" height="11" rx="2" stroke="#1F5C42" stroke-width="1.3"/><path d="M6 9H12M9 6V12" stroke="#1F5C42" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <span class="suppl-amount">Up to $1,000/wk</span>
+        </div>
+        <h3>Short-Term Disability</h3>
+        <p>Replaces lost income when you can't work due to injury or illness.</p>
+      </div>
+      <div class="suppl-card">
+        <div class="suppl-card-top">
+          <div class="suppl-icon">
+            <svg viewBox="0 0 18 18" fill="none"><path d="M2 5.5H16V14C16 15.1 15.1 16 14 16H4C2.9 16 2 15.1 2 14V5.5Z" stroke="#1F5C42" stroke-width="1.3"/><path d="M2 5.5L4.5 2H13.5L16 5.5" stroke="#1F5C42" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="suppl-amount">Up to $1,000</span>
+        </div>
+        <h3>Hospital Indemnity</h3>
+        <p>Cash paid directly to you when you're admitted to a hospital.</p>
+      </div>
+      <div class="suppl-card">
+        <div class="suppl-card-top">
+          <div class="suppl-icon">
+            <svg viewBox="0 0 18 18" fill="none"><path d="M9 2C9 2 3 5.5 3 10C3 13.3 5.7 16 9 16C12.3 16 15 13.3 15 10C15 5.5 9 2 9 2Z" stroke="#1F5C42" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="suppl-amount">Up to $150,000</span>
+        </div>
+        <h3>Term Life Insurance</h3>
+        <p>Coverage through age 70 for your beneficiaries.</p>
+        <p>Peace of mind that doesn't cost you a thing.</p>
+      </div>
+      <div class="suppl-card">
+        <div class="suppl-card-top">
+          <div class="suppl-icon">
+            <svg viewBox="0 0 18 18" fill="none"><path d="M9 2C9 2 3 5.5 3 10C3 13.3 5.7 16 9 16C12.3 16 15 13.3 15 10C15 5.5 9 2 9 2Z" stroke="#1F5C42" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 10L8 12L12 8" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="suppl-amount">Up to $75,000</span>
+        </div>
+        <h3>Whole Life Insurance</h3>
+        <p>Permanent coverage that builds cash value and never expires.</p>
+      </div>
+    </div>
+  </div>
+  <div class="tab-panel" id="tab-wellness">
+    <div class="wellness-grid">
+      <div class="wellness-card">
+        <div class="wellness-icon">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3" width="15" height="14" rx="2.5" stroke="#2DB89E" stroke-width="1.4"/><path d="M7 10H13M10 7V13" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <h3>24/7 Telemedicine</h3>
+          <p>Board-certified doctors on your phone — urgent care, prescription refills, screenings, lab referrals.</p>
+          <p>No waiting room. No copay. No deductible.</p>
+          <span class="tag">$0 copay · $0 deductible</span>
+        </div>
+      </div>
+      <div class="wellness-card">
+        <div class="wellness-icon">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="4" stroke="#2DB89E" stroke-width="1.4"/><path d="M3 17C3 14.2 6.1 12 10 12C13.9 12 17 14.2 17 17" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <h3>Mental Health Support</h3>
+          <p>Six free sessions/year with a licensed clinician — for you and every dependent.</p>
+          <p>Plus a self-help library for support between sessions.</p>
+          <span class="tag">6 free sessions/year per member</span>
+        </div>
+      </div>
+      <div class="wellness-card">
+        <div class="wellness-icon">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 16L7 9L10 13L13 7L16 16" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <h3>Diet &amp; Exercise Programs</h3>
+          <p>Mayo Clinic nutrition and fitness programs — structured guidance you'd normally pay for.</p>
+          <p>Included at no cost.</p>
+          <span class="tag">Mayo Clinic powered</span>
+        </div>
+      </div>
+      <div class="wellness-card">
+        <div class="wellness-icon">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5C10 2.5 4 6.5 4 11C4 14.3 6.7 17 10 17C13.3 17 16 14.3 16 11C16 6.5 10 2.5 10 2.5Z" stroke="#2DB89E" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.5 11L9.5 13L12.5 9" stroke="#2DB89E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <h3>Addiction Recovery Resources</h3>
+          <p>Confidential support for substance use and recovery — for you or a dependent.</p>
+          <p>No judgment. Anytime.</p>
+          <span class="tag">Confidential · Always available</span>
+        </div>
+      </div>
+      <div class="wellness-card">
+        <div class="wellness-icon">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 3L12.5 8H18L13.5 11.5L15.5 17L10 13.5L4.5 17L6.5 11.5L2 8H7.5L10 3Z" stroke="#2DB89E" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <h3>Resilience &amp; Relationship Programs</h3>
+          <p>Programs for stress, finances, and relationship health — built to get ahead of problems before they become crises.</p>
+          <span class="tag">For you and your dependents</span>
+        </div>
+      </div>
+      <div class="wellness-card">
+        <div class="wellness-icon">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="#2DB89E" stroke-width="1.4"/><path d="M7 10H13M10 7V13" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <h3>Personal Wellness Portal</h3>
+          <p>Everything in one app. Telehealth, mental health, diet, fitness — one login, no switching platforms.</p>
+          <span class="tag">Single app · All benefits</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="decision-section" id="decision">
+  <div class="decision-inner">
+    <div class="decision-header">
+      <span class="overline">Your Next Step</span>
+      <h2 class="section-headline">Your Package Is Ready. Pick Your Path.</h2>
+      <p style="font-size:16px; color:var(--body-gray); line-height:1.65;">
+        Your employer built this for you.<br>All you have to do is decide how you want it.
+      </p>
+    </div>
+    <div class="paths-grid">
+      <div class="path-card featured">
+        <div class="path-card-badge"><span>Most Popular · Fastest</span></div>
+        <div class="path-card-body">
+          <h3>Accept Your Package</h3>
+          <p class="path-desc">Your pre-built package is ready to go. If what you saw looked good, just confirm and you're covered.</p>
+          <ul class="path-checklist">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#e8f4ef"/><path d="M5 8L7 10L11 6" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Supplemental Coverages
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#e8f4ef"/><path d="M5 8L7 10L11 6" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              $0 Out-of-Pocket
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#e8f4ef"/><path d="M5 8L7 10L11 6" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Full Thrive Care
+            </li>
+          </ul>
+          <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="path-cta primary">
+            Accept My Package
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7H11.5M8 3.5L11.5 7L8 10.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="path-card">
+        <div class="path-card-badge" style="background: var(--teal);"><span>Need Help?</span></div>
+        <div class="path-card-body">
+          <h3>Customize with an Advisor</h3>
+          <p class="path-desc">Insurance can be tough. Sit down with an advisor to get benefits that compliment your situation best.</p>
+          <ul class="path-checklist">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#e6f7f4"/><path d="M5 8L7 10L11 6" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Add a spouse or dependents
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#e6f7f4"/><path d="M5 8L7 10L11 6" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Adjust coverage amounts where available
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" fill="#e6f7f4"/><path d="M5 8L7 10L11 6" stroke="#2DB89E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Review all options with a live advisor
+            </li>
+          </ul>
+          <a href="https://go.thrivebg.com/widget/booking/kPUxJNrPuRdtq8VjgGTV" target="_blank" rel="noopener" class="path-cta secondary">
+            Schedule a Customization Call
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-note">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#D1D5DB" stroke-width="1.4"/><path d="M10 6V10.5L13 12.5" stroke="#4B5563" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p><strong>Enrollment window is open.</strong> Once it closes, you're out until next year.</p>
+    </div>
+  </div>
+</section>
+<section class="faq-section" id="faq">
+  <div class="faq-header">
+    <h2 class="section-headline">Got Questions?</h2>
+    <p style="font-size:15.5px; color:var(--body-gray); line-height:1.65; margin-top:8px;">
+      The stuff people always ask — answered straight.
+    </p>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item" id="faq1">
+      <button class="faq-trigger" onclick="toggleFaq('faq1')">
+        <span class="faq-trigger-text">What is paying for these benefits?</span>
+        <div class="faq-icon">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+      <div class="faq-answer">
+        <p>This is a tax-qualified program provided by your employer. When you participate, you generate tax savings, and those savings cover your benefits. Think of it like a fancy HSA that keeps your paycheck whole.</p>
+      </div>
+    </div>
+    <div class="faq-item" id="faq2">
+      <button class="faq-trigger" onclick="toggleFaq('faq2')">
+        <span class="faq-trigger-text">What if I want to cover my spouse or kids too?</span>
+        <div class="faq-icon">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+      <div class="faq-answer">
+        <p>You can. Schedule a call with our team and we'll walk you through your options for adding family members to your package.</p>
+      </div>
+    </div>
+    <div class="faq-item" id="faq3">
+      <button class="faq-trigger" onclick="toggleFaq('faq3')">
+        <span class="faq-trigger-text">Does this replace my regular health insurance?</span>
+        <div class="faq-icon">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+      <div class="faq-answer">
+        <p>No, it works alongside it. The supplemental coverages fill the gaps your primary insurance leaves behind: high deductibles, hospital stays, missed income from disability. Thrive Care handles a lot of everyday health needs at $0 before your major medical plan even gets involved.</p>
+      </div>
+    </div>
+    <div class="faq-item" id="faq4">
+      <button class="faq-trigger" onclick="toggleFaq('faq4')">
+        <span class="faq-trigger-text">What happens if I don't enroll during open enrollment?</span>
+        <div class="faq-icon">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+      <div class="faq-answer">
+        <p>You'll need to wait until the next enrollment window. That means missing an average of <span id="faq-allotment-val">$185</span>/month in supplemental benefits, plus your complimentary Thrive Care services.</p>
+      </div>
+    </div>
+    <div class="faq-item" id="faq5">
+      <button class="faq-trigger" onclick="toggleFaq('faq5')">
+        <span class="faq-trigger-text">How will this affect me when I need to file taxes?</span>
+        <div class="faq-icon">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+      <div class="faq-answer">
+        <p>Thrive Benefits will never negatively impact your tax return. In most cases, it actually helps by lowering your taxable income, which can drop you into a lower tax bracket and save you more at tax season.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bottom-cta">
+  <div class="bottom-cta-inner">
+    <h2>Your Package Is Ready.<br>Don't Leave It on the Table.</h2>
+    <p style="margin-bottom:10px;">This is part of your total compensation. Enrollment takes a few minutes.</p>
+    <p>Skipping it means leaving free coverage — and free money — behind.</p>
+    <div class="bottom-cta-btns">
+      <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="btn-white">
+        Accept My Package
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="#1F5C42" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="footer-inner">
+    <a href="#" class="footer-logo">
+      <div class="logo-mark">T</div> Thrive Benefits
+    </a>
+    <div class="footer-copy">© 2024 Thrive Benefits Group. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+</div> <script defer>
+  // ── Tab switcher ──────────────────────────────────────
+  function switchTab(tabName, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    btn.classList.add('active');
+    const heading = document.getElementById('benefits-heading');
+    if (heading) {
+      heading.textContent = tabName === 'wellness' ? "What's Included" : 'Benefits You Can Customize';
+    }
+  }
+  // ── FAQ accordion ─────────────────────────────────────
+  function toggleFaq(id) {
+    const item = document.getElementById(id);
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  // ── Scroll fade-in setup ───────────────────────────────
+  const fadeSelectors = [
+    '.edu-card', '.suppl-card', '.wellness-card',
+    '.path-card', '.faq-item', '.income-card', '.pkg-card',
+    '.section-headline', '.overline', '.section-sub',
+    '.hero-sub', '.hero-badge',
+    '.edu-num', '.edu-card h3', '.edu-card p',
+    '.path-desc', '.timeline-note',
+    '.faq-section .section-headline', '.faq-section .section-sub',
+    '.bottom-cta h2', '.bottom-cta p',
+    '.edu-header-copy .section-sub'
+  ].join(', ');
+  const fadeEls = document.querySelectorAll(fadeSelectors);
+  fadeEls.forEach(el => el.classList.add('fade-in'));
+  let pendingFadeEls = Array.from(fadeEls);
+  function checkFadeIns() {
+    if (!pendingFadeEls.length) return;
+    const winH = window.innerHeight;
+    pendingFadeEls = pendingFadeEls.filter(el => {
+      if (el.getBoundingClientRect().top < winH - 50) {
+        el.style.willChange = 'opacity, transform';
+        el.classList.add('visible');
+        setTimeout(() => { el.style.willChange = 'auto'; }, 1000);
+        return false;
+      }
+      return true;
+    });
+  }
+  // ── RAF-throttled scroll handler ──────────────────────
+  const progressBar = document.getElementById('progressBar');
+  let scrollTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+      requestAnimationFrame(() => {
+        const scrollTop = document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        progressBar.style.width = ((scrollTop / docHeight) * 100) + '%';
+        checkFadeIns();
+        scrollTicking = false;
+      });
+      scrollTicking = true;
+    }
+  }, { passive: true });
+  // Run once on load to reveal anything already in viewport
+  checkFadeIns();
+  // ── Release stat-item will-change after load animations finish ──
+  setTimeout(() => {
+    document.querySelectorAll('.stat-item').forEach(el => { el.style.willChange = 'auto'; });
+  }, 2000);
+  // ── will-change on hover for interactive cards/buttons ──
+  document.querySelectorAll(
+    '.btn-forest, .btn-card-p, .path-cta.primary, .suppl-card, .edu-card, .path-card'
+  ).forEach(el => {
+    el.addEventListener('mouseenter', () => { el.style.willChange = 'transform'; });
+    el.addEventListener('mouseleave', () => {
+      setTimeout(() => { el.style.willChange = 'auto'; }, 600);
+    });
+  });
+  // ── Bar grow animation (IntersectionObserver) ─────────
+  const bars = document.querySelectorAll('.income-row-bar');
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('animated'), 120);
+        barObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  bars.forEach(b => barObserver.observe(b));
+</script>
+<script>
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+
+    // ── 1. Pass Params Through Outbound Links ─────────────────────────────────
+    // Always runs — ensures submission_source is stamped on every opt-in link
+    // regardless of whether any other URL params are present.
+    const submissionSource = params.get('submission_source') || 'manual';
+    document.querySelectorAll('a[href*="gothrivebg.com/opt-in"]').forEach(function(link) {
+      const url = new URL(link.href);
+      params.forEach(function(value, key) {
+        url.searchParams.set(key, value);
+      });
+      url.searchParams.set('submission_source', submissionSource); // always overwrite/set
+      link.href = url.toString();
+    });
+
+    // Nothing else to do if no params were passed
+    if (!params.toString()) return;
+
+    // ── 2. Dynamic Allotment Population ──────────────────────────────────────
+    const allotment = params.get('allotment') || params.get('contact.allotment');
+    if (allotment) {
+      const cleanAllotment = allotment.replace(/[^0-9.]/g, '');
+      if (cleanAllotment) {
+        const formatted = `$${cleanAllotment}`;
+
+        const pkgMain = document.getElementById('pkg-val-main');
+        if (pkgMain) pkgMain.innerText = formatted;
+
+        const statAllotment = document.getElementById('stat-allotment');
+        if (statAllotment) statAllotment.innerText = formatted;
+
+        const thriveVal = document.getElementById('thrive-val');
+        if (thriveVal) thriveVal.innerText = `+${formatted}/mo Value`;
+
+        const mobileLbl = document.getElementById('mobile-allotment-lbl');
+        if (mobileLbl) mobileLbl.innerText = ` · ${formatted}/mo Value`;
+
+        const faqVal = document.getElementById('faq-allotment-val');
+        if (faqVal) faqVal.innerText = formatted;
+      }
+    }
+    // ── 3. Fenced Target Extraction Helper (Protects against Smashed CRM Strings) ──
+    function getBenefitAmount(smashedStr, keywords) {
+      const keywordRegex = new RegExp('(?:' + keywords + ')', 'i');
+      const match = smashedStr.match(keywordRegex);
+      if (!match) return null;
+      let snippet = smashedStr.substring(match.index + match[0].length);
+      const fenceRegex = /accident|critical|short\s*term|disability|hospital|term\s*life|whole\s*life/i;
+      const nextMatch = snippet.match(fenceRegex);
+      if (nextMatch) {
+        snippet = snippet.substring(0, nextMatch.index);
+      }
+      snippet = snippet.replace(/\b(10|20|30)\s*years?\b/gi, '').replace(/\b(?:to\s*)?age\s*\d+\b/gi, '');
+      const numMatch = snippet.match(/(?:\$)?(\d+)\s*(k?)/i);
+      if (numMatch) {
+        let num = parseInt(numMatch[1], 10);
+        if (numMatch[2].toLowerCase() === 'k') num *= 1000;
+        return num;
+      }
+      return null;
+    }
+    // ── 4. Parse and Populate the Custom Benefits Package string ─────────────
+    const packageStr = params.get('benefits_package') || params.get('contact.benefits_package') || params.get('package');
+    if (packageStr) {
+
+      const pkgLblMain = document.getElementById('pkg-lbl-main');
+      if (pkgLblMain) pkgLblMain.innerText = 'Your Benefits Package';
+
+      const pkgDisclaimer = document.getElementById('pkg-disclaimer');
+      if (pkgDisclaimer) pkgDisclaimer.style.display = 'none';
+      let cleanStr = decodeURIComponent(packageStr).replace(/(\d),(\d)/g, '$1$2');
+      const lowerStr = cleanStr.toLowerCase();
+
+      const listItems = {
+        accident: document.getElementById('bft-accident'),
+        critical: document.getElementById('bft-critical'),
+        std: document.getElementById('bft-std'),
+        hospital: document.getElementById('bft-hospital'),
+        term: document.getElementById('bft-term'),
+        whole: document.getElementById('bft-whole')
+      };
+      Object.values(listItems).forEach(li => { if(li) li.style.display = 'none'; });
+      if (lowerStr.includes('accident')) {
+         listItems.accident.style.display = 'flex';
+      }
+      if (lowerStr.includes('critical')) {
+         listItems.critical.style.display = 'flex';
+         let amtNum = getBenefitAmount(cleanStr, 'critical illness|critical');
+         if (amtNum && amtNum >= 1000) {
+             listItems.critical.querySelector('.bft-amt').innerText = `$${amtNum.toLocaleString()} coverage`;
+         } else {
+             listItems.critical.querySelector('.bft-amt').innerText = 'Coverage for covered illnesses';
+         }
+      }
+      if (lowerStr.includes('short') || lowerStr.includes('disability')) {
+         listItems.std.style.display = 'flex';
+         let amtNum = getBenefitAmount(cleanStr, 'short term disability|short term|short-term|disability');
+         if (amtNum) {
+             listItems.std.querySelector('.bft-amt').innerText = `$${amtNum.toLocaleString()} / week`;
+         }
+      }
+      if (lowerStr.includes('hospital')) {
+         listItems.hospital.style.display = 'flex';
+         let amtNum = getBenefitAmount(cleanStr, 'hospital indemnity|hospital');
+         if (amtNum && amtNum >= 500) {
+             listItems.hospital.querySelector('.bft-amt').innerText = `$${amtNum.toLocaleString()} benefit`;
+         } else {
+             listItems.hospital.querySelector('.bft-amt').innerText = 'Coverage for hospital stays';
+         }
+      }
+      if (lowerStr.includes('term life')) {
+         listItems.term.style.display = 'flex';
+         let amtNum = getBenefitAmount(cleanStr, 'term life');
+         let termDesc = '· to age 70';
+         if (lowerStr.includes('20 year')) termDesc = '· 20 year term';
+         else if (lowerStr.includes('10 year')) termDesc = '· 10 year term';
+         if (amtNum && amtNum >= 5000) {
+             listItems.term.querySelector('.bft-amt').innerText = `$${amtNum.toLocaleString()} ${termDesc}`;
+         }
+      }
+      if (lowerStr.includes('whole life')) {
+         listItems.whole.style.display = 'flex';
+         let amtNum = getBenefitAmount(cleanStr, 'whole life');
+         if (amtNum && amtNum >= 1000) {
+             listItems.whole.querySelector('.bft-amt').innerText = `$${amtNum.toLocaleString()} coverage`;
+         }
+      }
+    }
+  })();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     IFRAME EMBED — Employee Consent Form
+     submission_source is always stamped:
+       • 'trigger' if present in the landing page URL
+       • 'manual'  if the visitor arrived without that param
+════════════════════════════════════════════════════════════ -->
+<iframe
+    src="https://go.thrivebg.com/widget/form/DIoxbV08UPQHl2vN7s2y"
+    style="width:100%;height:100%;border:none;border-radius:15px"
+    id="inline-DIoxbV08UPQHl2vN7s2y"
+    data-layout="{'id':'INLINE'}"
+    data-trigger-type="alwaysShow"
+    data-trigger-value=""
+    data-activation-type="alwaysActivated"
+    data-activation-value=""
+    data-deactivation-type="neverDeactivate"
+    data-deactivation-value=""
+    data-form-name="Employee Consent (Preview Customize/ No Platform)"
+    data-height="1172"
+    data-layout-iframe-id="inline-DIoxbV08UPQHl2vN7s2y"
+    data-form-id="DIoxbV08UPQHl2vN7s2y"
+    title="Employee Consent (Preview Customize/ No Platform)">
+</iframe>
+<script src="https://go.thrivebg.com/js/form_embed.js"></script>
+<script>
+  setTimeout(function() {
+    var params = new URLSearchParams(window.location.search);
+    var iframe = document.getElementById('inline-DIoxbV08UPQHl2vN7s2y');
+    if (!iframe) return;
+    var src = new URL(iframe.src);
+
+    // Pass through known CRM fields (only if present in URL)
+    var fieldMap = {
+      'contact_id': 'contact_id',
+      'first_name': 'first_name',
+      'last_name':  'last_name',
+      'email':      'email',
+      'phone':      'phone',
+      'company':    'company_name',
+      'age':        'age',
+      'allotment':  'allotment'
+    };
+    if (params.toString()) {
+      Object.entries(fieldMap).forEach(function(entry) {
+        if (params.has(entry[0])) {
+          src.searchParams.set(entry[1], params.get(entry[0]));
+        }
+      });
+    }
+
+    // Always stamp submission_source — 'trigger' if in URL, 'manual' otherwise
+    src.searchParams.set('submission_source', params.get('submission_source') || 'manual');
+
+    iframe.src = src.toString();
+  }, 300);
+</script>
+<script src="../theme.js"></script>
+</body>
+</html>

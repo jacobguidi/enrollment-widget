@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're Enrolled — What Happens Next | Thrive Benefits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --forest:    #1F5C42;
+      --forest-d:  #163f2e;
+      --forest-lt: #e8f4ef;
+      --sage-lt:   #EEF4F1;
+      --teal:      #2DB89E;
+      --teal-lt:   #e6f7f4;
+      --teal-mid:  rgba(45,184,158,.13);
+      --navy:      #162B3B;
+      --navy-d:    #0e1f2b;
+      --gold:      #F5A623;
+      --cloud:     #F5F6F8;
+      --white:     #FFFFFF;
+      --body-gray: #4B5563;
+      --mid-gray:  #D1D5DB;
+      --lt-border: #E5E7EB;
+      --black:     #0F1B14;
+      --font-head: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    /* ── GHL: Overscroll lock ───────────────────────── */
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      overscroll-behavior: none !important;
+      overscroll-behavior-y: none !important;
+      background: var(--white) !important;
+    }
+    html {
+      scroll-behavior: smooth;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    body {
+      font-family: var(--font-body);
+      color: var(--body-gray);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: hidden;
+    }
+    h1,h2,h3,h4 { font-family: var(--font-head); color: var(--black); line-height: 1.15; }
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container    { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+    .container-sm { max-width: 780px;  margin: 0 auto; padding: 0 40px; }
+
+    /* ── GHL: Full-width section breakout ───────────── */
+    .hero-confirm,
+    .timeline-section,
+    .paystub-section,
+    .use-section,
+    .support-section,
+    .bottom-cta,
+    .tbg-footer {
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      box-sizing: border-box;
+    }
+
+    /* ── Floating logo — top right ──────────────────── */
+    .tbg-logo-float {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      text-decoration: none !important;
+      transition: opacity .18s, transform .2s;
+    }
+    .tbg-logo-float:hover { opacity: .8; transform: translateY(-1px); }
+    .tbg-logo-float img {
+      height: 32px;
+      display: block;
+    }
+    @media (max-width: 600px) {
+      .tbg-logo-float { top: 14px; right: 16px; }
+      .tbg-logo-float img { height: 26px; }
+    }
+
+    /* ── Buttons ───────────────────────────────────────── */
+    .btn-forest {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 48px; padding: 0 26px; border-radius: var(--radius-sm);
+      background: var(--forest); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      border: none; cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 12px rgba(31,92,66,.22);
+      transition: background .18s, box-shadow .18s;
+    }
+    .btn-forest:hover { background: var(--forest-d); box-shadow: 0 4px 20px rgba(31,92,66,.32); text-decoration: none; }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 48px; padding: 0 22px; border-radius: var(--radius-sm);
+      background: transparent; color: var(--black);
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      border: 1.5px solid var(--mid-gray); cursor: pointer; text-decoration: none;
+      transition: border-color .18s, color .18s;
+    }
+    .btn-outline:hover { border-color: var(--forest); color: var(--forest); text-decoration: none; }
+    .btn-white {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 50px; padding: 0 28px; border-radius: var(--radius-sm);
+      background: #fff; color: var(--forest);
+      font-family: var(--font-head); font-weight: 800; font-size: 15px;
+      border: none; cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 14px rgba(0,0,0,.15);
+      transition: background .18s;
+    }
+    .btn-white:hover { background: var(--forest-lt); text-decoration: none; }
+    .btn-teal {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 48px; padding: 0 26px; border-radius: var(--radius-sm);
+      background: var(--teal); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      border: none; cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 12px rgba(45,184,158,.28);
+      transition: background .18s, box-shadow .18s;
+    }
+    .btn-teal:hover { background: #24a08a; text-decoration: none; }
+
+    /* ── Section Patterns ──────────────────────────── */
+    .overline {
+      font-family: var(--font-head); font-size: 11.5px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--teal);
+      margin-bottom: 10px; display: block;
+    }
+    .section-headline {
+      font-family: var(--font-head); font-weight: 800; letter-spacing: -.022em;
+      font-size: clamp(26px, 3vw, 38px); color: var(--black); margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--body-gray); line-height: 1.65; max-width: 520px;
+    }
+
+    /* ── Floating advisor pill ── */
+    .advisor-float {
+      position: fixed; bottom: 28px; right: 28px; z-index: 300;
+      display: flex; align-items: center; gap: 10px;
+      background: var(--forest); color: #fff;
+      border-radius: 100px; padding: 10px 18px 10px 12px;
+      box-shadow: 0 4px 24px rgba(15,27,20,.22), 0 1px 6px rgba(15,27,20,.12);
+      text-decoration: none; font-family: var(--font-head);
+      font-size: 13px; font-weight: 700;
+      transition: background .18s, box-shadow .2s, transform .2s;
+      animation: floatIn .6s cubic-bezier(.34,1.56,.64,1) .4s both;
+    }
+    .advisor-float:hover {
+      background: var(--forest-d);
+      box-shadow: 0 8px 32px rgba(15,27,20,.28);
+      transform: translateY(-2px);
+      text-decoration: none; color: #fff;
+    }
+    .advisor-float .af-dot {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .advisor-float .af-dot svg { width: 14px; height: 14px; }
+    .advisor-float .af-label { line-height: 1.2; }
+    .advisor-float .af-label span {
+      display: block; font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,.65); margin-top: 1px; letter-spacing: .02em;
+    }
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(20px) scale(.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @media (max-width: 600px) {
+      .advisor-float {
+        bottom: 0; right: 0; left: 0; border-radius: 0;
+        justify-content: center; padding: 14px 20px;
+        border-top: 1px solid rgba(255,255,255,.1);
+        box-shadow: 0 -4px 20px rgba(15,27,20,.18);
+      }
+    }
+
+    /* ── Scroll progress bar ── */
+    .progress-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 4px;
+      background: var(--teal); width: 0%; z-index: 9999;
+      transition: width .1s linear; margin: 0; padding: 0;
+    }
+    @media (max-width: 600px) {
+      .progress-bar { bottom: 52px; }
+    }
+
+    /* ══════════════════════════════════════════════════
+       HERO — CONFIRMATION
+    ══════════════════════════════════════════════════ */
+    .hero-confirm {
+      padding: 88px 40px 72px;
+      background: var(--white);
+      overflow: hidden;
+      text-align: center;
+    }
+    .hero-confirm::before {
+      content: ''; position: absolute; top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 700px; border-radius: 50%;
+      background: var(--teal-mid); pointer-events: none;
+    }
+    .hero-confirm-inner {
+      max-width: 680px; margin: 0 auto; position: relative; z-index: 1;
+    }
+    .confirm-icon-wrap {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px;
+    }
+    .confirm-ring {
+      width: 88px; height: 88px; border-radius: 50%;
+      background: var(--forest-lt);
+      border: 3px solid rgba(31,92,66,.18);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      animation: ringPop .6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .confirm-ring svg {
+      width: 38px; height: 38px;
+      animation: checkDraw .55s ease .3s both;
+    }
+    @keyframes ringPop {
+      from { transform: scale(.4); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+    @keyframes checkDraw {
+      from { opacity: 0; transform: scale(.5); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .hero-confirm h1 {
+      font-size: clamp(34px, 4.5vw, 52px); font-weight: 800;
+      letter-spacing: -.027em; color: var(--black); margin-bottom: 18px;
+    }
+    .hero-confirm h1 em { font-style: normal; color: var(--teal); }
+    .hero-confirm .hero-sub {
+      font-size: 17px; color: var(--body-gray); line-height: 1.65;
+      max-width: 520px; margin: 0 auto 36px;
+    }
+    .confirm-cta-row {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* ══════════════════════════════════════════════════
+       TIMELINE STRIP
+    ══════════════════════════════════════════════════ */
+    .timeline-section {
+      padding: 80px 40px;
+      background: var(--cloud);
+    }
+    .timeline-header {
+      text-align: center; max-width: 560px; margin: 0 auto 56px;
+    }
+    .timeline-track {
+      max-width: 960px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 48px 1fr 48px 1fr;
+      align-items: start; gap: 0;
+    }
+    .timeline-connector {
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 30px;
+    }
+    .timeline-connector-line {
+      width: 100%; margin-top: 22px;
+      border-top: 2px dashed var(--mid-gray);
+    }
+    .timeline-step {
+      background: var(--white); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 28px 24px;
+      transition: box-shadow .2s, border-color .2s;
+      position: relative;
+    }
+    .timeline-step:hover {
+      box-shadow: 0 6px 24px rgba(15,27,20,.07);
+      border-color: rgba(45,184,158,.3);
+    }
+    .timeline-step.now { border-color: var(--forest); }
+    .timeline-step-num {
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .timeline-step-num .step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .step-dot.green  { background: var(--forest); }
+    .step-dot.teal   { background: var(--teal); }
+    .step-dot.gray   { background: var(--mid-gray); }
+    .timeline-step-num .step-label { color: var(--body-gray); }
+    .timeline-step-num .step-label.active { color: var(--forest); }
+    .timeline-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px; flex-shrink: 0;
+    }
+    .timeline-icon.forest { background: var(--forest-lt); }
+    .timeline-icon.teal   { background: var(--teal-lt); }
+    .timeline-icon.cloud  { background: var(--cloud); border: 1.5px solid var(--lt-border); }
+    .timeline-icon svg { width: 20px; height: 20px; }
+    .timeline-step h3 {
+      font-size: 16px; font-weight: 800; color: var(--black);
+      margin-bottom: 8px; letter-spacing: -.01em;
+    }
+    .timeline-step p { font-size: 13.5px; color: var(--body-gray); line-height: 1.6; }
+    .timeline-step ul {
+      list-style: none; display: flex; flex-direction: column; gap: 7px; margin-top: 10px;
+    }
+    .timeline-step ul li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: var(--body-gray);
+    }
+    .timeline-step ul li svg { flex-shrink: 0; margin-top: 2px; }
+    .now-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--forest); color: #fff;
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 12px; border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    /* ══════════════════════════════════════════════════
+       PAYSTUB SECTION
+    ══════════════════════════════════════════════════ */
+    .paystub-section {
+      padding: 88px 40px;
+      background: var(--white);
+    }
+    .paystub-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 520px;
+      gap: 72px; align-items: center;
+    }
+    .paystub-copy .section-sub { max-width: 100%; margin-bottom: 28px; }
+    .paystub-card {
+      background: var(--white);
+      border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 40px rgba(15,27,20,.09), 0 2px 8px rgba(15,27,20,.04);
+      overflow: hidden;
+    }
+    .paystub-card-header {
+      background: var(--navy); padding: 18px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .paystub-company {
+      font-family: var(--font-head); font-size: 11px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); margin-bottom: 2px;
+    }
+    .paystub-title {
+      font-family: var(--font-head); font-size: 15px; font-weight: 800;
+      color: #fff;
+    }
+    .paystub-period {
+      font-family: var(--font-head); font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,.45); text-align: right;
+    }
+    .paystub-period strong { display: block; color: rgba(255,255,255,.75); font-size: 12px; margin-top: 2px; }
+    .paystub-body { padding: 0; }
+    .ps-section {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--lt-border);
+    }
+    .ps-section:last-child { border-bottom: none; }
+    .ps-section-lbl {
+      font-family: var(--font-head); font-size: 10px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--body-gray); margin-bottom: 10px;
+    }
+    .ps-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 0;
+    }
+    .ps-row-label {
+      font-size: 13px; color: var(--body-gray); font-weight: 500;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .ps-row-amount {
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      color: var(--black);
+    }
+    .ps-row-amount.deduct { color: var(--body-gray); font-weight: 500; }
+    .ps-row-amount.positive { color: var(--forest); }
+    .new-badge {
+      display: inline-flex; align-items: center;
+      background: var(--teal); color: #fff;
+      font-family: var(--font-head); font-size: 9px; font-weight: 800;
+      letter-spacing: .05em; text-transform: uppercase;
+      padding: 1px 6px; border-radius: 4px;
+    }
+    .ps-row.highlight-new {
+      background: rgba(45,184,158,.06);
+      border-radius: 6px; padding: 6px 8px; margin: 0 -8px;
+    }
+    .ps-row.highlight-savings {
+      background: rgba(31,92,66,.06);
+      border-radius: 6px; padding: 6px 8px; margin: 0 -8px;
+    }
+    .ps-net {
+      padding: 18px 24px;
+      background: var(--forest); display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .ps-net-label {
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      color: rgba(255,255,255,.7);
+    }
+    .ps-net-label span {
+      display: block; font-size: 12px; font-weight: 500;
+      color: rgba(255,255,255,.45); margin-top: 2px;
+    }
+    .ps-net-amount {
+      font-family: var(--font-head); font-size: 28px; font-weight: 800;
+      color: #fff; letter-spacing: -.03em;
+    }
+    .same-pay-callout {
+      margin-top: 14px;
+      display: flex; align-items: center; gap: 10px;
+      background: var(--teal-lt); border: 1px solid rgba(45,184,158,.25);
+      border-radius: var(--radius-sm); padding: 12px 16px;
+    }
+    .same-pay-callout .spc-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--teal); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .same-pay-callout .spc-icon svg { width: 15px; height: 15px; }
+    .same-pay-callout .spc-text {
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      color: var(--forest);
+    }
+    .same-pay-callout .spc-sub {
+      display: block; font-size: 12px; font-weight: 400;
+      color: var(--body-gray); margin-top: 2px;
+    }
+    .paystub-toggle {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--cloud); border: 1.5px solid var(--lt-border);
+      border-radius: 100px; padding: 4px; margin-bottom: 24px;
+      width: fit-content;
+    }
+    .pst-btn {
+      height: 34px; padding: 0 16px; border-radius: 100px; border: none;
+      font-family: var(--font-head); font-size: 12.5px; font-weight: 700;
+      cursor: pointer; transition: background .18s, color .18s;
+      background: transparent; color: var(--body-gray);
+    }
+    .pst-btn.active { background: var(--forest); color: #fff; }
+    .paystub-view { display: none; }
+    .paystub-view.active { display: block; }
+    .ps-explain-card {
+      background: var(--cloud); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 18px 20px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .ps-explain-card.accent {
+      background: var(--forest-lt); border-color: rgba(31,92,66,.18);
+    }
+    .ps-explain-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ps-explain-icon.forest-lt { background: var(--forest-lt); }
+    .ps-explain-icon.teal-lt   { background: var(--teal-lt); }
+    .ps-explain-icon.forest    { background: var(--forest); }
+    .ps-explain-title {
+      font-family: var(--font-head); font-size: 13.5px; font-weight: 800;
+      color: var(--black); margin-bottom: 5px;
+    }
+    .ps-explain-title.forest { color: var(--forest); }
+    .ps-explain-body {
+      font-size: 13px; color: var(--body-gray); line-height: 1.6;
+    }
+    .ps-legend {
+      display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .ps-legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--body-gray); font-weight: 500;
+    }
+    .ps-legend-dot {
+      width: 10px; height: 10px; border-radius: 3px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       HOW TO USE BENEFITS
+    ══════════════════════════════════════════════════ */
+    .use-section {
+      padding: 88px 40px;
+      background: var(--cloud);
+    }
+    .use-header {
+      text-align: center; max-width: 600px; margin: 0 auto 52px;
+    }
+    .use-cards {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .use-card {
+      background: var(--white); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 28px 24px;
+      transition: box-shadow .2s, border-color .2s, transform .4s cubic-bezier(.22,1,.36,1);
+    }
+    .use-card:hover {
+      box-shadow: 0 8px 32px rgba(15,27,20,.08);
+      border-color: rgba(45,184,158,.35);
+      transform: translateY(-4px);
+    }
+    .use-card-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .use-card-icon.forest { background: var(--forest-lt); }
+    .use-card-icon.teal   { background: var(--teal-lt); }
+    .use-card-icon.navy   { background: rgba(22,43,59,.08); }
+    .use-card-icon svg { width: 22px; height: 22px; }
+    .use-card .step-num {
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--teal); margin-bottom: 8px; display: block;
+    }
+    .use-card h3 {
+      font-size: 17px; font-weight: 800; color: var(--black);
+      margin-bottom: 10px; letter-spacing: -.01em;
+    }
+    .use-card p { font-size: 13.5px; color: var(--body-gray); line-height: 1.65; }
+    .use-card .when-tag {
+      display: inline-block; margin-top: 14px;
+      font-size: 11.5px; font-weight: 600; color: var(--forest);
+      background: var(--forest-lt); padding: 3px 10px; border-radius: 100px;
+    }
+    .use-card .when-tag.teal {
+      color: var(--teal); background: var(--teal-lt);
+    }
+
+    /* ══════════════════════════════════════════════════
+       SUPPORT STRIP
+    ══════════════════════════════════════════════════ */
+    .support-section {
+      padding: 72px 40px;
+      background: var(--white);
+    }
+    .support-inner {
+      max-width: 960px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .support-card {
+      background: var(--cloud); border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-md); padding: 28px 26px;
+      display: flex; gap: 18px; align-items: flex-start;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .support-card:hover {
+      box-shadow: 0 4px 20px rgba(15,27,20,.07);
+      border-color: rgba(45,184,158,.3);
+    }
+    .support-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .support-icon.forest { background: var(--forest-lt); }
+    .support-icon.teal   { background: var(--teal-lt); }
+    .support-icon svg { width: 20px; height: 20px; }
+    .support-card h3 {
+      font-size: 16px; font-weight: 800; color: var(--black);
+      margin-bottom: 6px; letter-spacing: -.01em;
+    }
+    .support-card p { font-size: 13.5px; color: var(--body-gray); line-height: 1.6; }
+    .support-card a {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 12px; font-size: 13px; font-weight: 700;
+      color: var(--forest);
+    }
+    .support-card a:hover { text-decoration: underline; }
+    .support-card a svg { width: 12px; height: 12px; }
+
+    /* ══════════════════════════════════════════════════
+       BOTTOM CTA
+    ══════════════════════════════════════════════════ */
+    .bottom-cta {
+      background: var(--navy); padding: 80px 40px;
+      text-align: center; overflow: hidden;
+    }
+    .bottom-cta::before {
+      content: ''; position: absolute; top: -120px; left: 50%;
+      transform: translateX(-50%); width: 500px; height: 500px;
+      border-radius: 50%; background: rgba(45,184,158,.06); pointer-events: none;
+    }
+    .bottom-cta-inner { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; }
+    .bottom-cta h2 {
+      font-family: var(--font-head); font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 800; color: #fff; letter-spacing: -.025em; margin-bottom: 14px;
+    }
+    .bottom-cta p { font-size: 16px; color: rgba(255,255,255,.62); line-height: 1.65; margin-bottom: 32px; }
+    .bottom-cta-btns { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+    /* ══════════════════════════════════════════════════
+       TBG FOOTER
+    ══════════════════════════════════════════════════ */
+    .tbg-footer {
+      background: var(--forest);
+      padding: 48px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      line-height: normal !important;
+      font-size: 16px !important;
+    }
+    .tbg-footer img {
+      height: 36px;
+      filter: brightness(0) invert(1);
+      display: block;
+    }
+    .tbg-footer-copy {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: rgba(255,255,255,.38);
+      line-height: 1.5;
+    }
+    .tbg-footer-copy a {
+      color: rgba(255,255,255,.38);
+      text-decoration: underline;
+    }
+    @media (max-width: 700px) {
+      .tbg-footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════
+       ANIMATIONS
+    ══════════════════════════════════════════════════ */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes glowBorder {
+      0%, 100% { border-color: var(--lt-border); }
+      50%       { border-color: rgba(45,184,158,.4); }
+    }
+    @keyframes rowHighlight {
+      0%   { background: rgba(45,184,158,.06); }
+      50%  { background: rgba(45,184,158,.14); }
+      100% { background: rgba(45,184,158,.06); }
+    }
+    .fade-in {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .85s cubic-bezier(.22,1,.36,1), transform .85s cubic-bezier(.22,1,.36,1);
+    }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .btn-forest, .btn-teal {
+      position: relative; overflow: hidden;
+      transition: background .3s ease, box-shadow .4s ease, transform .3s cubic-bezier(.22,1,.36,1) !important;
+    }
+    .btn-forest::after, .btn-teal::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.15) 50%, transparent 62%);
+      background-size: 220% 100%; opacity: 0; transition: opacity .3s ease;
+    }
+    .btn-forest:hover::after, .btn-teal:hover::after {
+      opacity: 1; animation: shimmer .75s ease forwards;
+    }
+    .btn-forest:hover, .btn-teal:hover {
+      box-shadow: 0 8px 28px rgba(31,92,66,.3), 0 0 18px rgba(45,184,158,.22) !important;
+      transform: translateY(-2px); text-decoration: none;
+    }
+    .paystub-card { animation: glowBorder 7s ease-in-out infinite; }
+    .ps-row.highlight-new { animation: rowHighlight 3s ease-in-out 1.2s 3; }
+
+    /* ══════════════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .paystub-inner { grid-template-columns: 1fr; gap: 48px; }
+      .paystub-inner .paystub-card { max-width: 520px; margin: 0 auto; }
+    }
+    @media (max-width: 960px) {
+      .timeline-track { grid-template-columns: 1fr; gap: 18px; }
+      .timeline-connector { display: none; }
+      .use-cards { grid-template-columns: 1fr 1fr; }
+      .support-inner { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .hero-confirm, .timeline-section, .paystub-section,
+      .use-section, .support-section, .bottom-cta {
+        padding-left: 20px; padding-right: 20px;
+      }
+      .bottom-cta { padding-bottom: 80px; }
+      .hero-confirm { padding-top: 48px; padding-bottom: 48px; }
+      .use-cards { grid-template-columns: 1fr; }
+      .confirm-cta-row { flex-direction: column; align-items: center; }
+      .bottom-cta-btns { flex-direction: column; }
+      .paystub-inner { gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="tbg-page">
+
+<!-- ── Floating TBG logo badge — top right ── -->
+<a href="https://gothrivebg.com" class="tbg-logo-float" aria-label="Thrive Benefits Group">
+  <img src="https://assets.cdn.filesafe.space/AD8AWa0PN7eiGQ8HXJv6/media/69824c297cf44b5808b1e0bd.svg" alt="Thrive Benefits Group" />
+</a>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     FLOATING ADVISOR PILL
+══════════════════════════════════════════════════════ -->
+<a href="https://go.thrivebg.com/widget/booking/TV36HEb3Jtseksy1LpEJ" target="_blank" rel="noopener" class="advisor-float">
+  <div class="af-dot">
+    <svg viewBox="0 0 14 14" fill="none"><path d="M2.5 3C2.5 2.4 2.9 2 3.5 2H5.5L6.5 4.5L5.5 5.7C6.1 6.9 7.1 7.9 8.3 8.5L9.5 7.5L12 8.5V10.5C12 11.1 11.6 11.5 11 11.5C6.3 11.5 2.5 7.7 2.5 3Z" stroke="white" stroke-width="1.2" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="af-label">
+    Talk to an Advisor
+    <span>Questions? We're here.</span>
+  </div>
+</a>
+
+
+<!-- ═══════════════════════════════════════════════════
+     HERO — CONFIRMATION
+══════════════════════════════════════════════════════ -->
+<section class="hero-confirm">
+  <div class="hero-confirm-inner">
+    <div class="confirm-icon-wrap">
+      <div class="confirm-ring">
+        <svg viewBox="0 0 38 38" fill="none">
+          <path d="M9 19.5L16 26.5L29 11.5" stroke="#1F5C42" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <h1>You're In.<br><em>Here's What Happens Next.</em></h1>
+    <p class="hero-sub">
+      Your benefits are confirmed and on the way.<br>
+      Here's what to expect — and how to use everything you just unlocked.
+    </p>
+    <div class="confirm-cta-row">
+      <a href="#timeline" class="btn-forest">
+        See Your Timeline
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3L8 13M4 9L8 13L12 9" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#paystub" class="btn-outline">About Your Paystub</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     TIMELINE
+══════════════════════════════════════════════════════ -->
+<section class="timeline-section" id="timeline">
+  <div class="timeline-header">
+    <span class="overline">What to Expect</span>
+    <h2 class="section-headline">Your Benefits Rollout — Step by Step</h2>
+    <p style="font-size:15.5px; color:var(--body-gray); line-height:1.65; margin-top:8px;">
+      Everything arrives the following month. No surprises, no gaps.
+    </p>
+  </div>
+
+  <div class="timeline-track">
+
+    <div class="timeline-step now fade-in">
+      <div class="now-badge">✓ Right Now</div>
+      <div class="timeline-step-num">
+        <div class="step-dot green"></div>
+        <span class="step-label active">Enrollment Complete</span>
+      </div>
+      <div class="timeline-icon forest">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M4 10L8 14L16 6" stroke="#1F5C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>You're Officially Enrolled</h3>
+      <p>Your enrollment is confirmed and recorded. Nothing more you need to do today.</p>
+      <ul>
+        <li>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#e8f4ef"/><path d="M3.5 6L5 7.5L8.5 4" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Enrollment recorded
+        </li>
+        <li>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#e8f4ef"/><path d="M3.5 6L5 7.5L8.5 4" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Benefits package confirmed
+        </li>
+      </ul>
+    </div>
+
+    <div class="timeline-connector">
+      <div class="timeline-connector-line"></div>
+    </div>
+
+    <div class="timeline-step fade-in">
+      <div class="timeline-step-num">
+        <div class="step-dot teal"></div>
+        <span class="step-label">Following Month, 1st</span>
+      </div>
+      <div class="timeline-icon teal">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3 4H17M3 8H17M3 12H12M3 16H9" stroke="#2DB89E" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Policy &amp; Login Info</h3>
+      <p>Be on the lookout for your policy documents and your Thrive Benefits portal login next month.</p>
+      <ul>
+        <li>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#e6f7f4"/><path d="M3.5 6L5 7.5L8.5 4" stroke="#2DB89E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Policy documents delivered
+        </li>
+        <li>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#e6f7f4"/><path d="M3.5 6L5 7.5L8.5 4" stroke="#2DB89E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Portal login credentials emailed
+        </li>
+      </ul>
+    </div>
+
+    <div class="timeline-connector">
+      <div class="timeline-connector-line"></div>
+    </div>
+
+    <div class="timeline-step fade-in">
+      <div class="timeline-step-num">
+        <div class="step-dot gray"></div>
+        <span class="step-label">Following Month — Ongoing</span>
+      </div>
+      <div class="timeline-icon forest">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M10 3C10 3 4 7 4 12C4 15.3 6.7 18 10 18C13.3 18 16 15.3 16 12C16 7 10 3 10 3Z" stroke="#1F5C42" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 12L9.5 14L13 10" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Your Benefits Are Active</h3>
+      <p>Log in and start using everything. From filing a claim on your policies to $0 copay, $0 deductible Thrive Care services.</p>
+      <ul>
+        <li>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#e8f4ef"/><path d="M3.5 6L5 7.5L8.5 4" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Thrive Care (telemedicine) live
+        </li>
+        <li>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#e8f4ef"/><path d="M3.5 6L5 7.5L8.5 4" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Supplemental coverages active
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     PAYSTUB SECTION
+══════════════════════════════════════════════════════ -->
+<section class="paystub-section" id="paystub">
+  <div class="paystub-inner">
+
+    <div class="paystub-copy fade-in">
+      <span class="overline">About Your Paystub</span>
+      <h2 class="section-headline">You'll See New Lines.<br>You Won't Feel a Thing.</h2>
+      <p class="section-sub">
+        New line items will appear on your paystub when benefits kick in.
+      </p>
+      <p class="section-sub" style="margin-top: 14px;">
+        Two of these cancel each other out to create your tax savings. Your take-home pay stays the same — <strong style="color: var(--black);">or in many cases, goes up slightly.</strong>
+      </p>
+
+      <div style="margin-top: 32px;">
+        <div class="paystub-toggle">
+          <button class="pst-btn active" onclick="switchPaystub('before', this)">Before Enrollment</button>
+          <button class="pst-btn" onclick="switchPaystub('after', this)">After Enrollment</button>
+        </div>
+
+        <div class="ps-legend">
+          <div class="ps-legend-item">
+            <div class="ps-legend-dot" style="background: var(--teal);"></div>
+            New benefit deductions
+          </div>
+          <div class="ps-legend-item">
+            <div class="ps-legend-dot" style="background: var(--forest);"></div>
+            Tax savings offset
+          </div>
+        </div>
+
+        <div class="paystub-view active" id="paystub-before">
+          <div class="paystub-card">
+            <div class="paystub-card-header">
+              <div class="paystub-card-header-left">
+                <div class="paystub-company">Example Illustration</div>
+                <div class="paystub-title">Pay Stub — Before Enrollment</div>
+              </div>
+              <div class="paystub-period">Period End<strong>Current</strong></div>
+            </div>
+            <div class="paystub-body">
+              <div class="ps-section">
+                <div class="ps-section-lbl">Earnings</div>
+                <div class="ps-row">
+                  <span class="ps-row-label">Regular Wages</span>
+                  <span class="ps-row-amount">$3,250</span>
+                </div>
+              </div>
+              <div class="ps-section">
+                <div class="ps-section-lbl">Taxes &amp; Deductions</div>
+                <div class="ps-row">
+                  <span class="ps-row-label">Taxes</span>
+                  <span class="ps-row-amount deduct">− $501</span>
+                </div>
+                <div class="ps-row">
+                  <span class="ps-row-label">FICA</span>
+                  <span class="ps-row-amount deduct">− $249</span>
+                </div>
+              </div>
+            </div>
+            <div class="ps-net">
+              <div class="ps-net-label">Net Pay<span>Take-home this period</span></div>
+              <div class="ps-net-amount">$2,500</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="paystub-view" id="paystub-after">
+          <div class="paystub-card">
+            <div class="paystub-card-header">
+              <div class="paystub-card-header-left">
+                <div class="paystub-company">Example Illustration</div>
+                <div class="paystub-title">Pay Stub — After Enrollment</div>
+              </div>
+              <div class="paystub-period">Period End<strong>Next Month</strong></div>
+            </div>
+            <div class="paystub-body">
+              <div class="ps-section">
+                <div class="ps-section-lbl">Earnings</div>
+                <div class="ps-row">
+                  <span class="ps-row-label">Regular Wages</span>
+                  <span class="ps-row-amount">$3,250</span>
+                </div>
+              </div>
+              <div class="ps-section">
+                <div class="ps-section-lbl">Taxes &amp; Deductions</div>
+                <div class="ps-row">
+                  <span class="ps-row-label">Taxes</span>
+                  <span class="ps-row-amount deduct">− $341</span>
+                </div>
+                <div class="ps-row">
+                  <span class="ps-row-label">FICA</span>
+                  <span class="ps-row-amount deduct">− $203</span>
+                </div>
+                <div class="ps-row highlight-new">
+                  <span class="ps-row-label">
+                    ↓ Pretax Deduction
+                    <span class="new-badge">NEW</span>
+                  </span>
+                  <span class="ps-row-amount deduct">− $600</span>
+                </div>
+                <div class="ps-row highlight-savings">
+                  <span class="ps-row-label">
+                    ↑ Post Tax Reimbursement
+                    <span class="new-badge" style="background: var(--forest);">NEW</span>
+                  </span>
+                  <span class="ps-row-amount positive">+ $600</span>
+                </div>
+              </div>
+              <div class="ps-section">
+                <div class="ps-section-lbl">Your Gain</div>
+                <div class="ps-row">
+                  <span class="ps-row-label">Tax Savings</span>
+                  <span class="ps-row-amount positive">+ $206</span>
+                </div>
+                <div class="ps-row">
+                  <span class="ps-row-label">Benefits Value</span>
+                  <span class="ps-row-amount positive">+ $185</span>
+                </div>
+              </div>
+            </div>
+            <div class="ps-net">
+              <div class="ps-net-label">Net Pay<span>Take-home this period</span></div>
+              <div class="ps-net-amount">$2,521</div>
+            </div>
+          </div>
+          <div class="same-pay-callout">
+            <div class="spc-icon">
+              <svg viewBox="0 0 15 15" fill="none"><path d="M7.5 2V8M4.5 5L7.5 2L10.5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12H12" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="spc-text">Same job. Better Benefits &amp; Wages.</div>
+              <span class="spc-sub">The deduction and reimbursement cancel out. They create tax savings to pay for your benefits. What's left is yours to keep.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-in" style="display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="ps-explain-card">
+          <div class="ps-explain-icon forest-lt">
+            <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="#1F5C42" stroke-width="1.3"/><path d="M5 7H11M5 10H8" stroke="#1F5C42" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="ps-explain-title">Two new equal line items</div>
+            <div class="ps-explain-body">You'll see 2 new equal line items. One positive, one negative. They cancel each other out to create your tax savings.</div>
+          </div>
+        </div>
+        <div class="ps-explain-card">
+          <div class="ps-explain-icon teal-lt">
+            <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#2DB89E" stroke-width="1.3"/><path d="M8 4.5V5.2M8 10.8V11.5M6 6.5C6 5.67 6.9 5 8 5C9.1 5 10 5.67 10 6.5C10 7.33 9.1 8 8 8C6.9 8 6 8.67 6 9.5C6 10.33 6.9 11 8 11C9.1 11 10 10.33 10 9.5" stroke="#2DB89E" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="ps-explain-title">Your benefits are already paid for</div>
+            <div class="ps-explain-body">After that, you'll see new benefit line items. These are covered by your savings — not money leaving your pocket.</div>
+          </div>
+        </div>
+        <div class="ps-explain-card accent">
+          <div class="ps-explain-icon forest">
+            <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M8 2L9.2 6.1H13.5L10 8.6L11.2 12.7L8 10.2L4.8 12.7L6 8.6L2.5 6.1H6.8L8 2Z" fill="white" stroke="white" stroke-width="0.4" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div class="ps-explain-title forest">Same job. Better Benefits &amp; Wages.</div>
+            <div class="ps-explain-body">After you get all of your Thrive Benefits, anything that's left over is for you to keep.</div>
+          </div>
+        </div>
+      </div>
+
+      <video
+        src="https://assets.cdn.filesafe.space/AD8AWa0PN7eiGQ8HXJv6/media/6a1eec441b531ff70a8468ef.mov"
+        controls
+        preload="metadata"
+        style="width:100%; border-radius: var(--radius-md); display: block;"
+      ></video>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     HOW TO USE YOUR BENEFITS
+══════════════════════════════════════════════════════ -->
+<section class="use-section" id="use-benefits">
+  <div class="use-header fade-in">
+    <h2 class="section-headline">How to Start Using Your Benefits</h2>
+    <p style="font-size:15.5px; color:var(--body-gray); line-height:1.65; margin-top:8px;">
+      Once your login arrives, here's exactly how to put everything to work.
+    </p>
+  </div>
+  <div class="use-cards">
+
+    <div class="use-card fade-in">
+      <div class="use-card-icon forest">
+        <svg viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="16" height="16" rx="3" stroke="#1F5C42" stroke-width="1.5"/><path d="M7 11H15M11 7V15" stroke="#1F5C42" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="step-num">01 · First Day</span>
+      <h3>Log Into Your Portal</h3>
+      <p>Your credentials arrive early next month. The portal is your hub — policy details, ID numbers, and all your benefit tools. Bookmark it.</p>
+      <span class="when-tag">Credentials arrive early next month</span>
+    </div>
+
+    <div class="use-card fade-in">
+      <div class="use-card-icon teal">
+        <svg viewBox="0 0 22 22" fill="none"><rect x="3.5" y="4" width="15" height="14" rx="2.5" stroke="#2DB89E" stroke-width="1.5"/><path d="M7 9H15M7 13H11" stroke="#2DB89E" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="step-num">02 · Thrive Care</span>
+      <h3>Book Your First Telehealth Visit</h3>
+      <p>Need a prescription, a quick check-in, or a mental health session? Open Thrive Care and connect with certified clinicians. $0 copay. $0 Deductible. No waiting room.</p>
+      <span class="when-tag teal">Available Day 1 of next month</span>
+    </div>
+
+    <div class="use-card fade-in">
+      <div class="use-card-icon forest">
+        <svg viewBox="0 0 22 22" fill="none"><path d="M11 3C11 3 5 7 5 12C5 15.3 7.7 18 11 18C14.3 18 17 15.3 17 12C17 7 11 3 11 3Z" stroke="#1F5C42" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 12L10 14L14 10" stroke="#1F5C42" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="step-num">03 · Supplementals</span>
+      <h3>Know How to File a Claim</h3>
+      <p>Had an accident or a hospital stay? Once your policy details arrive, file a claim. Simple process. Built to pay fast.</p>
+      <a href="https://www.youtube.com/watch?v=JSgRbFHN64Y" target="_blank" rel="noopener" class="when-tag" style="text-decoration: none; display: inline-flex; align-items: center; gap: 5px; margin-top: 14px;">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M3 2.5L8.5 5.5L3 8.5V2.5Z" fill="#1F5C42"/></svg>
+        Set Up Claims Portal Here
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SUPPORT
+══════════════════════════════════════════════════════ -->
+<section class="support-section">
+  <div style="max-width: 960px; margin: 0 auto; text-align: center; margin-bottom: 40px;" class="fade-in">
+    <span class="overline">We've Got You</span>
+    <h2 class="section-headline" style="margin-bottom: 8px;">Questions? We're a Call Away.</h2>
+    <p style="font-size: 15.5px; color: var(--body-gray);">Your enrollment is just the beginning. Here's how to reach us.</p>
+  </div>
+  <div class="support-inner">
+    <div class="support-card fade-in">
+      <div class="support-icon forest">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M4 5C4 4.4 4.4 4 5 4H8L9.5 7.5L8 9C8.8 10.6 9.4 11.2 11 12L12.5 10.5L16 12V15C16 15.6 15.6 16 15 16C9 16 4 11 4 5Z" stroke="#1F5C42" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h3>Talk to Your Advisor</h3>
+        <p>Questions about your policy, paystub, or a specific benefit? Book a quick call — we'll walk you through it.</p>
+        <a href="https://go.thrivebg.com/widget/booking/TV36HEb3Jtseksy1LpEJ" target="_blank" rel="noopener">
+          Schedule a call
+          <svg viewBox="0 0 12 12" fill="none"><path d="M2 6H10M7 3L10 6L7 9" stroke="#1F5C42" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="support-card fade-in">
+      <div class="support-icon teal">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M4 4H16C16.6 4 17 4.4 17 5V13C17 13.6 16.6 14 16 14H6L3 17V5C3 4.4 3.4 4 4 4Z" stroke="#2DB89E" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h3>Review Your Policy Docs</h3>
+        <p>Your full policy documents arrive at the start of next month — coverage amounts, claims instructions, and carrier contact info.</p>
+        <a href="mailto:jacob@thrivebg.com" style="color: var(--teal);">
+          Contact support
+          <svg viewBox="0 0 12 12" fill="none"><path d="M2 6H10M7 3L10 6L7 9" stroke="#2DB89E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     BOTTOM CTA
+══════════════════════════════════════════════════════ -->
+<section class="bottom-cta">
+  <div class="bottom-cta-inner">
+    <h2>Sit Tight.<br>Your Benefits Are Coming.</h2>
+    <p style="margin-bottom: 6px;">Everything arrives first of next month.</p>
+    <p style="margin-bottom: 32px;">Questions or want to adjust your coverage? We're here.</p>
+    <div class="bottom-cta-btns">
+      <a href="https://go.thrivebg.com/widget/booking/TV36HEb3Jtseksy1LpEJ" target="_blank" rel="noopener" class="btn-white">
+        Talk to an Advisor
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="#1F5C42" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     TBG FOOTER
+══════════════════════════════════════════════════════ -->
+<footer class="tbg-footer">
+  <a href="https://gothrivebg.com" style="text-decoration:none;">
+    <img src="https://assets.cdn.filesafe.space/AD8AWa0PN7eiGQ8HXJv6/media/69824c297cf44b5808b1e0bd.svg" alt="Thrive Benefits Group" />
+  </a>
+  <span class="tbg-footer-copy">&copy; 2026 Thrive Benefits Group &middot; <a href="mailto:jacob@thrivebg.com">jacob@thrivebg.com</a> &middot; <a href="tel:4239109717">(423) 910-9717</a> &middot; <a href="https://www.thrivebg.com" target="_blank">thrivebg.com</a></span>
+</footer>
+
+</div><!-- /#tbg-page -->
+
+<!-- ═══════════════════════════════════════════════════
+     JS
+══════════════════════════════════════════════════════ -->
+<script>
+  function switchPaystub(view, btn) {
+    document.querySelectorAll('.paystub-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.pst-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('paystub-' + view).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  const progressBar = document.getElementById('progressBar');
+  let rafPending = false;
+  window.addEventListener('scroll', () => {
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(() => {
+        const scrollTop = document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        progressBar.style.width = (scrollTop / docHeight * 100) + '%';
+        rafPending = false;
+      });
+    }
+  }, { passive: true });
+
+  const fadeObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        fadeObserver.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+</script>
+
+<!-- GHL: Parent container strip -->
+<script>
+(function () {
+  function stripGHLParents() {
+    var root = document.getElementById('tbg-page');
+    if (!root) return;
+    if (document.body) {
+      ['max-width','width'].forEach(function(p){
+        document.body.style.setProperty(p, '100%', 'important');
+      });
+      ['padding-left','padding-right','padding-top','padding-bottom',
+       'margin-left','margin-right','margin-top','margin-bottom'].forEach(function(p){
+        document.body.style.setProperty(p, '0', 'important');
+      });
+      document.body.style.setProperty('overflow-x', 'hidden', 'important');
+    }
+    var el = root.parentElement, i = 0;
+    while (el && el.tagName !== 'HTML' && i++ < 30) {
+      el.style.setProperty('max-width',      '100%',       'important');
+      el.style.setProperty('width',          '100%',       'important');
+      el.style.setProperty('padding-left',   '0',          'important');
+      el.style.setProperty('padding-right',  '0',          'important');
+      el.style.setProperty('padding-top',    '0',          'important');
+      el.style.setProperty('padding-bottom', '0',          'important');
+      el.style.setProperty('margin-left',    '0',          'important');
+      el.style.setProperty('margin-right',   '0',          'important');
+      el.style.setProperty('margin-top',     '0',          'important');
+      el.style.setProperty('margin-bottom',  '0',          'important');
+      el.style.setProperty('min-height',     '0',          'important');
+      el.style.setProperty('box-sizing',     'border-box', 'important');
+      el = el.parentElement;
+    }
+  }
+  stripGHLParents();
+  document.addEventListener('DOMContentLoaded', stripGHLParents);
+  window.addEventListener('load', stripGHLParents);
+  var t = setInterval(stripGHLParents, 100);
+  setTimeout(function () { clearInterval(t); }, 2000);
+}());
+</script>
+<script src="../theme.js"></script>
+
+</body>
+</html>
