@@ -1,0 +1,2657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enrollment Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --forest:    #1F5C42;
+      --forest-d:  #163f2e;
+      --forest-lt: #e8f4ef;
+      --teal:      #2DB89E;
+      --teal-lt:   #e6f7f4;
+      --navy:      #162B3B;
+      --cloud:     #F5F6F8;
+      --white:     #FFFFFF;
+      --body-gray: #4B5563;
+      --mid-gray:  #D1D5DB;
+      --lt-border: #E5E7EB;
+      --black:     #0F1B14;
+      --error:     #dc2626;
+      --warn:      #d97706;
+      --font-head: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      color: var(--body-gray);
+      background: var(--white);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 0; margin: 0;
+    }
+    /* ── Layout ─────────────────────────────────── */
+    html, body { height: auto; overflow-x: hidden; }
+    .ew-wrap { max-width: 780px; margin: 0 auto; padding: 28px 20px 40px; }
+    @media (max-width: 480px) { .ew-wrap { padding: 20px 14px 32px; } }
+    /* Extra bottom clearance only when sticky bar is visible */
+    body.sticky-on .ew-wrap { padding-bottom: 90px; }
+    /* ── Step Indicator ─────────────────────────── */
+    .ew-steps { display: flex; align-items: flex-start; margin-bottom: 40px; }
+    .ew-step-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 7px; position: relative; z-index: 1;
+    }
+    .ew-step-item:not(:last-child)::after {
+      content: ''; position: absolute; top: 15px;
+      left: calc(50% + 16px); right: calc(-50% + 16px);
+      height: 2px; background: var(--lt-border); z-index: 0; transition: background .3s;
+    }
+    .ew-step-item.done:not(:last-child)::after,
+    .ew-step-item.active:not(:last-child)::after { background: var(--forest); }
+    .ew-step-dot {
+      width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--lt-border);
+      background: var(--white); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--mid-gray);
+      transition: all .25s; position: relative; z-index: 1;
+    }
+    .ew-step-item.done .ew-step-dot  { background: var(--forest); border-color: var(--forest); color: #fff; }
+    .ew-step-item.active .ew-step-dot { border-color: var(--forest); color: var(--forest); box-shadow: 0 0 0 4px rgba(31,92,66,.1); }
+    .ew-step-label { font-family: var(--font-head); font-size: 11px; font-weight: 600; color: var(--mid-gray); text-align: center; white-space: nowrap; }
+    .ew-step-item.active .ew-step-label { color: var(--forest); }
+    .ew-step-item.done  .ew-step-label { color: var(--body-gray); }
+    /* ── Panels ─────────────────────────────────── */
+    .ew-panel { display: none; }
+    .ew-panel.active { display: block; animation: fadeUp .35s ease both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    /* ── Section Headers ────────────────────────── */
+    .ew-section-head { margin-bottom: 28px; }
+    .ew-overline {
+      font-family: var(--font-head); font-size: 11px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 6px;
+    }
+    .ew-section-head h2 {
+      font-family: var(--font-head); font-size: clamp(22px,3vw,30px);
+      font-weight: 800; color: var(--black); letter-spacing: -0.022em; margin-bottom: 6px;
+    }
+    .ew-section-head p { font-size: 14px; color: var(--body-gray); line-height: 1.6; }
+    /* ── Form Grid & Fields ─────────────────────── */
+    .ew-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 520px) { .ew-grid-2 { grid-template-columns: 1fr; } }
+    .ew-field { display: flex; flex-direction: column; gap: 5px; }
+    .ew-field.full { grid-column: 1 / -1; }
+    .ew-label {
+      font-family: var(--font-head); font-size: 10.5px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--forest);
+    }
+    .ew-input, .ew-select {
+      height: 44px; padding: 0 14px; border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 14px;
+      font-weight: 500; color: var(--black); background: var(--white);
+      transition: border-color .18s, box-shadow .18s; width: 100%; appearance: auto;
+    }
+    .ew-input:focus, .ew-select:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(31,92,66,.08); }
+    .ew-input.err { border-color: var(--error); }
+    .ew-input::placeholder { color: var(--mid-gray); font-weight: 400; }
+    .ew-field-hint { font-size: 11px; color: var(--body-gray); line-height: 1.4; }
+    /* ── Alert Banner ───────────────────────────── */
+    .ew-alert {
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm);
+      padding: 12px 16px; font-size: 13px; color: var(--error); margin-bottom: 20px; display: none;
+    }
+    .ew-alert.show { display: block; }
+    /* ── Benefit Cards ──────────────────────────── */
+    .ew-cards { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .ew-bcard {
+      border: 1.5px solid var(--lt-border); border-radius: var(--radius-lg);
+      background: var(--white); overflow: hidden; transition: border-color .2s, box-shadow .2s;
+    }
+    .ew-bcard.on { border-color: var(--forest); box-shadow: 0 4px 16px rgba(31,92,66,.08); }
+    .ew-bcard-header {
+      display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+    }
+    .ew-bcard-icon {
+      width: 44px; height: 44px; border-radius: 12px; background: var(--forest-lt);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .ew-bcard-title-area { flex: 1; min-width: 0; }
+    .ew-bcard-title {
+      font-family: var(--font-head); font-size: 15px; font-weight: 700;
+      color: var(--black); line-height: 1.2; margin-bottom: 2px;
+    }
+    .ew-bcard-sub { font-size: 12px; color: var(--body-gray); }
+    .ew-bcard-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .ew-bcard-rate {
+      font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--forest);
+      white-space: nowrap;
+    }
+    .ew-bcard.off .ew-bcard-rate { color: var(--mid-gray); }
+    .ew-toggle {
+      width: 44px; height: 24px; border-radius: 12px; background: var(--mid-gray);
+      position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0;
+      border: none; appearance: none; padding: 0;
+    }
+    .ew-toggle.on { background: var(--forest); }
+    .ew-toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+      transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .ew-toggle.on::after { transform: translateX(20px); }
+    .ew-bcard-body {
+      padding: 4px 20px 18px;
+      border-top: 1px solid var(--lt-border);
+    }
+    /* ── Per-Benefit Tier Chips ─────────────────── */
+    .ew-ptier-label {
+      font-family: var(--font-head); font-size: 10px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--forest);
+      margin-bottom: 8px; margin-top: 14px; display: block;
+    }
+    .ew-ptier-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .ew-ptier-chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 100px; border: 1.5px solid var(--lt-border);
+      font-family: var(--font-head); font-size: 12px; font-weight: 600; color: var(--body-gray);
+      cursor: pointer; transition: all .15s; background: var(--white); user-select: none;
+    }
+    .ew-ptier-chip:hover { border-color: var(--forest); color: var(--forest); }
+    .ew-ptier-chip.active { border-color: var(--forest); background: var(--forest-lt); color: var(--forest); }
+    /* ── Plan Chips ─────────────────────────────── */
+    .ew-plan-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .ew-plan-chip {
+      flex: 1; padding: 7px 10px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--lt-border); font-family: var(--font-head);
+      font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;
+      transition: all .15s; background: var(--white); color: var(--body-gray);
+    }
+    .ew-plan-chip:hover { border-color: var(--forest); }
+    .ew-plan-chip.active { border-color: var(--forest); background: var(--forest-lt); color: var(--forest); }
+    /* ── Options Row inside Card ────────────────── */
+    .ew-opts-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .ew-opt-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+    .ew-opt-label {
+      font-family: var(--font-head); font-size: 10px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--body-gray);
+    }
+    .ew-opt-select, .ew-opt-input {
+      height: 38px; padding: 0 10px; border: 1.5px solid var(--lt-border);
+      border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+      color: var(--black); background: var(--white); appearance: auto; width: 100%;
+      font-family: var(--font-body);
+    }
+    .ew-opt-select:focus, .ew-opt-input:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(31,92,66,.08); }
+    .ew-card-note {
+      font-size: 12px; color: var(--body-gray); margin-top: 10px;
+      padding: 10px 12px; background: var(--cloud); border-radius: var(--radius-sm); line-height: 1.5;
+    }
+    /* ── Allotment Banner (Step 2) ──────────────── */
+    .ew-allotment-bar {
+      border-radius: var(--radius-md); padding: 16px 20px;
+      background: linear-gradient(135deg, var(--forest) 0%, #2a7a56 100%);
+      color: #fff; margin-bottom: 20px; display: none;
+    }
+    .ew-allotment-bar.show { display: block; }
+    .ew-allot-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; flex-wrap: wrap; gap: 6px;
+    }
+    .ew-allot-label {
+      font-family: var(--font-head); font-size: 12px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase; opacity: .85;
+    }
+    .ew-allot-amount {
+      font-family: var(--font-head); font-size: 22px; font-weight: 800;
+    }
+    .ew-allot-prog-bg {
+      height: 6px; border-radius: 3px; background: rgba(255,255,255,.25); overflow: hidden; margin-bottom: 8px;
+    }
+    .ew-allot-prog-fill {
+      height: 100%; border-radius: 3px; background: #fff; transition: width .35s ease;
+    }
+    .ew-allot-prog-fill.over { background: #fbbf24; }
+    .ew-allot-bottom { display: flex; justify-content: space-between; font-size: 12px; opacity: .85; flex-wrap: wrap; gap: 4px; }
+    .ew-allot-bottom strong { font-weight: 700; opacity: 1; }
+    /* ── Sticky Total Bar ───────────────────────── */
+    .ew-sticky {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--navy); color: #fff;
+      padding: 12px 24px; display: none; align-items: center; justify-content: space-between;
+      z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+      gap: 16px; flex-wrap: wrap;
+    }
+    .ew-sticky.show { display: flex; }
+    .ew-sticky-left { }
+    .ew-sticky-label { font-family: var(--font-head); font-size: 13px; font-weight: 600; opacity: .75; }
+    .ew-sticky-sub { font-size: 11px; opacity: .55; }
+    .ew-sticky-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .ew-sticky-amount { font-family: var(--font-head); font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
+    .ew-sticky-cost { text-align: right; }
+    .ew-sticky-cost-label { font-size: 11px; opacity: .65; font-family: var(--font-head); font-weight: 600; }
+    .ew-sticky-cost-val { font-family: var(--font-head); font-size: 17px; font-weight: 800; color: #fbbf24; }
+    .ew-sticky-cost-val.covered { color: #6ee7b7; }
+    /* ── CTA Buttons ────────────────────────────── */
+    .ew-btn-row { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+    .ew-btn {
+      height: 50px; padding: 0 28px; border-radius: 100px; border: none;
+      font-family: var(--font-head); font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: all .18s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .ew-btn-primary { background: var(--forest); color: #fff; }
+    .ew-btn-primary:hover { background: var(--forest-d); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31,92,66,.3); }
+    .ew-btn-ghost { background: transparent; color: var(--body-gray); border: 1.5px solid var(--lt-border); }
+    .ew-btn-ghost:hover { border-color: var(--forest); color: var(--forest); }
+    .ew-btn:disabled { opacity: .45; cursor: default; transform: none !important; box-shadow: none !important; }
+    /* ── Sub-sections (Step 3) ──────────────────── */
+    .ew-sub-section { margin-bottom: 32px; }
+    .ew-sub-section + .ew-sub-section { border-top: 1px solid var(--lt-border); padding-top: 28px; }
+    .ew-sub-head {
+      font-family: var(--font-head); font-size: 18px; font-weight: 800;
+      color: var(--black); margin-bottom: 6px;
+    }
+    .ew-sub-desc { font-size: 13px; color: var(--body-gray); margin-bottom: 20px; line-height: 1.55; }
+    .ew-sub-group-label {
+      font-family: var(--font-head); font-size: 12px; font-weight: 700;
+      color: var(--forest); text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 12px; display: block;
+    }
+    /* ── Beneficiary Rows ───────────────────────── */
+    .ew-bene-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+    .ew-bene-row {
+      display: grid; grid-template-columns: 1fr 1fr 80px 36px;
+      gap: 10px; align-items: end;
+    }
+    @media (max-width: 520px) {
+      .ew-bene-row { grid-template-columns: 1fr 1fr; }
+      .ew-bene-row .ew-bene-pct { grid-column: 1; }
+      .ew-bene-row .ew-bene-del { grid-column: 2; justify-self: end; }
+    }
+    .ew-bene-del {
+      width: 36px; height: 38px; border-radius: var(--radius-sm); border: 1.5px solid var(--lt-border);
+      background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--error); transition: all .15s; flex-shrink: 0;
+    }
+    .ew-bene-del:hover { background: #fef2f2; border-color: var(--error); }
+    .ew-pct-bar-wrap { margin: 14px 0 8px; }
+    .ew-pct-bar-bg { height: 8px; border-radius: 4px; background: var(--lt-border); overflow: hidden; }
+    .ew-pct-bar-fill { height: 100%; border-radius: 4px; background: var(--forest); transition: width .3s, background .2s; }
+    .ew-pct-bar-fill.warn { background: var(--warn); }
+    .ew-pct-bar-fill.err  { background: var(--error); }
+    .ew-pct-total { font-family: var(--font-head); font-size: 13px; font-weight: 700; margin-top: 6px; }
+    .ew-pct-total.ok   { color: var(--forest); }
+    .ew-pct-total.warn { color: var(--warn); }
+    .ew-pct-total.err  { color: var(--error); }
+    /* ── Children Rows ──────────────────────────── */
+    .ew-child-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+    .ew-child-row {
+      display: grid; grid-template-columns: 1fr 1fr 140px 36px;
+      gap: 10px; align-items: end;
+    }
+    @media (max-width: 560px) { .ew-child-row { grid-template-columns: 1fr 1fr; } }
+    .ew-child-del {
+      width: 36px; height: 38px; border-radius: var(--radius-sm); border: 1.5px solid var(--lt-border);
+      background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--error); transition: all .15s;
+    }
+    .ew-child-del:hover { background: #fef2f2; border-color: var(--error); }
+    /* ── Add Button ─────────────────────────────── */
+    .ew-add-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 36px; padding: 0 16px; border-radius: 100px;
+      border: 1.5px dashed var(--forest); background: transparent;
+      font-family: var(--font-head); font-size: 12px; font-weight: 700;
+      color: var(--forest); cursor: pointer; transition: all .15s;
+    }
+    .ew-add-btn:hover { background: var(--forest-lt); }
+    /* ── Summary Table ──────────────────────────── */
+    .ew-sum-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .ew-sum-table th {
+      text-align: left; font-family: var(--font-head); font-size: 10px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--body-gray);
+      padding: 8px 12px; border-bottom: 2px solid var(--lt-border);
+    }
+    .ew-sum-table td { padding: 13px 12px; border-bottom: 1px solid var(--lt-border); font-size: 13px; vertical-align: middle; }
+    .ew-sum-table tr:last-child td { border-bottom: none; }
+    .ew-sum-prod { font-family: var(--font-head); font-weight: 700; color: var(--black); font-size: 14px; margin-bottom: 2px; }
+    .ew-sum-tier { font-size: 11px; color: var(--body-gray); }
+    .ew-sum-price { font-family: var(--font-head); font-weight: 700; color: var(--forest); text-align: right; white-space: nowrap; }
+    .ew-sum-total-row td { background: var(--forest-lt); font-family: var(--font-head); font-weight: 800; font-size: 16px; color: var(--forest); }
+    .ew-info-box {
+      background: var(--cloud); border-radius: var(--radius-md); padding: 18px 20px; margin-bottom: 20px;
+    }
+    .ew-info-box h4 { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--black); margin-bottom: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .ew-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+    @media (max-width: 440px) { .ew-info-grid { grid-template-columns: 1fr; } }
+    .ew-info-pair { font-size: 13px; }
+    .ew-info-pair .info-label { color: var(--body-gray); font-size: 11px; margin-bottom: 1px; }
+    .ew-info-pair .info-val { color: var(--black); font-weight: 600; }
+    /* ── Success Screen ─────────────────────────── */
+    .ew-success { text-align: center; padding: 48px 20px; }
+    .ew-success-icon { font-size: 60px; margin-bottom: 18px; }
+    .ew-success h2 { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--forest); margin-bottom: 12px; letter-spacing: -0.01em; }
+    .ew-success p { font-size: 15px; color: var(--body-gray); line-height: 1.7; }
+    .ew-success strong { color: var(--black); }
+
+    /* ── Rates Loading Overlay ───────────────────── */
+    #ratesLoadingOverlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(255,255,255,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+    }
+    #ratesLoadingOverlay.show { display: flex; }
+    .rl-spinner {
+      width: 44px; height: 44px; border: 4px solid var(--forest-lt);
+      border-top-color: var(--forest); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .rl-text { font-family: var(--font-head); font-weight: 600; color: var(--forest); font-size: 15px; }
+
+    /* ── Tobacco Toggle ──────────────────────────── */
+    .ew-tobacco-row { display:flex; gap:10px; margin-top:4px; }
+    .ew-tobacco-chip {
+      flex:1; padding:10px 14px; border-radius:var(--radius-sm);
+      border:2px solid var(--lt-border); background:var(--white);
+      font-family:var(--font-body); font-size:14px; font-weight:500;
+      color:var(--body-gray); cursor:pointer; text-align:center;
+      transition:all .15s ease;
+    }
+    .ew-tobacco-chip.active {
+      border-color:var(--forest); background:var(--forest-lt);
+      color:var(--forest); font-weight:600;
+    }
+    .ew-tobacco-chip:hover:not(.active) { border-color:#9ca3af; }
+
+    /* ── Rate source badge ───────────────────────── */
+    .ew-rate-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600;
+      margin-bottom:16px; letter-spacing:.02em;
+    }
+    .ew-rate-badge.live   { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
+    .ew-rate-badge.fbk    { background:#fef9c3; color:#854d0e; border:1px solid #fef08a; }
+    .ew-rate-badge .dot   { width:7px; height:7px; border-radius:50%; background:currentColor; }
+  </style>
+</head>
+<body>
+  <div class="ew-wrap">
+    <div class="ew-steps" id="ewSteps"></div>
+    <div class="ew-panel active" id="p1">
+      <div class="ew-section-head">
+        <span class="ew-overline">Step 1 of 3</span>
+        <h2>Tell Us About You</h2>
+        <p>We'll use this to personalize your benefits package and calculate your exact premium rates.</p>
+      </div>
+      <div class="ew-alert" id="p1Alert"></div>
+      <div class="ew-grid-2">
+        <div class="ew-field full">
+          <label class="ew-label" for="companySelect">Your Company</label>
+          <select class="ew-input" id="companySelect" style="cursor:pointer" disabled>
+            <option value="">Loading companies…</option>
+          </select>
+          <span class="ew-field-hint">Your company determines which benefits and rates are available to you.</span>
+        </div>
+        <div class="ew-field">
+          <label class="ew-label" for="firstName">First Name</label>
+          <input class="ew-input" id="firstName" type="text" placeholder="Jane" autocomplete="given-name" />
+        </div>
+        <div class="ew-field">
+          <label class="ew-label" for="lastName">Last Name</label>
+          <input class="ew-input" id="lastName" type="text" placeholder="Smith" autocomplete="family-name" />
+        </div>
+        <div class="ew-field">
+          <label class="ew-label" for="email">Email Address</label>
+          <input class="ew-input" id="email" type="email" placeholder="jane@example.com" autocomplete="email" />
+        </div>
+        <div class="ew-field">
+          <label class="ew-label" for="phone">Phone Number</label>
+          <input class="ew-input" id="phone" type="tel" placeholder="(555) 000-0000" autocomplete="tel" />
+        </div>
+        <div class="ew-field full">
+          <label class="ew-label" for="empAge">Your Age</label>
+          <input class="ew-input" id="empAge" type="number" min="18" max="90" placeholder="35" value="35"
+            style="max-width:140px;" />
+          <span class="ew-field-hint">Age is used to calculate accurate premium rates for your policy.</span>
+        </div>
+        <div class="ew-field full">
+          <label class="ew-label">Tobacco Use</label>
+          <div class="ew-tobacco-row">
+            <div class="ew-tobacco-chip active" id="tobaccoNo"  onclick="setTobacco(false)">🚭 Non-Tobacco</div>
+            <div class="ew-tobacco-chip"        id="tobaccoYes" onclick="setTobacco(true)">🚬 Tobacco User</div>
+          </div>
+          <span class="ew-field-hint">Tobacco use affects rates for Term Life, Whole Life, and Critical Illness.</span>
+        </div>
+      </div>
+      <div class="ew-btn-row">
+        <button class="ew-btn ew-btn-primary" onclick="goTo(2)">
+          Choose My Benefits
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="ew-panel" id="p2">
+      <div class="ew-section-head" id="p2Head">
+        <span class="ew-overline">Step 2 of 3</span>
+        <h2>Your Benefits Package</h2>
+        <p>All benefits start as Employee Only. You can customize coverage on each policy individually — they don't all have to match.</p>
+      </div>
+      <div class="ew-alert" id="p2Alert"></div>
+      <div class="ew-allotment-bar" id="allotmentBanner">
+        <div class="ew-allot-top">
+          <span class="ew-allot-label">💰 Your Tax Savings</span>
+          <span class="ew-allot-amount" id="allotAmt"></span>
+        </div>
+        <div class="ew-allot-prog-bg">
+          <div class="ew-allot-prog-fill" id="allotProgFill" style="width:0%"></div>
+        </div>
+        <div class="ew-allot-bottom">
+          <span id="allotUsedLabel">$0.00 selected</span>
+          <span id="allotRemLabel"></span>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85">You Owe</span>
+          <span id="allotYouOwe" style="font-family:var(--font-head);font-size:20px;font-weight:800"></span>
+        </div>
+      </div>
+      <div class="ew-cards" id="cardList"></div>
+      <div class="ew-btn-row">
+        <button class="ew-btn ew-btn-ghost" onclick="goTo(1)">← Back</button>
+        <button class="ew-btn ew-btn-primary" onclick="goTo(3)">
+          Continue
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="ew-panel" id="p3">
+      <div class="ew-section-head">
+        <span class="ew-overline">Step 3 of 3</span>
+        <h2>Details &amp; Beneficiaries</h2>
+        <p>Add dependents and beneficiaries, then review your summary below and submit.</p>
+      </div>
+      <div class="ew-alert" id="p3Alert"></div>
+      <div id="dependentSection"></div>
+      <div class="ew-sub-section">
+        <div class="ew-sub-head">Beneficiary Designations</div>
+        <div class="ew-sub-desc">Who should receive your benefits? Add one or more people and assign each a percentage. The total must equal exactly 100%.</div>
+        <div class="ew-bene-list" id="beneList"></div>
+        <div class="ew-pct-bar-wrap">
+          <div class="ew-pct-bar-bg"><div class="ew-pct-bar-fill" id="pctBarFill" style="width:0%"></div></div>
+          <div class="ew-pct-total" id="pctTotal"></div>
+        </div>
+        <button class="ew-add-btn" onclick="addBeneficiary()">+ Add Beneficiary</button>
+      </div>
+      <div class="ew-sub-section" style="margin-top:28px">
+        <div class="ew-sub-head">Your Enrollment Summary</div>
+        <div class="ew-sub-desc">Review your coverage selections below, then click Complete Enrollment to submit.</div>
+      </div>
+      <div id="summaryContent"></div>
+      <div class="ew-btn-row" id="submitBtnRow">
+        <button class="ew-btn ew-btn-ghost" id="backBtn3" onclick="goTo(2)">← Back</button>
+        <button class="ew-btn ew-btn-primary" id="submitBtn" onclick="submitEnrollment()">
+          Review &amp; Sign →
+        </button>
+      </div>
+      <div id="consentFormArea" style="display:none;margin-top:8px;border-radius:var(--radius-lg);overflow:hidden"></div>
+    </div>
+  </div><div class="ew-sticky" id="stickyBar">
+    <div class="ew-sticky-left">
+      <div class="ew-sticky-label">Monthly Total</div>
+      <div class="ew-sticky-sub">Active benefits only</div>
+    </div>
+    <div class="ew-sticky-right">
+      <div class="ew-sticky-amount" id="stickyAmount">$0.00/mo</div>
+      <div class="ew-sticky-cost" id="stickyCostBox" style="display:none">
+        <div class="ew-sticky-cost-label">Your Cost</div>
+        <div class="ew-sticky-cost-val" id="stickyCostVal">$0.00/mo</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ratesLoadingOverlay">
+    <div class="rl-spinner"></div>
+    <div class="rl-text">Loading your rates…</div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // CONFIG
+    // ─────────────────────────────────────────────
+    const WEBHOOK_URL = 'YOUR_WEBHOOK_URL_HERE';
+    // ─────────────────────────────────────────────
+    // COMPANY → GOOGLE SHEET CONFIG
+    // ─────────────────────────────────────────────
+    // ─── Directory sheet (master company list) ────
+    // Publish your sheet: File → Share → Publish to web → CSV
+    const DIRECTORY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?output=csv';
+    const WHOLE_EMP_MAX_BENEFIT_DEFAULT = 75000;
+
+    // Populated at load from DIRECTORY_SHEET_ID; falls back to FALLBACK_COMPANIES
+    let COMPANIES = {};
+
+    const FALLBACK_COMPANIES = {
+      'Shadescrest Health Care Center': {
+        sheetId: '1JOvmKjO16OY3DlvqUkKWKubaiDPOYKCqzHFK-3VkpA0',
+        wholeEmpMaxBenefit: 75000
+      },
+      'City of Refuge': {
+        sheetId: '1zayW32AsXrhOAGCg2veJJyQGLfXjcAaXt67yGsOfi1M',
+        wholeEmpMaxBenefit: 75000
+      },
+      'Still Serving Veterans': {
+        sheetId: '1E0L04miCffoo5iBIzWm267EvXxQr_ubziIy-iL7wDdw',
+        wholeEmpMaxBenefit: 75000
+      },
+      'Boys & Girls Club of the Ocoee Region': {
+        sheetId: '1pKFznmXOeklbJL4t8B3hoLPM6Pz_09qFGZs6yNpoKIA',
+        wholeEmpMaxBenefit: 75000
+      },
+      'Boys & Girls Club of Greater Augusta': {
+        sheetId: '1W2LUMqKUK6c3ca1NyFlMJXz4bUJTh9_PR5A8zLa9-f0',
+        wholeEmpMaxBenefit: 75000
+      },
+      'CareM': {
+        sheetId: '1pXRAAAj4cMbYm5JSu6uHYrHeylmsNU5Ta13jl7g7pA4',
+        wholeEmpMaxBenefit: 75000
+      }
+    };
+
+    // Hard cap on spouse whole life benefit
+    const WHOLE_SPOUSE_MAX_BENEFIT = 25000;
+
+    let LOADED_RATES = null;
+    let RATES_SOURCE = "fallback";
+
+    // ─────────────────────────────────────────────
+    // CANONICAL TITLE PARSING
+    // ─────────────────────────────────────────────
+    function parsePipeTitle(s) {
+      if (!s || typeof s !== 'string' || !s.includes('|')) return null;
+      const parts = s.split('|').map(p => p.trim()).filter(Boolean);
+      if (parts.length < 1) return null;
+      return parts;
+    }
+
+    function detectTierFromTitle(s) {
+      if (!s) return null;
+      const pipe = parsePipeTitle(s);
+      if (pipe) {
+        const seg0 = pipe[0].toLowerCase();
+        if (seg0 === 'employee-only' || seg0 === 'employee only')        return 'employee';
+        if (seg0 === 'employee + spouse' || seg0 === 'employee and spouse' || seg0 === 'employee & spouse')   return 'employee_spouse';
+        if (seg0 === 'employee + children' || seg0 === 'employee and children' || seg0 === 'employee & children' || seg0 === 'employee and child' || seg0 === 'employee & child') return 'employee_children';
+        if (seg0 === 'family') return 'family';
+      }
+      const lower = s.toLowerCase();
+      let result = null;
+      if (lower.includes('employee-only') || lower.includes('employee only'))     result = 'employee';
+      else if (lower.includes('employee and spouse') || lower.includes('employee & spouse'))    result = 'employee_spouse';
+      else if (lower.includes('employee and child') || lower.includes('employee & child') || lower.includes('employee/children') || lower.includes('emp. & children')) result = 'employee_children';
+      else if (lower.includes('family'))                                        result = 'family';
+      if (result) console.warn('[detectTier] Legacy fallback used for title:', s, '→', result);
+      return result;
+    }
+
+    function isTobaccoTitle(s) {
+      if (!s) return false;
+      const pipe = parsePipeTitle(s);
+      if (pipe && pipe.length >= 3) {
+        const v = pipe[pipe.length - 1].toLowerCase().trim();
+        return v === 'tobacco';
+      }
+      const t = s.trim();
+      return /tobacco\s*$/i.test(t) && !/non[-\s]?tobacco\s*$/i.test(t);
+    }
+
+    function isNonTobaccoTitle(s) {
+      if (!s) return false;
+      const pipe = parsePipeTitle(s);
+      if (pipe && pipe.length >= 3) {
+        const v = pipe[pipe.length - 1].toLowerCase().trim();
+        return v === 'non-tobacco' || v === 'non tobacco';
+      }
+      return /non[-\s]?tobacco\s*$/i.test(s);
+    }
+
+    function findTobaccoColInRow(row) {
+      for (let i = 0; i < row.length; i++) {
+        if (isTobaccoTitle(row[i])) return i;
+      }
+      return -1;
+    }
+
+    // ─── Google Sheets loader ──
+    window._debugRates = window._debugRates || {};
+    async function fetchSheetTabWithFallbacks(sheetId, ...names) {
+      for (const name of names) {
+        try {
+          const csv = await fetchSheetTab(sheetId, name);
+          const trimmed = (csv || '').trim();
+          const isErrorBody = trimmed.length === 0
+            || trimmed.startsWith('google.visualization')
+            || trimmed.startsWith('<')
+            || trimmed.includes('"status":"error"');
+          if (!isErrorBody) {
+            console.log('[Sheet] ✓ Tab resolved: "' + name + '" (' + csv.split('\n').length + ' rows)');
+            window._debugRates[names[0]] = { resolvedAs: name, preview: csv.split('\n').slice(0,5) };
+            return csv;
+          }
+          console.warn('[Sheet] Tab "' + name + '" returned error body — trying next variant...');
+          window._debugRates[names[0]] = { resolvedAs: null, lastAttempt: name, errorBody: trimmed.slice(0, 120) };
+        } catch (e) {
+          console.warn('[Sheet] Tab "' + name + '" fetch failed (' + e.message + ') — trying next variant...');
+          window._debugRates[names[0]] = { resolvedAs: null, lastAttempt: name, error: e.message };
+        }
+      }
+      console.warn('[Sheet] ✗ All tab name variants exhausted for:', names[0], '| tried:', names.join(', '));
+      return null;
+    }
+
+    function fetchSheetTab(sheetId, tabName) {
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(tabName)}`;
+      console.log('[Sheet] fetch() attempting tab "' + tabName + '"...');
+      return fetch(csvUrl)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.text();
+        })
+        .then(csv => {
+          console.log('[Sheet] fetch() SUCCESS for tab "' + tabName + '" (' + csv.split('\n').length + ' rows)');
+          return csv;
+        })
+        .catch(fetchErr => {
+          console.warn('[Sheet] fetch() failed for "' + tabName + '" (' + fetchErr.message + ') — trying JSONP...');
+          return fetchSheetTabJSONP(sheetId, tabName);
+        });
+    }
+
+    function fetchSheetTabJSONP(sheetId, tabName) {
+      return new Promise((resolve, reject) => {
+        const cb = 'gviz_' + Math.random().toString(36).slice(2);
+        const timer = setTimeout(() => {
+          delete window[cb];
+          if (script.parentNode) script.remove();
+          console.warn('[Sheet] JSONP timeout for tab:', tabName);
+          reject(new Error(`Timeout: "${tabName}"`));
+        }, 15000);
+        window[cb] = (data) => {
+          clearTimeout(timer); delete window[cb];
+          if (script.parentNode) script.remove();
+          if (!data) { reject(new Error(`No data for "${tabName}"`)); return; }
+          if (data.status === 'error') {
+            const msg = data.errors?.[0]?.message || 'Unknown error';
+            console.warn('[Sheet] JSONP error on tab "' + tabName + '":', msg);
+            reject(new Error(msg)); return;
+          }
+          if (!data.table) { reject(new Error(`No table in response for "${tabName}"`)); return; }
+          try {
+            const cols = data.table.cols.length;
+            const csv = (data.table.rows || []).map(row =>
+              Array.from({length: cols}, (_, i) => {
+                const cell = row.c ? row.c[i] : null;
+                const v = (cell && cell.v != null) ? cell.v : '';
+                const s = String(v);
+                return s.includes(',') || s.includes('"') || s.includes('\n')
+                  ? '"' + s.replace(/"/g, '""') + '"' : s;
+              }).join(',')
+            ).join('\n');
+            console.log('[Sheet] JSONP SUCCESS for tab "' + tabName + '" — ' + (data.table.rows||[]).length + ' rows');
+            resolve(csv);
+          } catch(e) {
+            console.error('[Sheet] JSONP parse error on "' + tabName + '":', e);
+            reject(e);
+          }
+        };
+        const script = document.createElement('script');
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(tabName)}`;
+        console.log('[Sheet] JSONP attempting tab "' + tabName + '"...');
+        script.src = url;
+        script.onerror = () => {
+          clearTimeout(timer); delete window[cb];
+          if (script.parentNode) script.remove();
+          console.error('[Sheet] JSONP script blocked/failed for "' + tabName + '" — URL:', url);
+          reject(new Error(`Both fetch and JSONP failed for: "${tabName}"`));
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    function cleanNum(v) {
+      if (v === null || v === undefined || v === '') return NaN;
+      if (typeof v === 'number') return v;
+      const s = String(v).replace(/[$,%\s'"]/g, '').replace(/,/g, '');
+      return parseFloat(s);
+    }
+
+    function parseCSV(text) {
+      const rows = [];
+      const lines = text.trim().replace(/\r/g, '').split('\n');
+      for (const line of lines) {
+        const row = []; let cur = ''; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (c === '"') { inQ = !inQ; }
+          else if (c === ',' && !inQ) { row.push(cur.trim()); cur = ''; }
+          else { cur += c; }
+        }
+        row.push(cur.trim());
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function parsePlanTab(csv) {
+      const rows = parseCSV(csv);
+      console.log('[parsePlanTab] first 4 rows:', JSON.stringify(rows.slice(0,4)));
+      const out = {};
+      let plan1Count = 0, plan2Count = 0;
+      for (const row of rows) {
+        const cell0 = (row[0] || '').trim().toLowerCase();
+        if (cell0.startsWith('plan ')) {
+          const key = cell0.replace(/\s+/g, '');
+          if (key === 'plan1') plan1Count++;
+          if (key === 'plan2') plan2Count++;
+          out[key] = {
+            employee:          cleanNum(row[1]),
+            employee_spouse:   cleanNum(row[2]),
+            employee_children: cleanNum(row[3]),
+            family:            cleanNum(row[4])
+          };
+          console.log('[parsePlanTab] parsed', key, '->', JSON.stringify(out[key]));
+        }
+      }
+      if (plan1Count >= 2 && plan2Count === 0) {
+        console.warn('[parsePlanTab] ⚠ DATA BUG: found ' + plan1Count + ' "Plan 1" rows and 0 "Plan 2" rows.');
+      }
+      return out;
+    }
+
+   function parseCITab(csv) {
+  const rows = parseCSV(csv);
+  console.log('[parseCITab] first 4 rows:', JSON.stringify(rows.slice(0,4)));
+
+  const out = {
+    nt:      { employee_group: {}, family_group: {} },
+    tobacco: { employee_group: {}, family_group: {} },
+    benefitAmounts: []
+  };
+
+  const normalizeAgeBand = s => s.trim().replace(/^age\s*/i, '').replace(/\s*[-–]\s*/g, '-');
+  const isAgeBand = s => {
+    const n = normalizeAgeBand(s);
+    return /^\d{2,3}-\d{2,3}$/.test(n) || /^\d{2,3}\+$/.test(n);
+  };
+
+  let tobaccoStartCol = -1;
+  for (const row of rows) {
+    const tCol = findTobaccoColInRow(row);
+    if (tCol >= 0) { tobaccoStartCol = tCol; break; }
+  }
+  console.log('[parseCITab] tobaccoStartCol:', tobaccoStartCol);
+
+  let currentGroup = 'employee_group';
+  let benefitCols = [];
+
+  for (const row of rows) {
+    const cell0 = (row[0] || '').trim();
+    if (!cell0) continue;
+    const lower = cell0.toLowerCase();
+
+    if (lower.includes('age')) {
+      const limit = tobaccoStartCol > 0 ? tobaccoStartCol : row.length;
+      const amounts = [];
+      for (let i = 1; i < limit; i++) {
+        const n = parseInt(String(row[i] || '').replace(/[$,\s"']/g, ''));
+        if (!isNaN(n) && n >= 1000 && !amounts.includes(n)) amounts.push(n);
+      }
+      if (amounts.length >= 1) {
+        benefitCols = amounts;
+        if (out.benefitAmounts.length === 0) out.benefitAmounts = amounts.slice();
+        console.log('[parseCITab] benefitCols updated:', benefitCols);
+        continue;
+      }
+    }
+
+    if (isAgeBand(cell0) && benefitCols.length > 0) {
+      const key = normalizeAgeBand(cell0);
+      const ntPremiums = {};
+      const tbPremiums = {};
+
+      benefitCols.forEach((b, i) => {
+        const ntRate = cleanNum(row[1 + i]);
+        ntPremiums[b] = isNaN(ntRate) ? 0 : ntRate;
+
+        if (tobaccoStartCol >= 0) {
+          const tbRate = cleanNum(row[tobaccoStartCol + 1 + i]);
+          tbPremiums[b] = isNaN(tbRate) ? 0 : tbRate;
+        } else {
+          tbPremiums[b] = ntPremiums[b];
+        }
+      });
+
+      out.nt[currentGroup][key]      = ntPremiums;
+      out.tobacco[currentGroup][key] = tbPremiums;
+      continue;
+    }
+
+    const tier = detectTierFromTitle(cell0);
+    if (tier) {
+      currentGroup = (tier === 'employee' || tier === 'employee_children')
+        ? 'employee_group'
+        : 'family_group';
+      console.log('[parseCITab] → group "' + currentGroup + '" via detectTierFromTitle:', tier, '|', cell0);
+    } else if (/spouse|family/i.test(lower)) {
+      currentGroup = 'family_group';
+      console.log('[parseCITab] → family_group via keyword fallback:', cell0);
+    } else if (/\bemployee\b/i.test(lower) && !/spouse|family/i.test(lower)) {
+      currentGroup = 'employee_group';
+      console.log('[parseCITab] → employee_group via keyword fallback:', cell0);
+    }
+  }
+
+  const empCount = Object.keys(out.nt.employee_group).length;
+  const famCount = Object.keys(out.nt.family_group).length;
+  console.log('[parseCITab] employee_group:', empCount, 'age bands | family_group:', famCount, 'age bands');
+
+  return empCount > 0 ? out : null;
+}
+    function parseDisabilityTab(csv) {
+      const rows = parseCSV(csv);
+      console.log('[parseDisabilityTab] first 3 rows:', JSON.stringify(rows.slice(0,3)));
+
+      const normalizeAge = s => s.trim().replace(/\s*[-–]\s*/g, '-').replace(/\s+/g, '');
+      const isAgeBandRow = s => /^\d{2,3}\s*[-–]\s*\d{2,3}$/.test(s) || /^\d{2,3}\+$/.test(s);
+
+      const PERIODS = ['13wk','26wk','52wk'];
+      const out = { '13wk': {}, '26wk': {}, '52wk': {} };
+      let currentPeriod = '13wk';
+
+      for (const row of rows) {
+        const cell0 = (row[0] || '').trim();
+        const fullRow = row.map(c => (c || '').toLowerCase()).join(' ');
+
+        if (!isAgeBandRow(cell0)) {
+          const pipe = parsePipeTitle(cell0);
+          if (pipe && pipe[0]) {
+            const seg0 = pipe[0].toLowerCase();
+            if (seg0.includes('disability') && /\b13\b/.test(seg0) && /week/.test(seg0)) { currentPeriod = '13wk'; continue; }
+            if (seg0.includes('disability') && /\b26\b/.test(seg0) && /week/.test(seg0)) { currentPeriod = '26wk'; continue; }
+            if (seg0.includes('disability') && /\b52\b/.test(seg0) && /week/.test(seg0)) { currentPeriod = '52wk'; continue; }
+          }
+          if (/\b13\b/.test(fullRow) && /week/.test(fullRow)) { currentPeriod = '13wk'; continue; }
+          if (/\b26\b/.test(fullRow) && /week/.test(fullRow)) { currentPeriod = '26wk'; continue; }
+          if (/\b52\b/.test(fullRow) && /week/.test(fullRow)) { currentPeriod = '52wk'; continue; }
+        }
+
+        if (!isAgeBandRow(cell0)) {
+          const hasWk = /\/wk|\/week|weekly benefit/i.test(fullRow);
+          if (hasWk || (cell0.toLowerCase().includes('age') && row.slice(1).some(v => {
+            const n = parseInt(String(v).replace(/[$,\s"'\/wk]/g, ''));
+            return !isNaN(n) && n >= 50 && n <= 5000;
+          }))) {
+            const amounts = row.slice(1)
+              .map(v => parseInt(String(v).replace(/[$,\s"']/g, '').replace(/\/wk.*$/i, '').replace(/\/week.*$/i, '')))
+              .filter(v => !isNaN(v) && v >= 50 && v <= 5000);
+            if (amounts.length > 0) {
+              out[currentPeriod]._amounts = amounts;
+              console.log('[parseDisabilityTab]', currentPeriod, 'amounts header:', amounts);
+            }
+            continue;
+          }
+        }
+
+        if (!cell0) continue;
+        if (/issue age|\/wk|\/week|weekly benefit|benefit amount/i.test(fullRow) && !isAgeBandRow(cell0)) continue;
+
+        if (isAgeBandRow(cell0)) {
+          const normalAge = normalizeAge(cell0);
+          const vals = row.slice(1).map(v => cleanNum(v)).filter(v => !isNaN(v));
+          if (vals.length > 0) {
+            out[currentPeriod][normalAge] = vals;
+          }
+        }
+      }
+
+      const result = {};
+      PERIODS.forEach(p => {
+        const ageBandKeys = Object.keys(out[p]).filter(k => !k.startsWith('_'));
+        if (ageBandKeys.length > 0) {
+          result[p] = out[p];
+          if (!result[p]._amounts) {
+            const maxLen = Math.max(...ageBandKeys.map(k => out[p][k].length));
+            result[p]._amounts = DISABILITY_WEEKLY_OPTIONS.slice(0, maxLen);
+          }
+        }
+      });
+      console.log('[parseDisabilityTab] periods found:', Object.keys(result));
+      return Object.keys(result).length > 0 ? result : null;
+    }
+
+    function parseTermTab(csv) {
+      const isAgeBand = s => /^(under\s*\d+|\d{2,3}\s*[-–]\s*\d{2,3}|\d{2,3}\+)$/i.test(s.trim());
+      const rows = parseCSV(csv);
+      console.log('[parseTermTab] first 3 rows:', JSON.stringify(rows.slice(0,3)));
+      const empty = () => ({ employee:[], employee_spouse:[], employee_children:[], family:[] });
+      const out = { benefitAmounts: [], nt: empty(), tobacco: empty() };
+
+      let tobaccoStartCol = -1;
+      for (const row of rows) {
+        const tCol = findTobaccoColInRow(row);
+        if (tCol >= 0) { tobaccoStartCol = tCol; break; }
+      }
+      console.log('[parseTermTab] tobaccoStartCol:', tobaccoStartCol);
+
+      for (const row of rows) {
+        const cell0 = (row[0] || '').trim().toLowerCase();
+        if (!cell0.includes('age')) continue;
+        const candidates = [];
+        const limit = tobaccoStartCol > 0 ? tobaccoStartCol : row.length;
+        for (let i = 1; i < limit; i++) {
+          const n = cleanNum(row[i]);
+          if (!isNaN(n) && n >= 1000 && n % 1000 === 0) {
+            if (tobaccoStartCol < 0 && candidates.includes(n)) break;
+            if (!candidates.includes(n)) candidates.push(n);
+          }
+        }
+        if (candidates.length >= 2) {
+          out.benefitAmounts = candidates;
+          break;
+        }
+      }
+      if (out.benefitAmounts.length === 0) {
+        out.benefitAmounts = [25000, 50000, 75000, 100000, 125000, 150000];
+      }
+      const numB = out.benefitAmounts.length;
+
+      let currentTier = 'employee';
+      for (const row of rows) {
+        const cell0 = (row[0] || '').trim();
+        if (!cell0) continue;
+        const lower = cell0.toLowerCase();
+        if (lower.includes('employee age') || lower.includes('issue age') ||
+            lower.includes('emp. benefit') || lower.includes('benefit amount') ||
+            lower.includes('$25') || lower.includes('25,000')) continue;
+        if (isAgeBand(cell0)) {
+          const ntRates = [];
+          const tbRates = [];
+          for (let i = 0; i < numB; i++) {
+            const nt = cleanNum(row[1 + i]);
+            ntRates.push(isNaN(nt) ? 0 : nt);
+            if (tobaccoStartCol >= 0) {
+              const tb = cleanNum(row[tobaccoStartCol + 1 + i]);
+              tbRates.push(isNaN(tb) ? 0 : tb);
+            } else {
+              tbRates.push(0);
+            }
+          }
+          out.nt[currentTier].push(ntRates);
+          out.tobacco[currentTier].push(tbRates);
+        } else {
+          const tier = detectTierFromTitle(cell0);
+          if (tier) {
+            currentTier = tier;
+          }
+        }
+      }
+      const hasData = Object.values(out.nt).some(arr => arr.length > 0);
+      return hasData ? out : null;
+    }
+
+    function parseWholeLifeTab(csv) {
+      function parseCSV(text) {
+        return text.split(/\r?\n/).map(line => {
+          const cells = [];
+          let cur = '', inQuote = false;
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+              inQuote = !inQuote;
+            } else if (ch === ',' && !inQuote) {
+              cells.push(cur.trim());
+              cur = '';
+            } else {
+              cur += ch;
+            }
+          }
+          cells.push(cur.trim());
+          return cells;
+        }).filter(r => r.some(c => c !== ''));
+      }
+
+      const safe = v => parseFloat(String(v || '').replace(/[$,"\s]/g, ''));
+      const rows = parseCSV(csv);
+      const out = { nt: {}, tobacco: {}, benefitAmounts: [], maxBenefit: null };
+
+      let tobaccoStartCol = -1;
+      for (const row of rows) {
+        for (let i = 1; i < row.length; i++) {
+          const cell = (row[i] || '').trim();
+          if (/tobacc?o+/i.test(cell) && !/non[-\s]?tobacc?o+/i.test(cell)) {
+            tobaccoStartCol = i;
+            break;
+          }
+        }
+        if (tobaccoStartCol >= 0) break;
+      }
+
+      for (const row of rows) {
+        const ageInt = parseInt((row[0] || '').trim());
+        if (!isNaN(ageInt) && ageInt >= 10 && ageInt <= 100) continue;
+        const limit = tobaccoStartCol > 0 ? tobaccoStartCol : row.length;
+        const amounts = [];
+        for (let i = 1; i < limit; i++) {
+          const n = safe(row[i]);
+          if (!isNaN(n) && n >= 1000 && n % 1000 === 0 && !amounts.includes(n)) amounts.push(n);
+        }
+        if (amounts.length >= 2) {
+          out.benefitAmounts = amounts;
+          out.maxBenefit = Math.max(...amounts);
+          break;
+        }
+      }
+
+      if (out.benefitAmounts.length === 0) {
+        console.warn('[parseWholeLifeTab] could not detect benefit amounts — returning null');
+        return null;
+      }
+
+      const numB = out.benefitAmounts.length;
+      for (const row of rows) {
+        const ageInt = parseInt((row[0] || '').trim());
+        if (isNaN(ageInt) || ageInt < 10 || ageInt > 100) continue;
+        const a = String(ageInt);
+        const ntPremiums = {};
+        const tbPremiums = {};
+
+        for (let i = 0; i < numB; i++) {
+          const benefit = out.benefitAmounts[i];
+          const ntRate = safe(row[1 + i]);
+          ntPremiums[benefit] = isNaN(ntRate) ? 0 : ntRate;
+
+          if (tobaccoStartCol >= 0) {
+            const tbRate = safe(row[tobaccoStartCol + 1 + i]);
+            tbPremiums[benefit] = isNaN(tbRate) ? 0 : tbRate;
+          } else {
+            tbPremiums[benefit] = ntPremiums[benefit];
+          }
+        }
+
+        out.nt[a]      = ntPremiums;
+        out.tobacco[a] = tbPremiums;
+      }
+
+      const count = Object.keys(out.nt).length;
+      return count > 0 ? out : null;
+    }
+
+    // ─── Load company list from master directory sheet ──
+    async function fetchDirectory() {
+      const sel = document.getElementById('companySelect');
+      if (sel) { sel.innerHTML = '<option value="">Loading companies…</option>'; sel.disabled = true; }
+
+      const applyList = (map) => {
+        COMPANIES = map;
+        if (!sel) return;
+        const opts = ['<option value="">— Select your company —</option>',
+          ...Object.keys(map).map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`)
+        ].join('');
+        sel.innerHTML = opts;
+        sel.disabled  = false;
+        if (S.company && COMPANIES[S.company]) sel.value = S.company;
+      };
+
+      try {
+        if (!DIRECTORY_URL || DIRECTORY_URL.startsWith('YOUR_')) {
+          throw new Error('Directory URL not configured — using fallback list');
+        }
+
+        const resp = await fetch(DIRECTORY_URL);
+        if (!resp.ok) throw new Error(`Directory fetch failed: HTTP ${resp.status}`);
+        const csv = await resp.text();
+        if (!csv || !csv.trim()) throw new Error('Directory sheet returned empty response');
+
+        const rows = parseCSV(csv);
+        if (rows.length < 2) throw new Error('Directory sheet appears empty');
+
+        // Map column names from header row
+        const headers = rows[0].map(h => (h || '').trim().toLowerCase());
+        const col = name => headers.findIndex(h => h === name.toLowerCase());
+
+        const iName      = col('company name');
+        const iRateTable = col('rate table id');
+        const iStatus    = col('status');
+
+        if (iName < 0)      throw new Error('"Company Name" column not found in directory');
+        if (iRateTable < 0) throw new Error('"Rate Table ID" column not found in directory');
+
+        const built = {};
+        for (let i = 1; i < rows.length; i++) {
+          const row    = rows[i];
+          const name   = (row[iName]      || '').trim();
+          const rateId = (row[iRateTable] || '').trim();
+          const status = iStatus >= 0 ? (row[iStatus] || '').trim().toLowerCase() : 'active';
+          if (!name || !rateId) continue;
+          if (iStatus >= 0 && status !== 'active') continue;
+          built[name] = { sheetId: rateId, wholeEmpMaxBenefit: WHOLE_EMP_MAX_BENEFIT_DEFAULT };
+        }
+
+        if (Object.keys(built).length === 0) throw new Error('No active companies found in directory');
+
+        console.log('[Directory] Loaded', Object.keys(built).length, 'companies');
+        applyList(built);
+
+      } catch (err) {
+        console.warn('[Directory]', err.message, '— using fallback list');
+        applyList({ ...FALLBACK_COMPANIES });
+      }
+    }
+
+    // ─── Load all rates for selected company ────────
+    async function loadRatesForCompany(companyName) {
+      const cfg = COMPANIES[companyName];
+      if (!cfg) { console.warn('Unknown company:', companyName); return false; }
+      const { sheetId } = cfg;
+      if (!sheetId || sheetId.startsWith('YOUR_')) {
+        console.warn('Sheet ID not configured — using fallback rates for', companyName);
+        LOADED_RATES = null; RATES_SOURCE = 'fallback';
+        return false;
+      }
+      try {
+        const results = await Promise.allSettled([
+          fetchSheetTabWithFallbacks(sheetId, 'Accident',             'ACC'),
+          fetchSheetTabWithFallbacks(sheetId, 'Hospital Indemnity',   'Hospital'),
+          fetchSheetTabWithFallbacks(sheetId, 'Critical Illness',     'CI'),
+          fetchSheetTabWithFallbacks(sheetId, 'Short Term Disability','STD'),
+          fetchSheetTabWithFallbacks(sheetId, '10 Year',              'Term 10'),
+          fetchSheetTabWithFallbacks(sheetId, '20 Year',              'Term 20'),
+          fetchSheetTabWithFallbacks(sheetId, 'To Age 70',            'Age 70'),
+          fetchSheetTabWithFallbacks(sheetId, 'Whole Life',           'Whole Life Employee'),
+        ]);
+        const ok = (i) => results[i].status === 'fulfilled' ? results[i].value : null;
+        const tryParse = (csv, parser, label) => {
+          if (!csv) return null;
+          const parsed = parser(csv);
+          if (!parsed) {
+            const preview = csv.split('\n').slice(0, 6).join('\n');
+            window._debugRates = window._debugRates || {};
+            window._debugRates[label] = { status: 'parse_failed', preview };
+            console.warn('[' + label + '] parser returned null. Raw CSV preview:\n' + preview);
+          }
+          return parsed;
+        };
+        LOADED_RATES = {
+          accident:   tryParse(ok(0), parsePlanTab,       'Accident'),
+          hospital:   tryParse(ok(1), parsePlanTab,       'Hospital Indemnity'),
+          ci:         tryParse(ok(2), parseCITab,         'Critical Illness'),
+          disability: tryParse(ok(3), parseDisabilityTab, 'Short Term Disability'),
+          term_10:    tryParse(ok(4), parseTermTab,       '10 Year'),
+          term_20:    tryParse(ok(5), parseTermTab,       '20 Year'),
+          term_to_70: tryParse(ok(6), parseTermTab,       'To Age 70'),
+          wholeEmp:   tryParse(ok(7), parseWholeLifeTab,  'Whole Life'),
+          // NOTE: wholeSpouse intentionally omitted — spouse rates are derived
+          // from the same Whole Life tab, keyed by spouse age (max $25,000).
+        };
+        Object.keys(LOADED_RATES).forEach(k => { if (!LOADED_RATES[k]) delete LOADED_RATES[k]; });
+        if (Object.keys(LOADED_RATES).length === 0) {
+          console.warn('All sheet tabs failed to load — falling back to embedded rates');
+          LOADED_RATES = null; RATES_SOURCE = 'fallback';
+        }
+        window._ratesLoadedKeys = Object.keys(LOADED_RATES);
+        RATES_SOURCE = window._ratesLoadedKeys.length > 0 ? 'sheet' : 'fallback';
+        console.log('Rates source:', RATES_SOURCE, '| Keys:', Object.keys(LOADED_RATES).join(', '));
+
+        const availPeriods = getAvailableDisabilityPeriods();
+        if (availPeriods.length > 0 && !availPeriods.includes(S.benefits.disability.period)) {
+          S.benefits.disability.period = availPeriods[0];
+        }
+        return true;
+      } catch (err) {
+        console.error('Failed to load rates:', err);
+        LOADED_RATES = null; RATES_SOURCE = 'fallback';
+        return false;
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // FALLBACK RATE TABLES
+    // ─────────────────────────────────────────────
+    const FALLBACK_ACCIDENT = {
+      plan1: { employee:12.72, employee_spouse:22.12, employee_children:27.72, family:40.64 },
+      plan2: { employee:22.24, employee_spouse:38.52, employee_children:45.32, family:67.04 }
+    };
+    const FALLBACK_HOSPITAL = {
+      plan1: { employee:21.91, employee_spouse:44.57, employee_children:40.62, family:63.28 },
+      plan2: { employee:34.56, employee_spouse:70.32, employee_children:65.99, family:101.73 }
+    };
+    const FALLBACK_CI = {
+      employee_group: {
+        "18-24":{5000:3.04,10000:4.99,15000:6.94,20000:8.88,25000:10.83,30000:12.77},
+        "25-29":{5000:4.02,10000:6.63,15000:9.25,20000:11.86,25000:14.47,30000:17.09},
+        "30-34":{5000:5.12,10000:8.61,15000:12.11,20000:15.59,25000:19.08,30000:22.57},
+        "35-39":{5000:7.12,10000:12.07,15000:16.99,20000:21.94,25000:26.86,30000:31.80},
+        "40-44":{5000:9.37,10000:15.95,15000:22.53,20000:29.12,25000:35.70,30000:42.27},
+        "45-49":{5000:12.32,10000:21.52,15000:30.72,20000:39.94,25000:49.14,30000:58.34},
+        "50-54":{5000:16.54,10000:29.58,15000:42.62,20000:55.67,25000:68.70,30000:81.74},
+        "55-59":{5000:22.04,10000:40.40,15000:58.76,20000:77.11,25000:95.47,30000:113.82},
+        "60-64":{5000:26.94,10000:50.54,15000:74.11,20000:97.69,25000:121.28,30000:144.85},
+        "65-69":{5000:35.12,10000:67.05,15000:98.98,20000:130.91,25000:162.84,30000:194.76},
+        "70+":  {5000:56.66,10000:109.90,15000:163.15,20000:216.39,25000:269.63,30000:322.87}
+      },
+      family_group: {
+        "18-24":{5000:4.96,10000:7.84,15000:10.71,20000:13.58,25000:16.45,30000:19.32},
+        "25-29":{5000:6.45,10000:10.30,15000:14.13,20000:17.97,25000:21.81,30000:25.65},
+        "30-34":{5000:8.23,10000:13.38,15000:18.54,20000:23.68,25000:28.85,30000:34.00},
+        "35-39":{5000:11.51,10000:18.84,15000:26.15,20000:33.46,25000:40.78,30000:48.11},
+        "40-44":{5000:15.18,10000:24.95,15000:34.75,20000:44.55,25000:54.33,30000:64.12},
+        "45-49":{5000:19.84,10000:33.57,15000:47.31,20000:61.05,25000:74.79,30000:88.53},
+        "50-54":{5000:26.38,10000:45.90,15000:65.42,20000:84.93,25000:104.44,30000:123.95},
+        "55-59":{5000:34.83,10000:62.33,15000:89.84,20000:117.35,25000:144.86,30000:172.37},
+        "60-64":{5000:42.07,10000:77.43,15000:112.78,20000:148.14,25000:183.50,30000:218.86},
+        "65-69":{5000:54.26,10000:102.16,15000:150.05,20000:197.94,25000:245.84,30000:293.73},
+        "70+":  {5000:86.69,10000:166.56,15000:246.42,20000:326.28,25000:406.14,30000:486.01}
+      }
+    };
+    const FALLBACK_DISABILITY = {
+      '13wk': {
+        '18-49':[11.25,14.06,16.86,19.69,22.48,25.31,28.12,30.94,33.73,36.56,39.38,42.17,45.00,47.81,50.60,53.43,56.24,59.04,61.86,64.67,67.47,70.30,73.12,75.94,78.73,81.55,84.37,87.17,89.98,92.80,95.60,98.41,101.24,104.03,106.85,109.67,112.47],
+        '50-59':[13.26,16.59,19.90,23.21,26.52,29.85,33.17,36.48,39.79,43.11,46.43,49.75,53.07,56.38,59.70,63.02,66.32,69.65,72.98,76.28,79.59,82.92,86.23,89.54,92.87,96.18,99.50,102.82,106.13,109.44,112.78,116.10,119.39,122.72,126.03,129.34,132.67],
+        '60-69':[16.59,20.72,24.88,29.02,33.17,37.31,41.47,45.61,49.72,53.87,58.02,62.16,66.31,70.45,74.60,78.75,82.90,87.05,91.19,95.33,99.48,103.62,107.78,111.91,116.07,120.21,124.37,128.51,132.66,136.80,140.95,145.09,149.19,153.35,157.49,161.65,165.79],
+        '70+': [20.80,25.99,31.19,36.39,41.59,46.78,51.99,57.19,62.36,67.56,72.77,77.96,83.15,88.36,93.56,98.75,103.95,109.16,114.36,119.55,124.74,129.95,135.14,140.34,145.55,150.74,155.93,161.13,166.34,171.53,176.72,181.92,187.10,192.30,197.50,202.70,207.90]
+      },
+      '26wk': {
+        '18-49':[16.17,20.22,24.26,28.31,32.35,36.40,40.45,44.48,48.52,52.58,56.62,60.67,64.70,68.76,72.79,76.83,80.88,84.93,88.99,93.03,97.04,101.09,105.14,109.19,113.25,117.29,121.33,125.36,129.42,133.45,137.50,141.54,145.59,149.65,153.67,157.73,161.76],
+        '50-59':[20.78,25.97,31.15,36.35,41.53,46.71,51.91,57.11,62.29,67.48,72.68,77.87,83.05,88.25,93.45,98.63,103.83,109.03,114.23,119.41,124.57,129.77,134.95,140.15,145.35,150.55,155.73,160.93,166.13,171.31,176.50,181.70,186.88,192.08,197.28,202.47,207.63],
+        '60-69':[27.07,33.83,40.61,47.37,54.15,60.91,67.69,74.45,81.20,88.00,94.76,101.51,108.29,115.06,121.82,128.61,135.37,142.13,148.90,155.68,162.43,169.19,175.98,182.73,189.51,196.27,203.06,209.82,216.59,223.36,230.12,236.88,243.64,250.43,257.19,263.96,270.73],
+        '70+': [35.14,43.93,52.71,61.51,70.28,79.07,87.87,96.64,105.42,114.23,123.00,131.79,140.58,149.36,158.15,166.93,175.70,184.52,193.29,202.08,210.86,219.65,228.44,237.22,246.01,254.80,263.57,272.38,281.15,289.94,298.73,307.50,316.29,325.09,333.86,342.67,351.45]
+      }
+    };
+    const FALLBACK_TERM = {
+      term_10: {
+        nt: {
+          employee:          [3.23,3.52,5.17,7.10,8.48,11.06,16.19,24.04,37.62,61.31],
+          employee_spouse:   [4.53,4.91,7.18,9.95,12.07,15.89,23.36,34.96,54.89,89.08],
+          employee_children: [4.26,4.55,6.20,8.13,9.51,12.09,17.22,25.07,38.65,62.34],
+          family:            [5.56,5.94,8.21,10.98,13.10,16.92,24.39,35.99,55.92,90.11]
+        },
+        tobacco: {
+          employee:          [3.48,4.17,6.29,9.83,14.12,20.77,32.23,51.64,82.48,127.83],
+          employee_spouse:   [4.78,5.56,8.30,12.68,17.71,25.60,39.40,62.56,99.75,155.60],
+          employee_children: [4.51,5.20,7.32,10.86,15.15,21.80,33.26,52.67,83.51,128.86],
+          family:            [5.81,6.59,9.33,13.71,18.74,26.63,40.43,63.59,100.78,156.63]
+        }
+      },
+      term_20: {
+        nt: {
+          employee:          [3.27,3.77,5.29,7.21,9.02,12.15,18.08,27.46,0,0],
+          employee_spouse:   [4.58,5.28,7.40,10.16,12.88,17.51,26.14,39.81,0,0],
+          employee_children: [4.30,4.80,6.32,8.24,10.05,13.18,19.11,28.49,0,0],
+          family:            [5.61,6.31,8.43,11.19,13.91,18.54,27.17,40.84,0,0]
+        },
+        tobacco: {
+          employee:          [3.62,4.69,6.98,10.73,15.73,23.58,36.58,57.39,0,0],
+          employee_spouse:   [4.93,6.20,9.09,13.68,19.59,28.94,44.64,69.74,0,0],
+          employee_children: [4.65,5.72,8.01,11.76,16.76,24.61,37.61,58.42,0,0],
+          family:            [5.96,7.23,10.12,14.71,20.62,29.97,45.67,70.77,0,0]
+        }
+      },
+      term_to_70: {
+        nt: {
+          employee:          [3.50,4.08,5.67,7.67,9.50,12.40,17.40,24.50,0,0],
+          employee_spouse:   [4.81,5.59,7.78,10.62,13.36,17.76,25.46,36.85,0,0],
+          employee_children: [4.53,5.11,6.70,8.70,10.53,13.43,18.43,25.53,0,0],
+          family:            [5.84,6.62,8.81,11.65,14.39,18.79,26.49,37.88,0,0]
+        },
+        tobacco: {
+          employee:          [4.12,5.42,7.94,11.87,16.85,24.10,35.27,52.69,0,0],
+          employee_spouse:   [5.43,6.93,10.05,14.82,20.71,29.46,43.33,65.04,0,0],
+          employee_children: [5.15,6.45,8.97,12.90,17.88,25.13,36.30,53.72,0,0],
+          family:            [6.46,7.96,11.08,15.85,21.74,30.49,44.36,66.07,0,0]
+        }
+      }
+    };
+    const DISABILITY_WEEKLY_OPTIONS = [100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500,525,550,575,600,625,650,675,700,725,750,775,800,825,850,875,900,925,950,975,1000];
+    const AGE_BANDS_TERM = [
+      {label:"Under 26",min:0,max:25},{label:"26–30",min:26,max:30},{label:"31–35",min:31,max:35},
+      {label:"36–40",min:36,max:40},{label:"41–45",min:41,max:45},{label:"46–50",min:46,max:50},
+      {label:"51–55",min:51,max:55},{label:"56–60",min:56,max:60},{label:"61–65",min:61,max:65},
+      {label:"66–70",min:66,max:70}
+    ];
+
+    // ── Whole Life Employee fallback table (per $10,000 benefit) ──
+    const WHOLE_EMP_10K_NT = {"18":5.38,"19":5.55,"20":5.76,"21":5.99,"22":6.25,"23":6.49,"24":6.74,"25":7.02,"26":7.31,"27":7.62,"28":7.93,"29":8.27,"30":8.62,"31":9.00,"32":9.41,"33":9.84,"34":10.32,"35":10.81,"36":11.32,"37":11.87,"38":12.43,"39":13.02,"40":13.62,"41":14.26,"42":14.92,"43":15.58,"44":16.27,"45":16.99,"46":17.77,"47":18.65,"48":19.61,"49":20.63,"50":21.73,"51":22.93,"52":24.22,"53":25.59,"54":27.05,"55":28.59,"56":30.27,"57":32.08,"58":34.02,"59":36.08,"60":38.27,"61":40.62,"62":43.15,"63":45.74,"64":48.37,"65":51.23,"66":54.51,"67":58.39,"68":62.82,"69":67.66,"70":73.02,"71":78.96,"72":85.56,"73":92.44,"74":99.53,"75":107.43,"76":116.73,"77":128.02,"78":140.84,"79":154.83,"80":170.63,"81":188.92,"82":210.37,"83":234.34,"84":260.39,"85":289.47,"86":322.53,"87":360.50,"88":405.13,"89":455.74,"90":509.80};
+    const WHOLE_EMP_10K_TB = Object.fromEntries(Object.entries(WHOLE_EMP_10K_NT).map(([k,v])=>[k, +(v*1.25).toFixed(2)]));
+
+    // ─────────────────────────────────────────────
+    // SPOUSE WHOLE LIFE HELPERS
+    // ─────────────────────────────────────────────
+
+    /**
+     * Returns the effective max benefit for the spouse's Whole Life policy.
+     * Rules:
+     *   1. Hard cap of $25,000
+     *   2. Cannot exceed the employee's elected WL benefit amount
+     *   3. Benefit amounts must exist in the loaded (or fallback) rate table
+     */
+    function getSpouseWLMaxBenefit() {
+      const empBenefit = S.benefits.wholeEmp.on ? S.benefits.wholeEmp.benefit : WHOLE_SPOUSE_MAX_BENEFIT;
+      return Math.min(WHOLE_SPOUSE_MAX_BENEFIT, empBenefit);
+    }
+
+    /**
+     * Build the list of valid benefit amount steps for the spouse WL dropdown.
+     * Uses the same benefit amounts as the employee WL table, filtered to ≤ spouseMax.
+     */
+    function getSpouseWLBenefitSteps() {
+      const spouseMax = getSpouseWLMaxBenefit();
+      let steps;
+
+      // If we have loaded rates, use those benefit amounts
+      if (LOADED_RATES && LOADED_RATES.wholeEmp && Array.isArray(LOADED_RATES.wholeEmp.benefitAmounts) && LOADED_RATES.wholeEmp.benefitAmounts.length > 0) {
+        steps = LOADED_RATES.wholeEmp.benefitAmounts.slice().sort((a, b) => a - b);
+      } else {
+        // Fallback: build from the employee fallback table steps (multiples of $5k up to $75k)
+        steps = [];
+        for (let v = 5000; v <= 75000; v += 5000) steps.push(v);
+      }
+
+      // Filter to only amounts ≤ spouse max and ensure we have at least one option
+      const filtered = steps.filter(v => v <= spouseMax);
+      if (filtered.length === 0 && steps.length > 0) filtered.push(steps[0]);
+      return filtered;
+    }
+
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
+    let currentStep = 1;
+    let S = {
+      firstName:'', lastName:'', email:'', phone:'', empAge:35,
+      allotment:0, contactId:'', company:'', tobacco:false,
+      benefits: {
+        accident:    { on:true,  plan:'plan1', tier:'employee' },
+        critical:    { on:true,  benefit:25000, tier:'employee' },
+        hospital:    { on:true,  plan:'plan1', tier:'employee' },
+        disability:  { on:true,  weekly:500, period:'26wk' },
+        term:        { on:true,  termType:'term_to_70', benefit:150000, tier:'employee' },
+        wholeEmp:    { on:true,  benefit:75000, childRider:0 },
+        wholeSpouse: { on:false, benefit:25000, spouseAge:35 }
+      },
+      spouseFirstName:'', spouseLastName:'', spouseDOB:'', spouseAge:35,
+      children:[],
+      beneficiaries:[{ name:'', relationship:'', pct:100 }]
+    };
+
+    // ─────────────────────────────────────────────
+    // DISPLAY CONSTANTS
+    // ─────────────────────────────────────────────
+    const TIER_LABELS = {
+      employee:'Employee Only', employee_spouse:'Employee + Spouse',
+      employee_children:'Employee + Children', family:'Family'
+    };
+    const TIER_SHORT  = { employee:'Just Me', employee_spouse:'+ Spouse', employee_children:'+ Kids', family:'Family' };
+    const TIER_ICONS  = { employee:'👤', employee_spouse:'👫', employee_children:'👨‍👧', family:'👨‍👩‍👧‍👦' };
+    const ALL_TIERS   = ['employee','employee_spouse','employee_children','family'];
+    const TIERED_KEYS = ['accident','critical','hospital','term'];
+    const CARDS_META  = {
+      accident:    { title:'Accident Expense',        icon:'🩹', sub:'Covers unexpected accidents & injuries' },
+      critical:    { title:'Critical Illness',        icon:'❤️‍🩹', sub:'Lump-sum benefit for serious diagnoses' },
+      hospital:    { title:'Hospital Indemnity',      icon:'🏥', sub:'Daily cash benefit during hospital stays' },
+      disability:  { title:'Short-Term Disability',  icon:'🛡️', sub:'Weekly income replacement when you can\'t work' },
+      term:        { title:'Term Life',               icon:'🌿', sub:'Affordable coverage for a defined term' },
+      wholeEmp:    { title:'Whole Life — You',        icon:'🍃', sub:'Permanent employee coverage that builds cash value' },
+      wholeSpouse: { title:'Whole Life — Spouse',    icon:'💚', sub:'Permanent coverage for your spouse · subject to underwriting' }
+    };
+    const fmt   = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+    const money = n => Math.round((n + Number.EPSILON)*100)/100;
+    const escHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    // ─────────────────────────────────────────────
+    // DISABILITY PERIOD HELPERS
+    // ─────────────────────────────────────────────
+    function getAvailableDisabilityPeriods() {
+      const disTbl = (LOADED_RATES && LOADED_RATES.disability) ? LOADED_RATES.disability : FALLBACK_DISABILITY;
+      const order = ['13wk','26wk','52wk'];
+      return order.filter(p => {
+        if (!disTbl[p]) return false;
+        return Object.keys(disTbl[p]).some(k => !k.startsWith('_') && Array.isArray(disTbl[p][k]) && disTbl[p][k].length > 0);
+      });
+    }
+    function getDefaultDisabilityPeriod() {
+      const avail = getAvailableDisabilityPeriods();
+      return avail[0] || '26wk';
+    }
+    function getDisabilityAmountsForPeriod(period) {
+      if (LOADED_RATES && LOADED_RATES.disability && LOADED_RATES.disability[period] && LOADED_RATES.disability[period]._amounts) {
+        return LOADED_RATES.disability[period]._amounts;
+      }
+      return DISABILITY_WEEKLY_OPTIONS;
+    }
+
+    // ─────────────────────────────────────────────
+    // BAND LOOKUPS
+    // ─────────────────────────────────────────────
+    function termBand(age)  { return AGE_BANDS_TERM.findIndex(b => age >= b.min && age <= b.max); }
+    function ciBand(age)    {
+      if(age>=18&&age<=24)return"18-24"; if(age<=29)return"25-29"; if(age<=34)return"30-34";
+      if(age<=39)return"35-39"; if(age<=44)return"40-44"; if(age<=49)return"45-49";
+      if(age<=54)return"50-54"; if(age<=59)return"55-59"; if(age<=64)return"60-64";
+      if(age<=69)return"65-69"; if(age>=70)return"70+"; return null;
+    }
+    function disabilityBand(age) {
+      if(age>=18&&age<=49)return"18-49"; if(age<=59)return"50-59";
+      if(age<=69)return"60-69"; if(age>=70)return"70+"; return null;
+    }
+    function findAgeBandInTable(age, bandKeys) {
+      for (const band of bandKeys) {
+        const norm = band.trim().replace(/\s*[-–]\s*/g, '-');
+        if (norm.endsWith('+')) {
+          if (age >= parseInt(norm)) return band;
+        } else {
+          const [lo, hi] = norm.split('-').map(Number);
+          if (!isNaN(lo) && !isNaN(hi) && age >= lo && age <= hi) return band;
+        }
+      }
+      return null;
+    }
+
+    // ─────────────────────────────────────────────
+    // DEPENDENT PRESENCE CHECKS
+    // ─────────────────────────────────────────────
+    function needsSpouse() {
+      return TIERED_KEYS.some(k => S.benefits[k].on && ['employee_spouse','family'].includes(S.benefits[k].tier))
+          || S.benefits.wholeSpouse.on;
+    }
+    function needsKids() {
+      return TIERED_KEYS.some(k => S.benefits[k].on && ['employee_children','family'].includes(S.benefits[k].tier))
+          || (S.benefits.wholeEmp.on && S.benefits.wholeEmp.childRider > 0);
+    }
+
+    // ─────────────────────────────────────────────
+    // PREMIUM CALCULATIONS
+    // ─────────────────────────────────────────────
+    function calcPremium(key) {
+      const b   = S.benefits[key];
+      const age = S.empAge;
+      if (!b.on) return { premium:0, available:true, note:'' };
+      if (key === 'accident') {
+        const tbl = (LOADED_RATES && LOADED_RATES.accident) ? LOADED_RATES.accident : FALLBACK_ACCIDENT;
+        return { premium: tbl[b.plan][b.tier], available:true, note:'' };
+      }
+      if (key === 'hospital') {
+        const tbl = (LOADED_RATES && LOADED_RATES.hospital) ? LOADED_RATES.hospital : FALLBACK_HOSPITAL;
+        return { premium: tbl[b.plan][b.tier], available:true, note:'' };
+      }
+      if (key === 'critical') {
+        const grp = ['employee', 'employee_children'].includes(b.tier) ? 'employee_group' : 'family_group';
+        const ciTbl = (LOADED_RATES && LOADED_RATES.ci) ? LOADED_RATES.ci : FALLBACK_CI;
+        const rateSource = S.tobacco ? (ciTbl.tobacco || ciTbl) : (ciTbl.nt || ciTbl);
+        let band = ciBand(age);
+        if (band && rateSource[grp] && !(band in rateSource[grp])) {
+          band = findAgeBandInTable(age, Object.keys(rateSource[grp])) || band;
+        }
+        if (!band || !rateSource[grp]) return { premium: 0, available: false, note: 'Age not eligible for Critical Illness.' };
+        const premium = rateSource[grp][band]?.[b.benefit] || 0;
+        return { premium: money(premium), available: true, note: '' };
+      }
+      if (key === 'disability') {
+        const period = b.period || getDefaultDisabilityPeriod();
+        const disTbl = (LOADED_RATES && LOADED_RATES.disability) ? LOADED_RATES.disability : FALLBACK_DISABILITY;
+        const periodData = disTbl[period];
+        if (!periodData) return { premium:0, available:false, note:'Rates not available for this selection.' };
+        let band = disabilityBand(age);
+        if (!band || !(band in periodData) || band.startsWith('_')) {
+          const dataKeys = Object.keys(periodData).filter(k => !k.startsWith('_'));
+          band = findAgeBandInTable(age, dataKeys) || band;
+        }
+        if (!band || band.startsWith('_')) return { premium:0, available:false, note:'Age not eligible for Disability.' };
+        const agePremiums = periodData[band];
+        if (!agePremiums || agePremiums.length === 0) return { premium:0, available:false, note:'Rates not available for this selection.' };
+        const amounts = getDisabilityAmountsForPeriod(period);
+        const wkIdx = amounts.indexOf(b.weekly);
+        const premium = wkIdx >= 0 ? agePremiums[wkIdx] : 0;
+        return { premium: money(premium), available:true, note:'' };
+      }
+      if (key === 'term') {
+        const i = termBand(age);
+        if (i < 0) return { premium:0, available:false, note:'Age outside supported range (under 70).' };
+        const termKey = b.termType;
+        const tblSrc  = (LOADED_RATES && LOADED_RATES[termKey]) ? LOADED_RATES[termKey] : FALLBACK_TERM[termKey];
+        const rates   = S.tobacco ? tblSrc.tobacco : tblSrc.nt;
+        const ageRates = rates?.[b.tier]?.[i];
+        if (ageRates === undefined || ageRates === null) {
+          return { premium:0, available:false, note:'This term/age/tier combination is not available. Try a different term type.' };
+        }
+        let premium;
+        if (Array.isArray(ageRates)) {
+          const bAmounts = tblSrc.benefitAmounts || [25000, 50000, 75000, 100000, 125000, 150000];
+          const bidx = bAmounts.indexOf(b.benefit);
+          premium = bidx >= 0 ? (ageRates[bidx] || 0) : 0;
+          if (!premium && bAmounts.length > 0) {
+            const nearest = bAmounts.reduce((a, c) => Math.abs(c - b.benefit) < Math.abs(a - b.benefit) ? c : a);
+            const ni = bAmounts.indexOf(nearest);
+            premium = ageRates[ni] ? ageRates[ni] * (b.benefit / nearest) : 0;
+          }
+        } else {
+          premium = ageRates ? ageRates * (b.benefit / 25000) : 0;
+        }
+        if (!premium) return { premium:0, available:false, note:'This term/age/tier combination is not available. Try a different term type.' };
+        return { premium: money(premium), available:true, note:'' };
+      }
+      if (key === 'wholeEmp') {
+        const ageKey = String(age);
+        const wlEmp = LOADED_RATES && LOADED_RATES.wholeEmp;
+        if (wlEmp) {
+          const sideMap = S.tobacco ? wlEmp.tobacco : wlEmp.nt;
+          if (!sideMap || !(ageKey in sideMap))
+            return { premium:0, available:false, note:'Age outside eligible range.' };
+          const rate = sideMap[ageKey][b.benefit];
+          if (!rate) return { premium:0, available:false, note:'Benefit amount not available for this age.' };
+          return { premium: money(rate + b.childRider), available:true, note:'' };
+        }
+        const wlTbl = S.tobacco ? WHOLE_EMP_10K_TB : WHOLE_EMP_10K_NT;
+        if (!(ageKey in wlTbl)) return { premium:0, available:false, note:'Age outside eligible range (18–90).' };
+        const cfg = S.company ? COMPANIES[S.company] : null;
+        const maxB = cfg?.wholeEmpMaxBenefit || (age <= 60 ? 75000 : 50000);
+        const actualBenefit = Math.min(b.benefit, maxB);
+        if (b.benefit !== actualBenefit) S.benefits.wholeEmp.benefit = actualBenefit;
+        return { premium: money(wlTbl[ageKey] * (actualBenefit/10000) + b.childRider), available:true, note:'' };
+      }
+
+      // ─── Whole Life — Spouse ─────────────────────────────────────────
+      // Spouse rates are read from the SAME Whole Life rate table as the employee,
+      // keyed by spouse age. Benefit is capped at $25,000 and cannot exceed the
+      // employee's elected benefit amount. All amounts are subject to underwriting.
+      if (key === 'wholeSpouse') {
+        const spKey = String(b.spouseAge);
+        const spouseMax = getSpouseWLMaxBenefit();
+
+        // Enforce benefit cap silently
+        if (b.benefit > spouseMax) {
+          S.benefits.wholeSpouse.benefit = spouseMax;
+          b.benefit = spouseMax;
+        }
+
+        // Validate spouse age (must be in the WL table range)
+        const spAge = parseInt(spKey);
+        if (isNaN(spAge) || spAge < 18) {
+          return { premium:0, available:false, note:'Please enter a valid spouse age (18 or older).' };
+        }
+
+        // ── Try loaded sheet rates first ──
+        const wlEmp = LOADED_RATES && LOADED_RATES.wholeEmp;
+        if (wlEmp) {
+          const sideMap = S.tobacco ? wlEmp.tobacco : wlEmp.nt;
+          if (!sideMap || !(spKey in sideMap)) {
+            return { premium:0, available:false, note:`Spouse age ${spAge} is outside the eligible Whole Life range.` };
+          }
+          // Find the nearest available benefit amount ≤ spouseMax
+          const avail = Object.keys(sideMap[spKey])
+            .map(Number)
+            .filter(v => v <= spouseMax)
+            .sort((a, c) => a - c);
+          if (avail.length === 0) {
+            return { premium:0, available:false, note:'No eligible benefit amounts for this spouse age.' };
+          }
+          const effectiveBenefit = avail.includes(b.benefit) ? b.benefit : avail.reduce((a, c) => Math.abs(c - b.benefit) < Math.abs(a - b.benefit) ? c : a);
+          const rate = sideMap[spKey][effectiveBenefit];
+          if (!rate) return { premium:0, available:false, note:'Rate not available for this selection.' };
+          return { premium: money(rate), available:true, note:'' };
+        }
+
+        // ── Fallback: use the per-$10k employee table ──
+        const wlTbl = S.tobacco ? WHOLE_EMP_10K_TB : WHOLE_EMP_10K_NT;
+        if (!(spKey in wlTbl)) {
+          return { premium:0, available:false, note:`Spouse age ${spAge} is outside the eligible range (18–90).` };
+        }
+        const effectiveBenefit = Math.min(b.benefit, spouseMax);
+        return { premium: money(wlTbl[spKey] * (effectiveBenefit / 10000)), available:true, note:'' };
+      }
+
+      return { premium:0, available:false, note:'' };
+    }
+
+    function setTobacco(val) {
+      S.tobacco = val;
+      document.getElementById('tobaccoNo').classList.toggle('active', !val);
+      document.getElementById('tobaccoYes').classList.toggle('active', val);
+    }
+    function calcTotal() {
+      return Object.keys(S.benefits).reduce((sum, k) => {
+        const r = calcPremium(k);
+        return sum + (r.available ? r.premium : 0);
+      }, 0);
+    }
+
+    // ─────────────────────────────────────────────
+    // CARD RENDERING
+    // ─────────────────────────────────────────────
+    function renderCardBody(key) {
+      const b   = S.benefits[key];
+      const age = S.empAge;
+      const prem = calcPremium(key);
+      let html = '';
+      if (TIERED_KEYS.includes(key)) {
+        html += `<span class="ew-ptier-label">Who's covered on this policy?</span>
+        <div class="ew-ptier-row">`;
+        ALL_TIERS.forEach(t => {
+          html += `<div class="ew-ptier-chip${b.tier===t?' active':''}"
+            onclick="setBenefitTier('${key}','${t}')" role="button" tabindex="0">
+            ${TIER_ICONS[t]} ${TIER_SHORT[t]}
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      if (key === 'accident' || key === 'hospital') {
+        html += `<div class="ew-plan-row">
+          <div class="ew-plan-chip${b.plan==='plan1'?' active':''}" onclick="setBenefitPlan('${key}','plan1')">Plan 1</div>
+          <div class="ew-plan-chip${b.plan==='plan2'?' active':''}" onclick="setBenefitPlan('${key}','plan2')">Plan 2</div>
+        </div>`;
+      }
+      if (key === 'critical') {
+        const ciLoaded = LOADED_RATES && LOADED_RATES.ci;
+        const ciSrcBadge = ciLoaded
+          ? `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
+          : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`;
+        html += `<div class="ew-card-note" style="margin-top:14px;margin-bottom:10px">Critical Illness coverage pays a lump sum on diagnosis.${ciSrcBadge}</div>`;
+        let ciAmounts = [];
+        if (ciLoaded && Array.isArray(ciLoaded.benefitAmounts) && ciLoaded.benefitAmounts.length > 0) {
+          ciAmounts = ciLoaded.benefitAmounts.slice().sort((a,c)=>a-c);
+        } else if (ciLoaded) {
+          const firstGroup = Object.values(ciLoaded.employee_group || {})[0]
+                          || Object.values(ciLoaded.family_group || {})[0];
+          ciAmounts = firstGroup ? Object.keys(firstGroup).map(Number).sort((a,c)=>a-c) : [];
+        }
+        if (ciAmounts.length === 0) {
+          ciAmounts = Object.keys(Object.values(FALLBACK_CI.employee_group)[0]).map(Number).sort((a,c)=>a-c);
+        }
+        if (!ciAmounts.includes(b.benefit)) {
+          const nearest = ciAmounts.reduce((a, c) => Math.abs(c - b.benefit) < Math.abs(a - b.benefit) ? c : a, ciAmounts[0]);
+          S.benefits.critical.benefit = nearest;
+        }
+        const opts = ciAmounts
+          .map(v => `<option value="${v}"${S.benefits.critical.benefit===v?' selected':''}>${fmt(v)} benefit</option>`).join('');
+        html += `<div class="ew-opts-row">
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Benefit Amount</label>
+            <select class="ew-opt-select" onchange="setOpt('critical','benefit',+this.value)">${opts}</select>
+          </div>
+        </div>`;
+      }
+      if (key === 'disability') {
+        html += `<div class="ew-card-note" style="margin-top:14px">🛡️ Employee-only coverage — designed to protect your income.</div>`;
+        const period = b.period || getDefaultDisabilityPeriod();
+        const periodLabels = { '13wk':'13 Weeks', '26wk':'26 Weeks', '52wk':'52 Weeks' };
+        const availPeriods = getAvailableDisabilityPeriods();
+        html += `<span class="ew-ptier-label" style="margin-top:12px;display:block">Benefit Period</span>
+        <div class="ew-ptier-row">
+          ${availPeriods.map(p =>
+            `<div class="ew-ptier-chip${period===p?' active':''}" onclick="setOpt('disability','period','${p}')" role="button" tabindex="0">${periodLabels[p]||p}</div>`
+          ).join('')}
+        </div>`;
+        const weeklyAmounts = getDisabilityAmountsForPeriod(period);
+        if (!weeklyAmounts.includes(b.weekly) && weeklyAmounts.length > 0) {
+          const nearest = weeklyAmounts.reduce((a, c) => Math.abs(c - b.weekly) < Math.abs(a - b.weekly) ? c : a, weeklyAmounts[0]);
+          S.benefits.disability.weekly = nearest;
+        }
+        const opts = weeklyAmounts
+          .map(v => `<option value="${v}"${S.benefits.disability.weekly===v?' selected':''}>${fmt(v)}/week</option>`).join('');
+        html += `<div class="ew-opts-row" style="margin-top:12px">
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Weekly Benefit</label>
+            <select class="ew-opt-select" onchange="setOpt('disability','weekly',+this.value)">${opts}</select>
+          </div>
+        </div>`;
+      }
+      if (key === 'term') {
+        const termOpts = [
+          {v:'term_10',l:'10-Year Term'},{v:'term_20',l:'20-Year Term'},{v:'term_to_70',l:'Term to Age 70'}
+        ].map(o => `<option value="${o.v}"${b.termType===o.v?' selected':''}>${o.l}</option>`).join('');
+        const currentTermTbl = (LOADED_RATES && LOADED_RATES[b.termType]) ? LOADED_RATES[b.termType]
+                                : (FALLBACK_TERM[b.termType] || {});
+        const bAmounts = (currentTermTbl.benefitAmounts && currentTermTbl.benefitAmounts.length > 0)
+          ? currentTermTbl.benefitAmounts
+          : [25000, 50000, 75000, 100000, 125000, 150000];
+        const bOpts = bAmounts
+          .map(v => `<option value="${v}"${b.benefit===v?' selected':''}>${fmt(v)}</option>`).join('');
+        html += `<div class="ew-opts-row">
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Term Type</label>
+            <select class="ew-opt-select" onchange="setOpt('term','termType',this.value)">${termOpts}</select>
+          </div>
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Benefit Amount</label>
+            <select class="ew-opt-select" onchange="setOpt('term','benefit',+this.value)">${bOpts}</select>
+          </div>
+        </div>`;
+      }
+      if (key === 'wholeEmp') {
+        const wlEmpLoaded = LOADED_RATES && LOADED_RATES.wholeEmp;
+        const wlSrcBadge = wlEmpLoaded
+          ? `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
+          : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates — tab not found</span>`;
+        html += `<div class="ew-card-note" style="margin-top:14px">🍃 Employee coverage only — permanent, builds cash value over time.${wlSrcBadge}</div>`;
+        let bSteps;
+        if (wlEmpLoaded && Array.isArray(LOADED_RATES.wholeEmp.benefitAmounts) && LOADED_RATES.wholeEmp.benefitAmounts.length > 0) {
+          bSteps = LOADED_RATES.wholeEmp.benefitAmounts.slice().sort((a,c)=>a-c);
+        } else {
+          const empCfg = S.company ? COMPANIES[S.company] : null;
+          const maxB = empCfg?.wholeEmpMaxBenefit || (age <= 60 ? 75000 : 50000);
+          bSteps = [];
+          for (let v = 10000; v <= maxB; v += 5000) bSteps.push(v);
+        }
+        const maxB = wlEmpLoaded ? (LOADED_RATES.wholeEmp.maxBenefit || Math.max(...bSteps)) : Math.max(...bSteps);
+        const safeB = Math.min(b.benefit, maxB);
+        if (b.benefit !== safeB) S.benefits.wholeEmp.benefit = safeB;
+        if (!bSteps.includes(safeB)) {
+          const nearest = bSteps.reduce((a, c) => Math.abs(c - safeB) < Math.abs(a - safeB) ? c : a, bSteps[0]);
+          S.benefits.wholeEmp.benefit = nearest;
+        }
+        const bOpts = bSteps.map(v => `<option value="${v}"${S.benefits.wholeEmp.benefit===v?' selected':''}>${fmt(v)}</option>`).join('');
+        const crOpts = [
+          {v:0,l:'No Child Rider'},
+          {v:2,l:'Add Child Rider (+$2.00/mo)'}
+        ].map(o => `<option value="${o.v}"${b.childRider===o.v?' selected':''}>${o.l}</option>`).join('');
+        html += `<div class="ew-opts-row" style="margin-top:12px">
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Benefit Amount</label>
+            <select class="ew-opt-select" onchange="setOpt('wholeEmp','benefit',+this.value);reRenderCard('wholeSpouse')">${bOpts}</select>
+          </div>
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Child Rider</label>
+            <select class="ew-opt-select" onchange="setOpt('wholeEmp','childRider',+this.value)">${crOpts}</select>
+          </div>
+        </div>`;
+      }
+
+      // ─── Whole Life Spouse card body ─────────────────────────────────
+      if (key === 'wholeSpouse') {
+        const wlEmpLoaded = LOADED_RATES && LOADED_RATES.wholeEmp;
+        const spouseMax   = getSpouseWLMaxBenefit();
+        const spSteps     = getSpouseWLBenefitSteps();
+
+        // Clamp current benefit selection to the allowed max
+        if (b.benefit > spouseMax) {
+          S.benefits.wholeSpouse.benefit = spouseMax;
+          b.benefit = spouseMax;
+        }
+        if (!spSteps.includes(b.benefit) && spSteps.length > 0) {
+          const nearest = spSteps.reduce((a, c) => Math.abs(c - b.benefit) < Math.abs(a - b.benefit) ? c : a, spSteps[0]);
+          S.benefits.wholeSpouse.benefit = nearest;
+          b.benefit = nearest;
+        }
+
+        const empBenefitNote = S.benefits.wholeEmp.on
+          ? `Spouse benefit may not exceed your own elected amount of <strong>${fmt(S.benefits.wholeEmp.benefit)}</strong>.`
+          : 'Enable your own Whole Life benefit to unlock higher spouse amounts.';
+
+        html += `
+          <div class="ew-card-note" style="margin-top:14px;margin-bottom:4px">
+            💚 Permanent coverage for your spouse using the same rate schedule as your own policy.
+            ${wlEmpLoaded
+              ? `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
+              : `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`
+            }
+          </div>
+          <div class="ew-card-note" style="background:#fef9c3;border:1px solid #fef08a;color:#78350f;margin-top:8px">
+            ⚠️ <strong>Subject to underwriting.</strong> All spouse benefit amounts require carrier approval before coverage is effective. ${empBenefitNote}
+          </div>
+          <div class="ew-opts-row" style="margin-top:14px">
+            <div class="ew-opt-field" style="max-width:120px">
+              <label class="ew-opt-label">Spouse Age</label>
+              <input class="ew-opt-input" type="number" min="18" max="90" value="${b.spouseAge}" placeholder="35"
+                onchange="setSpouseAgeFromCard(+this.value)" />
+            </div>
+            <div class="ew-opt-field">
+              <label class="ew-opt-label">Benefit Amount <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(max ${fmt(spouseMax)})</span></label>
+              <select class="ew-opt-select" onchange="setOpt('wholeSpouse','benefit',+this.value)">
+                ${spSteps.map(v => `<option value="${v}"${b.benefit===v?' selected':''}>${fmt(v)}</option>`).join('')}
+              </select>
+            </div>
+          </div>`;
+      }
+
+      if (!prem.available && prem.note) {
+        html += `<div class="ew-card-note" style="color:var(--warn);background:#fffbeb;margin-top:10px">⚠️ ${prem.note}</div>`;
+      }
+      return html;
+    }
+
+    function renderCard(key) {
+      const b    = S.benefits[key];
+      const meta = CARDS_META[key];
+      const prem = calcPremium(key);
+      const isOn = b.on;
+      let rateHTML;
+      if (!isOn)              rateHTML = `<span style="font-size:12px;color:var(--mid-gray)">Off</span>`;
+      else if (prem.available) rateHTML = `${fmt(prem.premium)}<span style="font-size:11px;font-weight:500;opacity:.65">/mo</span>`;
+      else                     rateHTML = `<span style="font-size:12px">—</span>`;
+      return `
+        <div class="ew-bcard ${isOn?'on':'off'}" id="card-${key}">
+          <div class="ew-bcard-header">
+            <div class="ew-bcard-icon">${meta.icon}</div>
+            <div class="ew-bcard-title-area">
+              <div class="ew-bcard-title">${meta.title}</div>
+              <div class="ew-bcard-sub">${meta.sub}</div>
+            </div>
+            <div class="ew-bcard-right">
+              <div class="ew-bcard-rate">${rateHTML}</div>
+              <button class="ew-toggle ${isOn?'on':''}" aria-label="Toggle ${meta.title}"
+                onclick="toggleBenefit('${key}')"></button>
+            </div>
+          </div>
+          ${isOn ? `<div class="ew-bcard-body">${renderCardBody(key)}</div>` : ''}
+        </div>`;
+    }
+
+    function renderRateBadge() {
+      const head = document.getElementById('p2Head');
+      if (!head) return;
+      const existing = head.querySelector('.ew-rate-badge');
+      if (existing) existing.remove();
+      const isLive = RATES_SOURCE === 'sheet';
+      const badge = document.createElement('div');
+      badge.className = 'ew-rate-badge ' + (isLive ? 'live' : 'fbk');
+      badge.innerHTML = '<span class="dot"></span>'
+        + (isLive
+            ? 'Live rates loaded from ' + (S.company || 'sheet') + ' (' + (window._ratesLoadedKeys||[]).join(', ') + ')'
+            : 'Using embedded rates — open browser console (F12) to see why sheet failed');
+      head.appendChild(badge);
+    }
+
+    function renderAllCards() {
+      renderRateBadge();
+      document.getElementById('cardList').innerHTML =
+        Object.keys(S.benefits).map(k => renderCard(k)).join('');
+    }
+
+    function reRenderCard(key) {
+      const el = document.getElementById('card-' + key);
+      if (el) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = renderCard(key);
+        el.replaceWith(tmp.firstElementChild);
+      }
+      updateStickyBar();
+    }
+
+    // ─────────────────────────────────────────────
+    // BENEFIT ACTIONS
+    // ─────────────────────────────────────────────
+    function toggleBenefit(key) {
+      S.benefits[key].on = !S.benefits[key].on;
+      if (key === 'wholeSpouse' && S.benefits.wholeSpouse.on && S.spouseAge >= 18) {
+        S.benefits.wholeSpouse.spouseAge = S.spouseAge;
+      }
+      // When employee WL is toggled, re-render spouse card too (spouse benefit cap may change)
+      reRenderCard(key);
+      if (key === 'wholeEmp') reRenderCard('wholeSpouse');
+    }
+    function setBenefitTier(key, tier) { S.benefits[key].tier = tier; reRenderCard(key); }
+    function setBenefitPlan(key, plan) { S.benefits[key].plan = plan; reRenderCard(key); }
+    function setOpt(key, prop, val)    { S.benefits[key][prop] = val; reRenderCard(key); }
+    function setSpouseAgeFromCard(val) {
+      const v = parseInt(val);
+      if (isNaN(v)) return;
+      S.benefits.wholeSpouse.spouseAge = v;
+      S.spouseAge = v;
+      reRenderCard('wholeSpouse');
+    }
+    function setSpouseAgeFromDetails(val) {
+      const v = parseInt(val);
+      if (isNaN(v)) return;
+      S.spouseAge = v;
+      if (S.benefits.wholeSpouse.on) {
+        S.benefits.wholeSpouse.spouseAge = v;
+      }
+    }
+    function updateStickyBar() {
+      document.getElementById('stickyAmount').textContent = fmt(calcTotal()) + '/mo';
+      updateAllotmentBanner();
+    }
+
+    // ─────────────────────────────────────────────
+    // STEP 3 — DEPENDENT SECTION
+    // ─────────────────────────────────────────────
+    function renderDependentSection() {
+      const el = document.getElementById('dependentSection');
+      const showSp = needsSpouse();
+      const showKd = needsKids();
+      if (!showSp && !showKd) { el.innerHTML = ''; return; }
+      if (S.benefits.wholeSpouse.on && S.benefits.wholeSpouse.spouseAge) {
+        S.spouseAge = S.benefits.wholeSpouse.spouseAge;
+      }
+      let html = `<div class="ew-sub-section">
+        <div class="ew-sub-head">Dependent Information</div>
+        <div class="ew-sub-desc">You've added dependents to one or more policies. Please provide their details for enrollment records.</div>`;
+      if (showSp) {
+        const showSpouseAge = S.benefits.wholeSpouse.on;
+        html += `<span class="ew-sub-group-label">Spouse</span>
+        <div class="ew-grid-2" style="margin-bottom:20px">
+          <div class="ew-field">
+            <label class="ew-label" for="spFN">First Name</label>
+            <input class="ew-input" id="spFN" type="text" placeholder="First"
+              value="${escHtml(S.spouseFirstName)}" oninput="S.spouseFirstName=this.value" />
+          </div>
+          <div class="ew-field">
+            <label class="ew-label" for="spLN">Last Name</label>
+            <input class="ew-input" id="spLN" type="text" placeholder="Last"
+              value="${escHtml(S.spouseLastName)}" oninput="S.spouseLastName=this.value" />
+          </div>
+          <div class="ew-field">
+            <label class="ew-label" for="spDOB">Date of Birth</label>
+            <input class="ew-input" id="spDOB" type="date"
+              value="${S.spouseDOB}" oninput="S.spouseDOB=this.value" />
+          </div>
+          ${showSpouseAge ? `<div class="ew-field">
+            <label class="ew-label" for="spAge">Age</label>
+            <input class="ew-input" id="spAge" type="number" min="18" max="90"
+              value="${S.spouseAge}" placeholder="35"
+              oninput="setSpouseAgeFromDetails(+this.value)" />
+            <span class="ew-field-hint">Used for Whole Life Spouse premium calculation.</span>
+          </div>` : ''}
+        </div>`;
+      }
+      if (showKd) {
+        html += `<span class="ew-sub-group-label">Children</span>
+        <div class="ew-child-list" id="childList">${renderChildRows()}</div>
+        <button class="ew-add-btn" onclick="addChild()">+ Add Child</button>`;
+      }
+      html += `</div>`;
+      el.innerHTML = html;
+    }
+
+    function renderChildRows() {
+      if (S.children.length === 0) {
+        return `<p style="font-size:13px;color:var(--body-gray)">No children added yet. Use the button below to add each child.</p>`;
+      }
+      return S.children.map((c, i) => `
+        <div class="ew-child-row">
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">First Name</label>
+            <input class="ew-opt-input" type="text" placeholder="First" value="${escHtml(c.firstName)}"
+              oninput="S.children[${i}].firstName=this.value" />
+          </div>
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Last Name</label>
+            <input class="ew-opt-input" type="text" placeholder="Last" value="${escHtml(c.lastName)}"
+              oninput="S.children[${i}].lastName=this.value" />
+          </div>
+          <div class="ew-opt-field">
+            <label class="ew-opt-label">Date of Birth</label>
+            <input class="ew-opt-input" type="date" value="${c.dob}"
+              oninput="S.children[${i}].dob=this.value" />
+          </div>
+          <button class="ew-child-del" onclick="removeChild(${i})">✕</button>
+        </div>`).join('');
+    }
+
+    function addChild() {
+      S.children.push({ firstName:'', lastName:'', dob:'' });
+      const cl = document.getElementById('childList');
+      if (cl) cl.innerHTML = renderChildRows();
+    }
+    function removeChild(i) {
+      S.children.splice(i, 1);
+      const cl = document.getElementById('childList');
+      if (cl) cl.innerHTML = renderChildRows();
+    }
+
+    // ─────────────────────────────────────────────
+    // STEP 3 — BENEFICIARIES
+    // ─────────────────────────────────────────────
+    function renderBeneList() {
+      const list = document.getElementById('beneList');
+      if (!list) return;
+      if (S.beneficiaries.length === 0) {
+        list.innerHTML = `<p style="font-size:13px;color:var(--body-gray)">No beneficiaries yet. Add one below.</p>`;
+      } else {
+        list.innerHTML = S.beneficiaries.map((b, i) => `
+          <div class="ew-bene-row">
+            <div class="ew-opt-field">
+              <label class="ew-opt-label">Full Name</label>
+              <input class="ew-opt-input" type="text" placeholder="Jane Smith"
+                value="${escHtml(b.name)}" oninput="S.beneficiaries[${i}].name=this.value" />
+            </div>
+            <div class="ew-opt-field">
+              <label class="ew-opt-label">Relationship</label>
+              <select class="ew-opt-select" onchange="S.beneficiaries[${i}].relationship=this.value">
+                <option value="">— Select —</option>
+                ${['Spouse','Child','Parent','Sibling','Domestic Partner','Trust','Estate','Other']
+                  .map(r => `<option value="${r}"${b.relationship===r?' selected':''}>${r}</option>`).join('')}
+              </select>
+            </div>
+            <div class="ew-opt-field ew-bene-pct">
+              <label class="ew-opt-label">% Share</label>
+              <input class="ew-opt-input" type="number" min="1" max="100" placeholder="100"
+                value="${b.pct}" oninput="S.beneficiaries[${i}].pct=+this.value;updatePctBar()" />
+            </div>
+            ${S.beneficiaries.length > 1
+              ? `<button class="ew-bene-del ew-bene-del" onclick="removeBeneficiary(${i})" title="Remove">✕</button>`
+              : `<div></div>`}
+          </div>`).join('');
+      }
+      updatePctBar();
+    }
+
+    function updatePctBar() {
+      const total = S.beneficiaries.reduce((s,b) => s + (b.pct||0), 0);
+      const fill  = document.getElementById('pctBarFill');
+      const label = document.getElementById('pctTotal');
+      if (!fill || !label) return;
+      fill.style.width = Math.min(total, 100) + '%';
+      fill.className   = 'ew-pct-bar-fill' + (total>100?' err':total<100?' warn':'');
+      label.className  = 'ew-pct-total' + (total===100?' ok':total>100?' err':' warn');
+      if      (total===100) label.textContent = '100% allocated ✓';
+      else if (total > 100) label.textContent = `${total}% allocated — reduce by ${total-100}%`;
+      else                  label.textContent = `${total}% allocated — ${100-total}% remaining`;
+    }
+
+    function addBeneficiary() {
+      const used      = S.beneficiaries.reduce((s,b) => s + (b.pct||0), 0);
+      const remaining = Math.max(0, 100-used);
+      S.beneficiaries.push({ name:'', relationship:'', pct:remaining });
+      renderBeneList();
+    }
+    function removeBeneficiary(i) {
+      S.beneficiaries.splice(i, 1);
+      renderBeneList();
+    }
+
+    // ─────────────────────────────────────────────
+    // SUMMARY
+    // ─────────────────────────────────────────────
+    function renderSummary() {
+      const el = document.getElementById('summaryContent');
+      let rows  = '';
+      let total = 0;
+      Object.keys(S.benefits).forEach(key => {
+        const b    = S.benefits[key];
+        if (!b.on) return;
+        const prem = calcPremium(key);
+        const meta = CARDS_META[key];
+        const tierLbl = b.tier ? TIER_LABELS[b.tier] : 'Employee Only';
+        let detail = tierLbl;
+        if (key==='accident'||key==='hospital') detail += ` · ${b.plan==='plan1'?'Plan 1':'Plan 2'}`;
+        if (key==='critical')   detail += ` · ${fmt(b.benefit)} benefit`;
+        if (key==='disability') detail  = `Employee Only · ${fmt(b.weekly)}/wk`;
+        if (key==='term')       detail += ` · ${fmt(b.benefit)} · ${{term_10:'10-Year',term_20:'20-Year',term_to_70:'To Age 70'}[b.termType]}`;
+        if (key==='wholeEmp')   detail  = `Employee Only · ${fmt(b.benefit)}${b.childRider?` + Child Rider`:''}`;
+        if (key==='wholeSpouse')detail  = `Spouse · Age ${b.spouseAge} · ${fmt(b.benefit)} · Subject to underwriting`;
+        if (prem.available) {
+          total += prem.premium;
+          rows += `<tr>
+            <td><div class="ew-sum-prod">${meta.icon} ${meta.title}</div><div class="ew-sum-tier">${detail}</div></td>
+            <td class="ew-sum-price">${fmt(prem.premium)}/mo</td>
+          </tr>`;
+        } else {
+          rows += `<tr>
+            <td><div class="ew-sum-prod">${meta.icon} ${meta.title}</div><div class="ew-sum-tier" style="color:var(--warn)">${prem.note||'Unavailable at this age'}</div></td>
+            <td class="ew-sum-price" style="color:var(--mid-gray)">—</td>
+          </tr>`;
+        }
+      });
+      let depHTML = '';
+      if (needsSpouse() && S.spouseFirstName) {
+        const ageStr = S.benefits.wholeSpouse.on && S.spouseAge ? `, age ${S.spouseAge}` : '';
+        depHTML += `<div class="ew-info-pair">
+          <div class="info-label">Spouse</div>
+          <div class="info-val">${escHtml(S.spouseFirstName)} ${escHtml(S.spouseLastName)}${ageStr}</div>
+        </div>`;
+      }
+      S.children.forEach((c,i) => {
+        if (c.firstName) depHTML += `<div class="ew-info-pair">
+          <div class="info-label">Child ${i+1}</div>
+          <div class="info-val">${escHtml(c.firstName)} ${escHtml(c.lastName)}</div>
+        </div>`;
+      });
+      const beneHTML = S.beneficiaries.filter(b=>b.name).map(b => `
+        <div class="ew-info-pair">
+          <div class="info-label">${escHtml(b.name)}</div>
+          <div class="info-val">${b.relationship||'—'} · ${b.pct}%</div>
+        </div>`).join('');
+      el.innerHTML = `
+        ${S.allotment > 0 ? `
+        <div class="ew-info-box" style="background:var(--forest-lt);border:1.5px solid rgba(31,92,66,.2)">
+          <h4 style="color:var(--forest)">💰 Your Tax Savings</h4>
+          <div class="ew-info-grid">
+            <div class="ew-info-pair">
+              <div class="info-label">Employer Covers</div>
+              <div class="info-val" style="color:var(--forest)">${fmt(S.allotment)}/mo</div>
+            </div>
+            <div class="ew-info-pair">
+              <div class="info-label">Your Monthly Cost</div>
+              <div class="info-val" style="color:${Math.max(0,total-S.allotment)===0?'var(--forest)':'var(--error)'}">
+                ${Math.max(0,total-S.allotment)===0 ? '✓ Fully Covered' : fmt(Math.max(0,total-S.allotment))+'/mo'}
+              </div>
+            </div>
+          </div>
+        </div>` : ''}
+        <div class="ew-info-box">
+          <h4>Your Information</h4>
+          <div class="ew-info-grid">
+            <div class="ew-info-pair"><div class="info-label">Name</div><div class="info-val">${escHtml(S.firstName)} ${escHtml(S.lastName)}</div></div>
+            <div class="ew-info-pair"><div class="info-label">Email</div><div class="info-val">${escHtml(S.email)}</div></div>
+            <div class="ew-info-pair"><div class="info-label">Phone</div><div class="info-val">${escHtml(S.phone)}</div></div>
+            <div class="ew-info-pair"><div class="info-label">Age</div><div class="info-val">${S.empAge}</div></div>
+            <div class="ew-info-pair"><div class="info-label">Tobacco</div><div class="info-val">${S.tobacco ? 'Tobacco User' : 'Non-Tobacco'}</div></div>
+          </div>
+        </div>
+        ${depHTML ? `<div class="ew-info-box"><h4>Dependents</h4><div class="ew-info-grid">${depHTML}</div></div>` : ''}
+        <table class="ew-sum-table">
+          <thead><tr>
+            <th>Benefit</th>
+            <th style="text-align:right">Monthly Premium</th>
+          </tr></thead>
+          <tbody>
+            ${rows}
+            <tr class="ew-sum-total-row">
+              <td>Total Monthly Premium</td>
+              <td class="ew-sum-price">${fmt(total)}/mo</td>
+            </tr>
+          </tbody>
+        </table>
+        ${beneHTML ? `<div class="ew-info-box"><h4>Beneficiaries</h4><div class="ew-info-grid">${beneHTML}</div></div>` : ''}
+      `;
+    }
+
+    // ─────────────────────────────────────────────
+    // STEP INDICATOR
+    // ─────────────────────────────────────────────
+    function renderSteps(active) {
+      const STEPS = [
+        {n:1,label:'About You'},{n:2,label:'Package'},{n:3,label:'Details'}
+      ];
+      document.getElementById('ewSteps').innerHTML = STEPS.map(s => {
+        const cls = active > s.n ? 'done' : active === s.n ? 'active' : '';
+        const dot = active > s.n ? '✓' : s.n;
+        return `<div class="ew-step-item ${cls}">
+          <div class="ew-step-dot">${dot}</div>
+          <div class="ew-step-label">${s.label}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ─────────────────────────────────────────────
+    // NAVIGATION
+    // ─────────────────────────────────────────────
+    async function goTo(target) {
+      if (target > currentStep) {
+        if (currentStep === 1) {
+          const err = validateStep1();
+          if (err) { showAlert('p1Alert', err); return; }
+        }
+        if (currentStep === 2) {
+          const err = validateStep2();
+          if (err) { showAlert('p2Alert', err); return; }
+        }
+        if (currentStep === 3) {
+          const err = validateStep3();
+          if (err) { showAlert('p3Alert', err); return; }
+        }
+      }
+      hideAllAlerts();
+
+      if (target === 2 && currentStep === 1 && S.company) {
+        const overlay = document.getElementById('ratesLoadingOverlay');
+        if (overlay) overlay.classList.add('show');
+        try {
+          await loadRatesForCompany(S.company);
+        } catch(e) {
+          console.error('Rate load error:', e);
+        } finally {
+          if (overlay) overlay.classList.remove('show');
+          currentStep = target;
+          document.querySelectorAll('.ew-panel').forEach(p => p.classList.remove('active'));
+          document.getElementById('p' + target).classList.add('active');
+          renderSteps(target);
+          const sticky = document.getElementById('stickyBar');
+          sticky.classList.add('show');
+          document.body.classList.add('sticky-on');
+          renderAllCards();
+          updateStickyBar();
+          updateAllotmentBanner();
+          window.scrollTo(0, 0);
+          notifyHeight();
+          return;
+        }
+      }
+
+      currentStep = target;
+      document.querySelectorAll('.ew-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('p' + target).classList.add('active');
+      renderSteps(target);
+
+      const sticky = document.getElementById('stickyBar');
+      if (target === 2) {
+        sticky.classList.add('show');
+        document.body.classList.add('sticky-on');
+        updateStickyBar();
+        updateAllotmentBanner();
+      } else {
+        sticky.classList.remove('show');
+        document.body.classList.remove('sticky-on');
+      }
+
+      if (target === 2) renderAllCards();
+      if (target === 3) { renderDependentSection(); renderBeneList(); updatePctBar(); renderSummary(); }
+      window.scrollTo(0, 0);
+      notifyHeight();
+    }
+
+    // ─────────────────────────────────────────────
+    // VALIDATION
+    // ─────────────────────────────────────────────
+    function validateStep1() {
+      const fn = document.getElementById('firstName').value.trim();
+      const ln = document.getElementById('lastName').value.trim();
+      const em = document.getElementById('email').value.trim();
+      const ph = document.getElementById('phone').value.trim();
+      const ag = parseInt(document.getElementById('empAge').value, 10);
+      const co = document.getElementById('companySelect').value;
+      if (!co) return 'Please select your company from the dropdown.';
+      if (!fn || !ln) return 'Please enter your first and last name.';
+      if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return 'Please enter a valid email address.';
+      if (!ph) return 'Please enter your phone number.';
+      if (isNaN(ag) || ag < 18 || ag > 90) return 'Please enter a valid age between 18 and 90.';
+      S.company = co; S.firstName = fn; S.lastName = ln; S.email = em; S.phone = ph; S.empAge = ag;
+      return null;
+    }
+    function validateStep2() {
+      const anyOn = Object.values(S.benefits).some(b => b.on);
+      if (!anyOn) return 'Please select at least one benefit to continue.';
+      return null;
+    }
+    function validateStep3() {
+      if (S.beneficiaries.length === 0)
+        return 'Please add at least one beneficiary.';
+      const incomplete = S.beneficiaries.some(b => !b.name.trim() || !b.relationship);
+      if (incomplete)
+        return 'Please complete all beneficiary fields — name and relationship are required.';
+      const pctTotal = S.beneficiaries.reduce((s,b) => s + (b.pct||0), 0);
+      if (pctTotal !== 100)
+        return `Beneficiary percentages must total exactly 100% (currently ${pctTotal}%).`;
+      if (needsSpouse()) {
+        if (!S.spouseFirstName.trim() || !S.spouseLastName.trim())
+          return "Please enter your spouse's full name.";
+        if (!S.spouseDOB)
+          return "Please enter your spouse's date of birth.";
+        if (S.benefits.wholeSpouse.on) {
+          const spA = parseInt(S.spouseAge);
+          if (isNaN(spA) || spA < 18 || spA > 90)
+            return "Please enter a valid spouse age between 18 and 90 (required for Whole Life Spouse).";
+        }
+      }
+      if (needsKids()) {
+        if (S.children.length === 0)
+          return "You've added kids to a policy — please add at least one child's information.";
+        const badKid = S.children.some(c => !c.firstName.trim() || !c.lastName.trim() || !c.dob);
+        if (badKid)
+          return 'Please complete all fields for each child (first name, last name, and date of birth).';
+      }
+      return null;
+    }
+
+    // ─────────────────────────────────────────────
+    // ALERTS
+    // ─────────────────────────────────────────────
+    function showAlert(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.classList.add('show'); }
+    }
+    function hideAllAlerts() {
+      document.querySelectorAll('.ew-alert').forEach(e => e.classList.remove('show'));
+    }
+
+    // ─────────────────────────────────────────────
+    // SUBMIT
+    // ─────────────────────────────────────────────
+    function submitEnrollment() {
+      const err = validateStep3();
+      if (err) {
+        showAlert('p3Alert', err);
+        const alertEl = document.getElementById('p3Alert');
+        if (alertEl) alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      renderSummary();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Loading consent form…';
+      const total   = calcTotal();
+      const empCost = S.allotment > 0 ? Math.max(0, total - S.allotment) : 0;
+      const n = [];
+      n.push('=== ENROLLMENT SUMMARY ===');
+      n.push(`Name: ${S.firstName} ${S.lastName}`);
+      n.push(`Email: ${S.email}`);
+      n.push(`Phone: ${S.phone}`);
+      n.push(`Age: ${S.empAge}`);
+      if (S.company) n.push(`Company: ${S.company}`);
+      n.push('');
+      n.push('--- COVERAGE ELECTIONS ---');
+      Object.keys(S.benefits).forEach(key => {
+        const b    = S.benefits[key];
+        if (!b.on) return;
+        const prem = calcPremium(key);
+        const meta = CARDS_META[key];
+        if (!prem.available) return;
+        const tierLbl = b.tier ? TIER_LABELS[b.tier] : 'Employee Only';
+        let detail = tierLbl;
+        if (key==='accident'||key==='hospital') detail += ` | ${b.plan==='plan1'?'Plan 1':'Plan 2'}`;
+        if (key==='critical')    detail += ` | ${fmt(b.benefit)} benefit`;
+        if (key==='disability')  detail  = `Employee Only | ${fmt(b.weekly)}/wk`;
+        if (key==='term')        detail += ` | ${fmt(b.benefit)} | ${{term_10:'10-Year',term_20:'20-Year',term_to_70:'To Age 70'}[b.termType]}`;
+        if (key==='wholeEmp')    detail  = `Employee Only | ${fmt(b.benefit)}${b.childRider?' + Child Rider':''}`;
+        if (key==='wholeSpouse') detail  = `Spouse Age ${b.spouseAge} | ${fmt(b.benefit)} | Subject to underwriting`;
+        n.push(`${meta.title}: ${fmt(prem.premium)}/mo | ${detail}`);
+      });
+      n.push('');
+      n.push(`Total Monthly Premium: ${fmt(total)}/mo`);
+      if (S.allotment > 0) {
+        n.push(`Tax Savings: ${fmt(S.allotment)}/mo`);
+        n.push(`Employee Cost: ${fmt(empCost)}/mo`);
+      }
+      const hasSpouse = needsSpouse() && S.spouseFirstName;
+      const hasKids   = S.children.some(c => c.firstName);
+      if (hasSpouse || hasKids) {
+        n.push('');
+        n.push('--- DEPENDENTS ---');
+        if (hasSpouse) {
+          const ageStr = S.benefits.wholeSpouse.on && S.spouseAge ? ` | Age: ${S.spouseAge}` : '';
+          n.push(`Spouse: ${S.spouseFirstName} ${S.spouseLastName}${S.spouseDOB?' | DOB: '+S.spouseDOB:''}${ageStr}`);
+        }
+        S.children.forEach((c, i) => {
+          if (!c.firstName) return;
+          n.push(`Child ${i+1}: ${c.firstName} ${c.lastName}${c.dob?' | DOB: '+c.dob:''}`);
+        });
+      }
+      const activeBene = S.beneficiaries.filter(b => b.name);
+      if (activeBene.length) {
+        n.push('');
+        n.push('--- BENEFICIARIES ---');
+        activeBene.forEach(b => {
+          n.push(`${b.name} | ${b.relationship||'—'} | ${b.pct}%`);
+        });
+      }
+      n.push('');
+      n.push(`Submitted: ${new Date().toLocaleString()}`);
+      const contactNotes = n.join('\n');
+      const params = new URLSearchParams({
+        first_name:     S.firstName,
+        last_name:      S.lastName,
+        email:          S.email,
+        phone:          S.phone,
+        benefit_summary: contactNotes,
+      });
+      const formSrc = `https://go.thrivebg.com/widget/form/Y5QvdwL7DDeNDVs6MyNl?${params.toString()}`;
+      const btnRow = document.getElementById('submitBtnRow');
+      if (btnRow) btnRow.style.display = 'none';
+      const consentArea = document.getElementById('consentFormArea');
+      if (consentArea) {
+        consentArea.style.display = 'block';
+        consentArea.innerHTML = `
+          <iframe
+            id="ghlConsentFrame"
+            src="${formSrc}"
+            style="width:100%;min-height:650px;border:none;display:block"
+            title="Employee Consent">
+          </iframe>`;
+        consentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const REDIRECT_URL = 'https://gothrivebg.com/whats-next';
+        let ghlSubmitted = false;
+        const ghlMessageHandler = (event) => {
+          if (ghlSubmitted) return;
+          const d = event.data;
+          const isSubmit = (
+            (typeof d === 'string' && (d.includes('form_submitted') || d.includes('formSubmitted'))) ||
+            (typeof d === 'object' && d && (
+              d.type === 'form_submitted' || d.type === 'formSubmitted' ||
+              d.event === 'form_submitted' || d.event === 'formSubmitted' ||
+              d.action === 'form_submitted'
+            ))
+          );
+          if (isSubmit) {
+            ghlSubmitted = true;
+            window.removeEventListener('message', ghlMessageHandler);
+            window.top.location.href = REDIRECT_URL;
+          }
+        };
+        window.addEventListener('message', ghlMessageHandler);
+        const iframe = document.getElementById('ghlConsentFrame');
+        let iframeLoadCount = 0;
+        iframe.addEventListener('load', () => {
+          iframeLoadCount++;
+          if (iframeLoadCount >= 2 && !ghlSubmitted) {
+            ghlSubmitted = true;
+            window.removeEventListener('message', ghlMessageHandler);
+            window.top.location.href = REDIRECT_URL;
+          }
+        });
+      }
+      notifyHeight();
+    }
+
+    // ─────────────────────────────────────────────
+    // IFRAME HEIGHT RELAY
+    // ─────────────────────────────────────────────
+    function notifyHeight() {
+      const wrap = document.querySelector('.ew-wrap');
+      const h    = wrap ? Math.ceil(wrap.getBoundingClientRect().height) + 56 : 600;
+      window.parent.postMessage({ type:'resize', height: h }, '*');
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => notifyHeight());
+      ro.observe(document.querySelector('.ew-wrap'));
+    }
+
+    // ─────────────────────────────────────────────
+    // URL PARAM PRE-FILL & PACKAGE PARSING
+    // ─────────────────────────────────────────────
+    function getURLParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        firstName:  p.get('first_name')  || '',
+        lastName:   p.get('last_name')   || '',
+        phone:      p.get('phone')       || '',
+        email:      p.get('email')       || '',
+        age:        parseInt(p.get('age') || '0', 10) || 0,
+        allotment:  parseFloat(p.get('allotment') || '0') || 0,
+        contactId:  p.get('contact_id')  || '',
+        company:    p.get('company')     || '',
+        packageStr: p.get('benefits_package') || p.get('contact.benefits_package') || p.get('package') || ''
+      };
+    }
+
+    function getBenefitAmount(smashedStr, keywords) {
+      const keywordRegex = new RegExp('(?:' + keywords + ')', 'i');
+      const match = smashedStr.match(keywordRegex);
+      if (!match) return null;
+      let snippet = smashedStr.substring(match.index + match[0].length);
+      const fenceRegex = /accident|critical|short\s*term|disability|hospital|term\s*life|whole\s*life/i;
+      const nextMatch = snippet.match(fenceRegex);
+      if (nextMatch) {
+        snippet = snippet.substring(0, nextMatch.index);
+      }
+      snippet = snippet.replace(/\b(10|20|30)\s*years?\b/gi, '').replace(/\b(?:to\s*)?age\s*\d+\b/gi, '');
+      const numMatch = snippet.match(/(?:\$)?(\d+)\s*(k?)/i);
+      if (numMatch) {
+        let num = parseInt(numMatch[1], 10);
+        if (numMatch[2].toLowerCase() === 'k') num *= 1000;
+        return num;
+      }
+      return null;
+    }
+
+    function initFromURL() {
+      const p = getURLParams();
+      if (p.firstName) S.firstName = p.firstName;
+      if (p.lastName)  S.lastName  = p.lastName;
+      if (p.email)     S.email     = p.email;
+      if (p.phone)     S.phone     = p.phone;
+      if (p.age >= 18 && p.age <= 90) S.empAge = p.age;
+      S.allotment  = p.allotment;
+      S.contactId  = p.contactId;
+      S.company    = p.company;
+      if (p.firstName)   { const el = document.getElementById('firstName');     if(el) el.value = p.firstName; }
+      if (p.lastName)    { const el = document.getElementById('lastName');      if(el) el.value = p.lastName;  }
+      if (p.email)       { const el = document.getElementById('email');         if(el) el.value = p.email;     }
+      if (p.phone)       { const el = document.getElementById('phone');         if(el) el.value = p.phone;     }
+      if (p.age >= 18)   { const el = document.getElementById('empAge');        if(el) el.value = p.age;       }
+
+      if (p.packageStr) {
+        Object.keys(S.benefits).forEach(k => S.benefits[k].on = false);
+        let cleanStr = decodeURIComponent(p.packageStr).replace(/(\d),(\d)/g, '$1$2');
+        const lowerStr = cleanStr.toLowerCase();
+
+        if (lowerStr.includes('accident')) {
+           S.benefits.accident.on = true;
+        }
+        if (lowerStr.includes('critical')) {
+           S.benefits.critical.on = true;
+           let amtNum = getBenefitAmount(cleanStr, 'critical illness|critical');
+           if (amtNum && amtNum >= 1000) S.benefits.critical.benefit = amtNum;
+        }
+        if (lowerStr.includes('short') || lowerStr.includes('disability')) {
+           S.benefits.disability.on = true;
+           let amtNum = getBenefitAmount(cleanStr, 'short term disability|short term|short-term|disability');
+           if (amtNum) S.benefits.disability.weekly = amtNum;
+        }
+        if (lowerStr.includes('hospital')) {
+           S.benefits.hospital.on = true;
+        }
+        if (lowerStr.includes('term life')) {
+           S.benefits.term.on = true;
+           let amtNum = getBenefitAmount(cleanStr, 'term life');
+           if (amtNum && amtNum >= 5000) S.benefits.term.benefit = amtNum;
+           if (lowerStr.includes('20 year')) S.benefits.term.termType = 'term_20';
+           else if (lowerStr.includes('10 year')) S.benefits.term.termType = 'term_10';
+           else S.benefits.term.termType = 'term_to_70';
+        }
+        if (lowerStr.includes('whole life')) {
+           S.benefits.wholeEmp.on = true;
+           let amtNum = getBenefitAmount(cleanStr, 'whole life');
+           if (amtNum && amtNum >= 1000) S.benefits.wholeEmp.benefit = amtNum;
+        }
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // ALLOTMENT BANNER
+    // ─────────────────────────────────────────────
+    function updateAllotmentBanner() {
+      const banner = document.getElementById('allotmentBanner');
+      if (!banner) return;
+      const allotment = S.allotment;
+      if (!allotment || allotment <= 0) {
+        banner.classList.remove('show');
+        const cb = document.getElementById('stickyCostBox');
+        if (cb) cb.style.display = 'none';
+        return;
+      }
+      banner.classList.add('show');
+      const total     = calcTotal();
+      const usedPct   = Math.min((total / allotment) * 100, 100);
+      const empCost   = Math.max(0, total - allotment);
+      const remaining = Math.max(0, allotment - total);
+      const over      = total > allotment;
+      document.getElementById('allotAmt').textContent = fmt(allotment) + '/mo';
+      const fill = document.getElementById('allotProgFill');
+      if (fill) { fill.style.width = usedPct + '%'; fill.className = 'ew-allot-prog-fill' + (over?' over':''); }
+      const usedLbl = document.getElementById('allotUsedLabel');
+      const remLbl  = document.getElementById('allotRemLabel');
+      if (usedLbl) usedLbl.textContent = fmt(total) + '/mo selected';
+      if (remLbl) {
+        if (!total)  remLbl.textContent = 'Full budget available';
+        else         remLbl.innerHTML   = `<strong>${fmt(remaining)}/mo remaining</strong>`;
+      }
+      const youOweEl = document.getElementById('allotYouOwe');
+      if (youOweEl) {
+        if (empCost === 0) {
+          youOweEl.textContent = '$0.00 / mo';
+          youOweEl.style.color = '#a7f3d0';
+        } else {
+          youOweEl.textContent = fmt(empCost) + '/mo';
+          youOweEl.style.color = '#fbbf24';
+        }
+      }
+      const cb  = document.getElementById('stickyCostBox');
+      const cv  = document.getElementById('stickyCostVal');
+      if (cb && cv) {
+        cb.style.display = 'block';
+        cv.textContent   = fmt(empCost) + '/mo';
+        cv.className     = 'ew-sticky-cost-val' + (empCost === 0 ? ' covered' : '');
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+    initFromURL();
+    renderSteps(1);
+    notifyHeight();
+    fetchDirectory(); // async — populates company dropdown from live directory sheet
+
+    // ── Whole Life Raw CSV Debug Panel ──────────────────────────────
+    async function renderWLDebugPanel() {
+      const existing = document.getElementById('wlDebugPanel');
+      if (existing) existing.remove();
+      const panel = document.createElement('div');
+      panel.id = 'wlDebugPanel';
+      panel.style.cssText = 'margin:32px 0 0;font-size:11px;color:var(--body-gray)';
+      const company = S.company;
+      const cfg = company && COMPANIES[company];
+      const tabs = ['Whole Life', 'Whole Life Employee'];
+      let resultsHTML = '';
+      if (cfg) {
+        for (const tab of tabs) {
+          let content;
+          try {
+            const csv = await fetchSheetTab(cfg.sheetId, tab);
+            const preview = csv.split('\n').slice(0, 8).map(r => r.replace(/</g,'&lt;')).join('\n');
+            content = `<pre style="background:#f9fafb;padding:8px;border-radius:6px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-size:10px;margin:6px 0 0">${preview}</pre>`;
+            resultsHTML += `<details style="margin-bottom:6px">
+              <summary style="cursor:pointer;color:#166534;font-weight:600;padding:4px 0">✓ "${tab}" — tab found</summary>
+              ${content}
+            </details>`;
+          } catch(e) {
+            resultsHTML += `<details style="margin-bottom:6px">
+              <summary style="cursor:pointer;color:#92400e;font-weight:600;padding:4px 0">✗ "${tab}" — ${e.message}</summary>
+            </details>`;
+          }
+        }
+      } else {
+        resultsHTML = `<p style="color:var(--warn);margin:8px 0">No company selected — complete Step 1 first.</p>`;
+      }
+      panel.innerHTML = `
+        <details>
+          <summary style="cursor:pointer;color:#92400e;font-weight:600;list-style:none;display:inline-flex;align-items:center;gap:6px">
+            <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#d97706"></span>
+            ⚠ Show Whole Life raw CSV — share with developer to fix parser
+          </summary>
+          <div style="margin-top:10px;padding:12px;background:#fffbeb;border:1px solid #fef08a;border-radius:8px">
+            <div style="font-weight:700;color:#92400e;margin-bottom:8px">Company: ${company || '—'} &nbsp;|&nbsp; Sheet: ${cfg ? cfg.sheetId.slice(0,16)+'…' : '—'}</div>
+            ${resultsHTML}
+          </div>
+        </details>`;
+      document.querySelector('.ew-wrap').appendChild(panel);
+    }
+
+    // Auto-render WL debug panel whenever Step 2 loads
+    const _origRenderAllCards = renderAllCards;
+    renderAllCards = function() {
+      _origRenderAllCards();
+      renderWLDebugPanel();
+    };
+  </script>
+</body>
+</html>
