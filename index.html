@@ -2420,57 +2420,6 @@
             title="Employee Consent">
           </iframe>`;
         consentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // ?redirect= on the widget URL lets each broker set their own post-enrollment page
-        const REDIRECT_URL = new URLSearchParams(window.location.search).get('redirect')
-          || 'https://gothrivebg.com/whats-next';
-
-        const doRedirect = () => {
-          // Pass enrollment data to the parent funnel page before navigating
-          window.parent.postMessage({
-            type: 'enrollment_complete',
-            data: {
-              firstName:    S.firstName,
-              lastName:     S.lastName,
-              email:        S.email,
-              phone:        S.phone,
-              company:      S.company,
-              totalPremium: calcTotal(),
-              empAge:       S.empAge,
-              tobacco:      S.tobacco
-            }
-          }, '*');
-          window.top.location.href = REDIRECT_URL;
-        };
-
-        let ghlSubmitted = false;
-        const ghlMessageHandler = (event) => {
-          if (ghlSubmitted) return;
-          const d = event.data;
-          const isSubmit = (
-            (typeof d === 'string' && (d.includes('form_submitted') || d.includes('formSubmitted'))) ||
-            (typeof d === 'object' && d && (
-              d.type === 'form_submitted' || d.type === 'formSubmitted' ||
-              d.event === 'form_submitted' || d.event === 'formSubmitted' ||
-              d.action === 'form_submitted'
-            ))
-          );
-          if (isSubmit) {
-            ghlSubmitted = true;
-            window.removeEventListener('message', ghlMessageHandler);
-            doRedirect();
-          }
-        };
-        window.addEventListener('message', ghlMessageHandler);
-        const iframe = document.getElementById('ghlConsentFrame');
-        let iframeLoadCount = 0;
-        iframe.addEventListener('load', () => {
-          iframeLoadCount++;
-          if (iframeLoadCount >= 2 && !ghlSubmitted) {
-            ghlSubmitted = true;
-            window.removeEventListener('message', ghlMessageHandler);
-            doRedirect();
-          }
-        });
       }
       notifyHeight();
     }
