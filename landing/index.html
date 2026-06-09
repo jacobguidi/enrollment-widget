@@ -877,7 +877,7 @@
 <div class="builder-breakout">
 <div class="progress-bar" id="progressBar"></div>
 <div class="enroll-banner">
-  <p><strong>Open Enrollment Is Open.</strong> Your package is ready — accept before the window closes.</p>
+  <p><span id="company-banner-logo"></span><strong><span data-company-name="">Open Enrollment Is Open</span>.</strong> Your package is ready — accept before the window closes.</p>
 </div>
 <section class="hero">
   <div class="hero-grid">
@@ -886,7 +886,7 @@
         <div class="dot">
           <svg viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 2.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <span>Open Enrollment · Thrive Benefits</span>
+        <span>Open Enrollment · <span data-broker-brand="">Thrive Benefits</span></span>
       </div>
       <h1>More Benefits.<br><em>More Money.</em><br>Nothing Out of Pocket.</h1>
       <p class="hero-sub">
@@ -904,7 +904,7 @@
       <div class="pkg-card">
         <div class="pkg-header">
           <div class="pkg-lbl" id="pkg-lbl-main">A Typical Pre-Built Package</div>
-          <div class="pkg-name">Thrive Benefits Package</div>
+          <div class="pkg-name"><span data-broker-brand="">Thrive Benefits</span> Package</div>
           <div class="pkg-value-row">
             <div class="pkg-val" id="pkg-val-main">$185</div>
             <div class="pkg-val-meta">
@@ -1353,7 +1353,7 @@
 <footer>
   <div class="footer-inner">
     <a href="#" class="footer-logo">
-      <div class="logo-mark">T</div> Thrive Benefits
+      <div class="logo-mark">T</div> <span data-broker-brand="">Thrive Benefits</span>
     </a>
     <div class="footer-copy">© 2024 Thrive Benefits Group. All rights reserved.</div>
     <div class="footer-links">
@@ -1584,61 +1584,67 @@
   })();
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════
-     IFRAME EMBED — Employee Consent Form
-     submission_source is always stamped:
-       • 'trigger' if present in the landing page URL
-       • 'manual'  if the visitor arrived without that param
-════════════════════════════════════════════════════════════ -->
-<iframe
-    src="https://go.thrivebg.com/widget/form/DIoxbV08UPQHl2vN7s2y"
-    style="width:100%;height:100%;border:none;border-radius:15px"
-    id="inline-DIoxbV08UPQHl2vN7s2y"
-    data-layout="{'id':'INLINE'}"
-    data-trigger-type="alwaysShow"
-    data-trigger-value=""
-    data-activation-type="alwaysActivated"
-    data-activation-value=""
-    data-deactivation-type="neverDeactivate"
-    data-deactivation-value=""
-    data-form-name="Employee Consent (Preview Customize/ No Platform)"
-    data-height="1172"
-    data-layout-iframe-id="inline-DIoxbV08UPQHl2vN7s2y"
-    data-form-id="DIoxbV08UPQHl2vN7s2y"
-    title="Employee Consent (Preview Customize/ No Platform)">
-</iframe>
-<script src="https://go.thrivebg.com/js/form_embed.js"></script>
 <script>
-  setTimeout(function() {
-    var params = new URLSearchParams(window.location.search);
-    var iframe = document.getElementById('inline-DIoxbV08UPQHl2vN7s2y');
-    if (!iframe) return;
-    var src = new URL(iframe.src);
+(function () {
+  const DIRECTORY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?output=csv';
 
-    // Pass through known CRM fields (only if present in URL)
-    var fieldMap = {
-      'contact_id': 'contact_id',
-      'first_name': 'first_name',
-      'last_name':  'last_name',
-      'email':      'email',
-      'phone':      'phone',
-      'company':    'company_name',
-      'age':        'age',
-      'allotment':  'allotment'
-    };
-    if (params.toString()) {
-      Object.entries(fieldMap).forEach(function(entry) {
-        if (params.has(entry[0])) {
-          src.searchParams.set(entry[1], params.get(entry[0]));
-        }
-      });
+  function parseCSV(text) {
+    return text.trim().replace(/\r/g,'').split('\n').map(line => {
+      const row=[]; let cur='', inQ=false;
+      for (let i=0;i<line.length;i++) {
+        const c=line[i];
+        if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){row.push(cur.trim());cur='';}else{cur+=c;}
+      }
+      row.push(cur.trim()); return row;
+    });
+  }
+
+  async function applyCompanyBranding() {
+    const params  = new URLSearchParams(window.location.search);
+    const company = params.get('company') || params.get('company_name') || '';
+    if (!company) return;
+
+    // Always inject company name into banner text
+    document.querySelectorAll('[data-company-name]').forEach(el => {
+      el.textContent = company + ' — Open Enrollment Is Open';
+    });
+
+    // Fetch directory to get company logo
+    try {
+      const resp = await fetch(DIRECTORY_URL);
+      if (!resp.ok) return;
+      const rows = parseCSV(await resp.text());
+      if (rows.length < 2) return;
+
+      const headers = rows[0].map(h => h.trim().toLowerCase());
+      const iName = headers.findIndex(h => h === 'company name');
+      const iLogo = headers.findIndex(h => h === 'company logo');
+      if (iName < 0 || iLogo < 0) return;
+
+      const row = rows.slice(1).find(r =>
+        (r[iName]||'').trim().toLowerCase() === company.trim().toLowerCase()
+      );
+      if (!row) return;
+
+      const logoUrl = (row[iLogo]||'').trim();
+      if (!logoUrl) return;
+
+      // Inject company logo into banner
+      const wrap = document.getElementById('company-banner-logo');
+      if (wrap) {
+        wrap.innerHTML = `<img src="${logoUrl}" alt="${company}" style="height:22px;width:auto;vertical-align:middle;margin-right:10px;border-radius:4px"> `;
+      }
+    } catch(e) {
+      console.warn('[CobrBrand]', e.message);
     }
+  }
 
-    // Always stamp submission_source — 'trigger' if in URL, 'manual' otherwise
-    src.searchParams.set('submission_source', params.get('submission_source') || 'manual');
-
-    iframe.src = src.toString();
-  }, 300);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyCompanyBranding);
+  } else {
+    applyCompanyBranding();
+  }
+}());
 </script>
 <script src="../theme.js"></script>
 </body>
