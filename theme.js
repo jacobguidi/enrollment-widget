@@ -42,11 +42,13 @@
       const headers = rows[0].map(v => v.trim().toLowerCase());
       const col = name => headers.findIndex(v => v === name.toLowerCase());
 
-      const iBroker   = col('broker id');
-      const iPrimary  = col('primary color');
-      const iSecond   = col('secondary color');
-      const iLogo     = col('logo url');
-      const iBrand    = col('brand name');
+      const iBroker    = col('broker id');
+      const iPrimary   = col('primary color');
+      const iSecond    = col('secondary color');
+      const iLogo      = col('logo url');
+      const iBrand     = col('brand name');
+      const iEnrollUrl = col('enroll url');
+      const iCustomUrl = col('customize url');
 
       // Find first row belonging to this broker (any active company row works for theme data)
       const row = rows.slice(1).find(r =>
@@ -54,10 +56,12 @@
       );
       if (!row) { console.warn('[Theme] No row found for broker:', broker); return; }
 
-      const primary = iPrimary >= 0 ? (row[iPrimary] || '').trim() : '';
-      const second  = iSecond  >= 0 ? (row[iSecond]  || '').trim() : '';
-      const logoUrl = iLogo    >= 0 ? (row[iLogo]    || '').trim() : '';
-      const brand   = iBrand   >= 0 ? (row[iBrand]   || '').trim() : '';
+      const primary    = iPrimary   >= 0 ? (row[iPrimary]   || '').trim() : '';
+      const second     = iSecond    >= 0 ? (row[iSecond]    || '').trim() : '';
+      const logoUrl    = iLogo      >= 0 ? (row[iLogo]      || '').trim() : '';
+      const brand      = iBrand     >= 0 ? (row[iBrand]     || '').trim() : '';
+      const enrollUrl  = iEnrollUrl >= 0 ? (row[iEnrollUrl] || '').trim() : '';
+      const customUrl  = iCustomUrl >= 0 ? (row[iCustomUrl] || '').trim() : enrollUrl;
 
       const root = document.documentElement;
 
@@ -97,6 +101,23 @@
       if (brand) {
         document.querySelectorAll('[data-broker-brand]').forEach(el => {
           el.textContent = brand;
+        });
+      }
+
+      // Swap CTA link destinations — preserve existing URL params
+      const pageParams = new URLSearchParams(window.location.search);
+      if (enrollUrl) {
+        document.querySelectorAll('[data-broker-cta="enroll"]').forEach(a => {
+          const url = new URL(enrollUrl);
+          pageParams.forEach((v, k) => url.searchParams.set(k, v));
+          a.href = url.toString();
+        });
+      }
+      if (customUrl) {
+        document.querySelectorAll('[data-broker-cta="customize"]').forEach(a => {
+          const url = new URL(customUrl);
+          pageParams.forEach((v, k) => url.searchParams.set(k, v));
+          a.href = url.toString();
         });
       }
 
