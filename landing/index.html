@@ -908,8 +908,7 @@
       <div class="pkg-card">
         <div class="pkg-header">
           <div class="pkg-lbl" id="pkg-lbl-main">Your Benefits Package</div>
-          <div id="pkg-company-name" style="font-family:var(--font-head);font-size:13px;font-weight:700;color:rgba(255,255,255,.75);margin-bottom:2px;display:none"></div>
-          <div class="pkg-name">Benefits Package</div>
+          <div class="pkg-name" id="pkg-headline">Here's your employer sponsored benefits package</div>
           <div class="pkg-value-row">
             <div class="pkg-val" id="pkg-val-main">$185</div>
             <div class="pkg-val-meta">
@@ -1605,16 +1604,26 @@
   }
 
   function applyCompanyName(company) {
+    const params    = new URLSearchParams(window.location.search);
+    const firstName = params.get('first_name') || params.get('firstName') || '';
+
     // Banner headline
     document.querySelectorAll('[data-company-name]').forEach(el => {
       el.textContent = company + ' — Open Enrollment Is Open';
     });
-    // Hero badge: company name takes priority over broker brand name
+    // Hero badge
     const badge = document.getElementById('hero-badge-entity');
     if (badge) badge.textContent = company;
-    // Package card company name
-    const pkgName = document.getElementById('pkg-company-name');
-    if (pkgName) { pkgName.textContent = company; pkgName.style.display = 'block'; }
+    // Card overline → company name
+    const lbl = document.getElementById('pkg-lbl-main');
+    if (lbl) lbl.textContent = company;
+    // Card headline → "Jane, here's your employer sponsored benefits package"
+    const headline = document.getElementById('pkg-headline');
+    if (headline) {
+      headline.textContent = firstName
+        ? firstName + ', here\'s your employer sponsored benefits package'
+        : 'Here\'s your employer sponsored benefits package';
+    }
   }
 
   async function applyCompanyLogo(company) {
