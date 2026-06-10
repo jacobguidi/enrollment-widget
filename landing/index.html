@@ -909,6 +909,7 @@
         <div class="pkg-header">
           <div class="pkg-lbl" id="pkg-lbl-main">Your Benefits Package</div>
           <div class="pkg-name" id="pkg-headline">Here's your employer sponsored benefits package</div>
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:600;color:rgba(255,255,255,.8);margin-top:2px" id="pkg-sub-line" style="display:none">Benefits Package</div>
           <div class="pkg-value-row">
             <div class="pkg-val" id="pkg-val-main">$185</div>
             <div class="pkg-val-meta">
@@ -1617,13 +1618,11 @@
     // Card overline → company name
     const lbl = document.getElementById('pkg-lbl-main');
     if (lbl) lbl.textContent = company;
-    // Card headline → "Jane, here's your employer sponsored benefits package"
+    // Card: "[Company] Employer Sponsored" + "Benefits Package"
     const headline = document.getElementById('pkg-headline');
-    if (headline) {
-      headline.textContent = firstName
-        ? firstName + ', here\'s your employer sponsored benefits package'
-        : 'Here\'s your employer sponsored benefits package';
-    }
+    if (headline) headline.textContent = company + ' Employer Sponsored';
+    const subLine = document.getElementById('pkg-sub-line');
+    if (subLine) subLine.style.display = 'block';
   }
 
   async function applyCompanyLogo(company) {
