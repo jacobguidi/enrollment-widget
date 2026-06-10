@@ -28,11 +28,11 @@
 // ============================================================
 
 // Contains only the Clients registry tab — safe to share/publish
-const MASTER_WORKBOOK_ID = '1MWenQPb4CyASD-SOJIkmQIHNvgkhTCBrS9wjYcLLlUM';
+const MASTER_WORKBOOK_ID = '1jqzmXQPbI0jlIvVN7dMgVL6YNHz8oxTEwboh8ROVbtU';
 
 // Private workbook — contains Master Eligibility tab with employee PII
 // Create a new blank Google Sheet, paste its ID here, share with NO ONE
-const ELIGIBILITY_WORKBOOK_ID = '1BXQgc7XQxpL4lkt5VRRmVWmbDbmrVHSNSCJ9OmzR910';
+const ELIGIBILITY_WORKBOOK_ID = 'PASTE_ELIGIBILITY_SHEET_ID_HERE';
 
 const NOTIFY_EMAIL = 'jacob@thrivebg.com';
 
