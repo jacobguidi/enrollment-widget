@@ -762,6 +762,7 @@
       }
       .enroll-banner { padding-left: 0; padding-right: 0; }
       .hero { padding-top: 48px; padding-bottom: 48px; }
+      #hero-company-logo-wrap { text-align: center; }
       .nav-question { display: none; }
       .suppl-grid { grid-template-columns: 1fr; }
       .hero-cta-row { flex-direction: column; align-items: flex-start; }
@@ -882,6 +883,12 @@
 <section class="hero">
   <div class="hero-grid">
     <div>
+      <div id="hero-company-logo-wrap" style="display:none;margin-bottom:20px">
+        <img id="hero-company-logo-img" src="" alt="" data-company-logo="true"
+          style="height:90px;width:auto;max-width:240px;object-fit:contain;
+                 border-radius:10px;background:#fff;padding:8px;
+                 box-shadow:0 2px 12px rgba(0,0,0,.1)">
+      </div>
       <div class="hero-badge" id="hero-badge-pill">
         <div class="dot">
           <svg viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 2.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -889,22 +896,9 @@
         <span>Open Enrollment · <span id="hero-badge-entity" data-broker-brand="">Thrive Benefits</span></span>
       </div>
       <h1>More Benefits.<br><em>More Money.</em><br>Nothing Out of Pocket.</h1>
-      <div id="hero-company-logo-wrap" style="display:none;margin:20px 0">
-        <img id="hero-company-logo-img" src="" alt="" data-company-logo="true"
-          style="height:90px;width:auto;max-width:240px;object-fit:contain;
-                 border-radius:10px;background:#fff;padding:8px;
-                 box-shadow:0 2px 12px rgba(0,0,0,.1)">
-      </div>
       <p class="hero-sub">
         Your employer set it up. You use tax savings for benefits instead of your paycheck. No out-of-pocket expense.
       </p>
-      <div class="hero-cta-row">
-        <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="btn-forest" data-broker-cta="enroll">
-          Accept My Package
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-        <a href="#how-it-works" class="btn-outline">See How It Works</a>
-      </div>
     </div>
     <div>
       <div class="pkg-card">
