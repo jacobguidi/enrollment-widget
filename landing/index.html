@@ -747,6 +747,10 @@
     @media (max-width: 960px) {
       .hero-grid { grid-template-columns: 1fr; gap: 40px; }
       .hero::before { display: none; }
+      .enroll-banner { display: none; }
+      .hero-right { order: 1; }
+      .hero-left  { order: 2; }
+      #hero-company-logo-wrap { text-align: center; margin-top: 8px; }
       .edu-header { grid-template-columns: 1fr; gap: 36px; }
       .edu-cards { grid-template-columns: 1fr; }
       .suppl-grid { grid-template-columns: 1fr 1fr; }
@@ -882,7 +886,7 @@
 </div>
 <section class="hero">
   <div class="hero-grid">
-    <div>
+    <div class="hero-left">
       <div id="hero-company-logo-wrap" style="display:none;margin-bottom:20px">
         <img id="hero-company-logo-img" src="" alt="" data-company-logo="true"
           style="height:90px;width:auto;max-width:240px;object-fit:contain;
@@ -900,11 +904,12 @@
         Your employer set it up. You use tax savings for benefits instead of your paycheck. No out-of-pocket expense.
       </p>
     </div>
-    <div>
+    <div class="hero-right">
       <div class="pkg-card">
         <div class="pkg-header">
-          <div class="pkg-lbl" id="pkg-lbl-main">A Typical Pre-Built Package</div>
-          <div class="pkg-name"><span data-broker-brand="">Thrive Benefits</span> Package</div>
+          <div class="pkg-lbl" id="pkg-lbl-main">Your Benefits Package</div>
+          <div id="pkg-company-name" style="font-family:var(--font-head);font-size:13px;font-weight:700;color:rgba(255,255,255,.75);margin-bottom:2px;display:none"></div>
+          <div class="pkg-name">Benefits Package</div>
           <div class="pkg-value-row">
             <div class="pkg-val" id="pkg-val-main">$185</div>
             <div class="pkg-val-meta">
@@ -1607,6 +1612,9 @@
     // Hero badge: company name takes priority over broker brand name
     const badge = document.getElementById('hero-badge-entity');
     if (badge) badge.textContent = company;
+    // Package card company name
+    const pkgName = document.getElementById('pkg-company-name');
+    if (pkgName) { pkgName.textContent = company; pkgName.style.display = 'block'; }
   }
 
   async function applyCompanyLogo(company) {
