@@ -877,12 +877,18 @@
 <div class="builder-breakout">
 <div class="progress-bar" id="progressBar"></div>
 <div class="enroll-banner">
-  <p><span id="company-banner-logo"></span><strong><span data-company-name="">Open Enrollment Is Open</span>.</strong> Your package is ready — accept before the window closes.</p>
+  <p><strong><span data-company-name="">Open Enrollment Is Open</span>.</strong> Your package is ready — accept before the window closes.</p>
 </div>
 <section class="hero">
   <div class="hero-grid">
     <div>
-      <div class="hero-badge">
+      <div id="hero-company-logo-wrap" style="display:none;margin-bottom:24px">
+        <img id="hero-company-logo-img" src="" alt="" data-company-logo="true"
+          style="height:80px;width:auto;max-width:220px;object-fit:contain;
+                 border-radius:10px;background:#fff;padding:8px;
+                 box-shadow:0 2px 12px rgba(0,0,0,.1)">
+      </div>
+      <div class="hero-badge" id="hero-badge-pill">
         <div class="dot">
           <svg viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 2.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
@@ -1627,12 +1633,15 @@
       const logoUrl = row ? (row[iLogo]||'').trim() : '';
       if (!logoUrl) return;
 
-      const wrap = document.getElementById('company-banner-logo');
-      if (wrap) {
-        wrap.innerHTML = `<img src="${logoUrl}" alt="${company}" data-company-logo="true"
-          style="height:40px;width:auto;max-width:120px;vertical-align:middle;
-                 margin-right:12px;border-radius:6px;object-fit:contain;
-                 background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,.12)">`;
+      // Show large logo in hero, hide the text pill
+      const img  = document.getElementById('hero-company-logo-img');
+      const wrap = document.getElementById('hero-company-logo-wrap');
+      const pill = document.getElementById('hero-badge-pill');
+      if (img && wrap) {
+        img.src = logoUrl;
+        img.alt = company;
+        wrap.style.display = 'block';
+        if (pill) pill.style.display = 'none';
       }
     } catch(e) {
       console.warn('[CoBrand]', e.message);
