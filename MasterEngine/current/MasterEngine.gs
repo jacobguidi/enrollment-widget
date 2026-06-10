@@ -169,9 +169,10 @@ function loadCurrentConfig() {
     payFreq:          cfg['Pay Frequency']        || 26,
     ppsWorkbookId:    cfg['PPS Workbook ID']      || '',
     ppsMapping:       cfg['PPS Mapping']          || null,
-    // PATCH: use != null so a saved 0 still loads, but an unsaved
-    // value returns '' instead of writing "0" into a blank field.
     leaveInPaycheck:  cfg['Leave in Paycheck'] != null ? cfg['Leave in Paycheck'] : '',
+    brokerId:         cfg['Broker ID']            || '',
+    companyLogoUrl:   cfg['Company Logo URL']     || '',
+    clientStatus:     cfg['Client Status']        || 'Active',
   };
 }
 
@@ -214,6 +215,9 @@ function saveSetupAndImport(formJSON) {
     'PPS Workbook ID':      form.ppsWorkbookId    || '',
     'PPS Mapping':          form.ppsMapping       || null,
     'Leave in Paycheck':    Number(form.leaveInPaycheck) || 0,
+    'Broker ID':            form.brokerId         || '',
+    'Company Logo URL':     form.companyLogoUrl   || '',
+    'Client Status':        form.clientStatus     || 'Active',
   };
   saveConfig(cfg);
 
@@ -273,7 +277,9 @@ function registerWithMaster() {
   setIfHeader(['Enrollment Cutoff'],                       cfg['Enrollment Cutoff'] || '');
   setIfHeader(['Effective Date'],                          cfg['Effective Date'] || '');
   setIfHeader(['Pay Frequency'],                           cfg['Pay Frequency'] || '');
-  setIfHeader(['Status'],                                  'Active');
+  setIfHeader(['Status'],                                  cfg['Client Status'] || 'Active');
+  setIfHeader(['Broker ID'],                               cfg['Broker ID'] || '');
+  setIfHeader(['Company Logo'],                            cfg['Company Logo URL'] || '');
 
   const planBuilderCol = cm['Plan Builder ID'];
   if (planBuilderCol !== undefined) {
@@ -291,260 +297,576 @@ function registerWithMaster() {
 }
 
 // ============================================================
-// §3b  WIZARD HTML  (5-tab version — group type radio + cushion)
+// §3b  WIZARD BACKEND — Broker + Company loaders
+// ============================================================
+function loadBrokersForWizard() {
+  try {
+    const masterSS    = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
+    const sh          = masterSS.getSheetByName('Broker Config');
+    if (!sh) return { brokers: [] };
+    const data    = sh.getDataRange().getValues();
+    if (data.length < 2) return { brokers: [] };
+    const h   = data[0].map(v => String(v).trim().toLowerCase());
+    const iId = h.findIndex(v => v === 'broker id');
+    const iNm = h.findIndex(v => v === 'brand name');
+    const brokers = [];
+    for (let i = 1; i < data.length; i++) {
+      const id   = (data[i][iId] || '').toString().trim();
+      const name = (data[i][iNm] || '').toString().trim() || id;
+      if (id) brokers.push({ id, name });
+    }
+    return { brokers };
+  } catch (e) { return { error: e.message }; }
+}
+
+function loadCompaniesForBroker(brokerId) {
+  try {
+    const masterSS = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
+    const sh       = masterSS.getSheetByName('Clients');
+    if (!sh) return { companies: [] };
+    const data = sh.getDataRange().getValues();
+    if (data.length < 2) return { companies: [] };
+    const h       = data[0].map(v => String(v).trim().toLowerCase());
+    const iName   = h.findIndex(v => v === 'company name');
+    const iBroker = h.findIndex(v => v === 'broker id');
+    const iPlan   = h.findIndex(v => v === 'plan builder id');
+    const iStatus = h.findIndex(v => v === 'status');
+    const iRate   = h.findIndex(v => v === 'rate table id');
+    const iGroup  = h.findIndex(v => v === 'group id');
+    const iEff    = h.findIndex(v => v === 'effective date');
+    const iCut    = h.findIndex(v => v === 'enrollment cutoff');
+    const iLogo   = h.findIndex(v => v === 'company logo');
+    const companies = [];
+    for (let i = 1; i < data.length; i++) {
+      const broker = (data[i][iBroker] || '').toString().trim().toLowerCase();
+      if (brokerId && broker !== brokerId.toLowerCase()) continue;
+      const name = (data[i][iName] || '').toString().trim();
+      if (!name) continue;
+      companies.push({
+        name,
+        planBuilderId:    (data[i][iPlan]   || '').toString().trim(),
+        status:           (data[i][iStatus] || '').toString().trim(),
+        rateSheetId:      (data[i][iRate]   || '').toString().trim(),
+        groupId:          (data[i][iGroup]  || '').toString().trim(),
+        effectiveDate:    (data[i][iEff]    || '').toString().trim(),
+        enrollmentCutoff: (data[i][iCut]    || '').toString().trim(),
+        companyLogoUrl:   (data[i][iLogo]   || '').toString().trim(),
+      });
+    }
+    return { companies };
+  } catch (e) { return { error: e.message }; }
+}
+
+function saveBrokerConfig(formJSON) {
+  try {
+    const form     = JSON.parse(formJSON);
+    const masterSS = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
+    let sh         = masterSS.getSheetByName('Broker Config');
+    if (!sh) {
+      sh = masterSS.insertSheet('Broker Config');
+      sh.getRange(1,1,1,7).setValues([['Broker ID','Brand Name','Primary','Secondary','Logo URL','Enroll URL','Customize URL']]).setFontWeight('bold');
+    }
+    sh.appendRow([form.brokerId||'', form.brandName||'', form.primary||'', form.secondary||'', form.logoUrl||'', form.enrollUrl||'', form.customizeUrl||'']);
+    return { ok: true, message: '✓ Broker "' + (form.brandName||form.brokerId) + '" added to Master Workbook.' };
+  } catch (e) { return { ok: false, error: e.message }; }
+}
+
+function createPPSFromTemplate(companyName) {
+  const PPS_TEMPLATE_ID = '1G36w4u6A5YRw-JPSOLKdU93PXsjPtkRUa8Yyp-O47xw';
+  try {
+    const file    = DriveApp.getFileById(PPS_TEMPLATE_ID);
+    const newFile = file.makeCopy(companyName + ' — PPS Tracker');
+    const newId   = newFile.getId();
+    return { ok: true, id: newId, url: 'https://docs.google.com/spreadsheets/d/' + newId + '/edit' };
+  } catch (e) { return { ok: false, error: e.message }; }
+}
+
+// ============================================================
+// §3c  WIZARD HTML  (6-tab version — broker → company → client)
 // ============================================================
 function _buildWizardHTML() {
   return `<!DOCTYPE html>
-<html><head><style>
-  body        { font-family:'Google Sans',Roboto,Arial,sans-serif; padding:14px; font-size:13px; color:#202124; }
-  h3          { margin:0 0 4px 0; color:#1a73e8; font-size:15px; }
-  .sub        { color:#5f6368; font-size:11px; margin-bottom:14px; }
-  .steps      { display:flex; gap:4px; margin-bottom:16px; }
-  .step       { flex:1; height:4px; background:#e0e0e0; border-radius:2px; }
-  .step.active,.step.done { background:#1a73e8; }
-  .tab        { display:none; }
-  .tab.active { display:block; animation:fadeIn .2s; }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  .field      { margin-bottom:12px; }
-  .lbl        { font-size:11px; font-weight:600; color:#3c4043; margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.04em; }
-  .hint       { font-size:10.5px; color:#5f6368; margin-top:3px; line-height:1.4; }
-  input,select,textarea { width:100%; box-sizing:border-box; padding:7px 9px; border:1px solid #dadce0; border-radius:4px; font-size:12.5px; font-family:inherit; color:#202124; }
-  textarea { font-family:monospace; font-size:10.5px; min-height:110px; resize:vertical; }
-  input:focus,select:focus,textarea:focus { outline:none; border-color:#1a73e8; box-shadow:0 0 0 2px rgba(26,115,232,.12); }
-  .row2       { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .btn-row    { display:flex; gap:8px; margin-top:14px; }
-  .btn        { flex:1; padding:9px 12px; border-radius:4px; border:none; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-  .btn-primary              { background:#1a73e8; color:#fff; }
-  .btn-primary:hover        { background:#1557b0; }
-  .btn-primary:disabled     { background:#dadce0; color:#5f6368; cursor:not-allowed; }
-  .btn-ghost                { background:#fff; color:#1a73e8; border:1px solid #dadce0; }
-  .btn-ghost:hover          { background:#f1f3f4; }
-  .map-row    { display:grid; grid-template-columns:1fr 1fr; gap:6px; align-items:center; padding:5px 0; border-bottom:1px solid #f1f3f4; }
-  .map-row:last-child       { border-bottom:none; }
-  .map-lbl    { font-size:11px; color:#3c4043; font-weight:500; }
-  .map-row select           { font-size:11px; padding:5px 7px; }
-  #status     { margin-top:12px; padding:10px 12px; border-radius:4px; display:none; font-size:12px; line-height:1.5; }
-  .ok-bg      { background:#e6f4ea; color:#137333; }
-  .err-bg     { background:#fce8e6; color:#c5221f; }
-  .info-card  { background:#f1f3f4; padding:8px 10px; border-radius:4px; font-size:11px; line-height:1.5; margin-bottom:12px; }
-  .radio-group        { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
-  .radio-group label  { display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer; font-weight:500; }
-  .pps-card   { background:#e8f0fe; border:1px solid #c5d6f5; border-radius:4px; padding:10px 12px; font-size:11.5px; line-height:1.6; margin-bottom:10px; }
-  .pps-card b { color:#1a73e8; }
-  .pps-card ol{ margin:6px 0 0 16px; padding:0; }
+<html><head><meta charset="UTF-8"><style>
+  *{box-sizing:border-box}
+  body{font-family:'Google Sans',Roboto,Arial,sans-serif;padding:14px;font-size:13px;color:#202124;margin:0}
+  h3{margin:0 0 2px;color:#1a73e8;font-size:15px}
+  .sub{color:#5f6368;font-size:11px;margin-bottom:14px}
+  .steps{display:flex;gap:4px;margin-bottom:16px}
+  .step{flex:1;height:4px;background:#e0e0e0;border-radius:2px;transition:background .2s}
+  .step.active,.step.done{background:#1a73e8}
+  .tab{display:none}
+  .tab.active{display:block;animation:fadeIn .2s}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .field{margin-bottom:12px}
+  .lbl{font-size:11px;font-weight:600;color:#3c4043;margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.04em}
+  .hint{font-size:10.5px;color:#5f6368;margin-top:3px;line-height:1.4}
+  input,select,textarea{width:100%;padding:7px 9px;border:1px solid #dadce0;border-radius:4px;font-size:12.5px;font-family:inherit;color:#202124}
+  textarea{font-family:monospace;font-size:10.5px;min-height:90px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.12)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-row{display:flex;gap:8px;margin-top:14px}
+  .btn{flex:1;padding:9px 12px;border-radius:4px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-primary{background:#1a73e8;color:#fff}
+  .btn-primary:hover{background:#1557b0}
+  .btn-primary:disabled{background:#dadce0;color:#5f6368;cursor:not-allowed}
+  .btn-ghost{background:#fff;color:#1a73e8;border:1px solid #dadce0}
+  .btn-ghost:hover{background:#f1f3f4}
+  .btn-sm{flex:none;padding:6px 12px;font-size:12px;border-radius:4px;border:1px solid #1a73e8;background:#e8f0fe;color:#1a73e8;cursor:pointer;font-family:inherit;font-weight:600}
+  .btn-sm:hover{background:#d2e3fc}
+  .map-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid #f1f3f4}
+  .map-row:last-child{border-bottom:none}
+  .map-lbl{font-size:11px;color:#3c4043;font-weight:500}
+  .map-row select{font-size:11px;padding:5px 7px}
+  #status{margin-top:12px;padding:10px 12px;border-radius:4px;display:none;font-size:12px;line-height:1.5}
+  .ok-bg{background:#e6f4ea;color:#137333}
+  .err-bg{background:#fce8e6;color:#c5221f}
+  .info-card{background:#f1f3f4;padding:8px 10px;border-radius:4px;font-size:11px;line-height:1.5;margin-bottom:12px}
+  .radio-group{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .radio-group label{display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;font-weight:500}
+  .card{border-radius:6px;padding:10px 12px;font-size:11.5px;line-height:1.6;margin-bottom:10px}
+  .card-blue{background:#e8f0fe;border:1px solid #c5d6f5}
+  .card-blue b{color:#1a73e8}
+  .card-yellow{background:#fef9c3;border:1px solid #fde68a}
+  .card-yellow b{color:#92400e}
+  .card-green{background:#e6f4ea;border:1px solid #a8d5b5}
+  .card-green b{color:#137333}
+  .divider{border:none;border-top:1px solid #e0e0e0;margin:14px 0}
+  .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:6px;vertical-align:middle}
+  .tag-active{background:#e6f4ea;color:#137333}
+  .tag-inactive{background:#fce8e6;color:#c5221f}
+  .tag-new{background:#e8f0fe;color:#1a73e8}
 </style></head><body>
 
-  <h3>Setup &amp; Import</h3>
-  <p class="sub">Lock template constraints once — Steps 2 and 3 read these automatically.</p>
+<h3>Setup &amp; Import</h3>
+<p class="sub">Broker → Company → Client details → Rates → PPS → Pay &amp; Mapping</p>
 
-  <div class="steps">
-    <div class="step active" id="s1"></div>
-    <div class="step" id="s2"></div>
-    <div class="step" id="s3"></div>
-    <div class="step" id="s4"></div>
-    <div class="step" id="s5"></div>
+<div class="steps">
+  <div class="step active" id="s1"></div>
+  <div class="step" id="s2"></div>
+  <div class="step" id="s3"></div>
+  <div class="step" id="s4"></div>
+  <div class="step" id="s5"></div>
+  <div class="step" id="s6"></div>
+</div>
+
+<!-- ═══ TAB 1: BROKER ═══ -->
+<div class="tab active" id="tab1">
+  <div class="field">
+    <label class="lbl">Select Broker</label>
+    <select id="brokerSelect" onchange="onBrokerSelect()">
+      <option value="">Loading brokers…</option>
+    </select>
+    <p class="hint" id="brokerHint">Loads from Master Clients → Broker Config tab.</p>
   </div>
 
-  <div class="tab active" id="tab1">
-    <div class="field"><label class="lbl">Company Name</label>
-      <input id="company" type="text" placeholder="City of Refuge" /></div>
-    <div class="field">
-      <label class="lbl">Group ID <span style="font-weight:400; text-transform:none; letter-spacing:0">— assigned by Recuro</span></label>
-      <input id="groupId" type="text" placeholder="Leave blank until Recuro provides" />
-      <p class="hint">Recuro assigns this when they onboard the group. Save now and re-run Setup to fill in later — it will update, not duplicate.</p>
-    </div>
-    <div class="field"><label class="lbl">Enrollment Cutoff</label>
-      <input id="enrollmentCutoff" type="text" placeholder="MM/DD/YYYY" /></div>
+  <div id="newBrokerForm" style="display:none">
+    <hr class="divider">
+    <div class="card card-blue" style="margin-bottom:12px"><b>New Broker Setup</b> — this will add a row to the Broker Config tab in the Master Workbook.</div>
     <div class="row2">
-      <div class="field"><label class="lbl">Effective Date</label>
-        <input id="effectiveDate" type="text" placeholder="MM/DD/YYYY" /></div>
-      <div class="field"><label class="lbl">Sign Date</label>
-        <input id="signDate" type="text" placeholder="MM/DD/YYYY" /></div>
+      <div class="field"><label class="lbl">Brand Name</label>
+        <input id="brokerBrandName" type="text" placeholder="Acme Benefits" oninput="autoSlugBrokerId()" /></div>
+      <div class="field"><label class="lbl">Broker ID <span style="font-weight:400;text-transform:none;letter-spacing:0">(slug)</span></label>
+        <input id="brokerIdNew" type="text" placeholder="acme" /></div>
     </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="next(1)">Next →</button></div>
+    <div class="row2">
+      <div class="field"><label class="lbl">Primary Color</label>
+        <input id="brokerPrimary" type="text" placeholder="#1F5C42" /></div>
+      <div class="field"><label class="lbl">Secondary Color</label>
+        <input id="brokerSecondary" type="text" placeholder="#2DB89E" /></div>
+    </div>
+    <div class="field"><label class="lbl">Enroll URL <span style="font-weight:400;text-transform:none;letter-spacing:0">— GHL page with enrollment widget</span></label>
+      <input id="brokerEnrollUrl" type="text" placeholder="https://go.broker.com/enroll" /></div>
+    <div class="field"><label class="lbl">Customize URL <span style="font-weight:400;text-transform:none;letter-spacing:0">— leave blank to use Enroll URL</span></label>
+      <input id="brokerCustomizeUrl" type="text" placeholder="https://go.broker.com/customize" /></div>
+    <div class="field"><label class="lbl">Broker Logo URL</label>
+      <input id="brokerLogoUrl" type="text" placeholder="Paste GHL media link after upload" />
+      <p class="hint">📤 Upload logo in GHL → Media Library → Upload → right-click image → Copy Link → paste above.</p>
+    </div>
+    <button class="btn btn-sm" onclick="saveNewBroker()" style="width:100%;margin-bottom:4px">Save Broker to Master →</button>
+    <div id="brokerSaveMsg" style="font-size:11px;color:#137333;display:none;margin-top:4px"></div>
   </div>
 
-  <div class="tab" id="tab2">
-    <div class="field"><label class="lbl">Rate Tables Sheet ID</label>
-      <input id="rateSheetId" type="text" placeholder="1ABCdef…" onblur="onRateIdChange()" /></div>
-    <div class="field"><label class="lbl">STD Benefit Period</label>
-      <select id="stdLabel"><option value="">— pick rate sheet first —</option></select>
-      <p class="hint" id="stdHint">Auto-loads from the rate sheet's Short Term Disability tab.</p>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-ghost"   onclick="prev(2)">← Back</button>
-      <button class="btn btn-primary" onclick="next(2)">Next →</button>
-    </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="next(1)">Next →</button>
+  </div>
+</div>
+
+<!-- ═══ TAB 2: COMPANY ═══ -->
+<div class="tab" id="tab2">
+  <div class="field">
+    <label class="lbl">Select Company <span id="brokerLabel" style="font-weight:400;text-transform:none;letter-spacing:0;color:#5f6368"></span></label>
+    <select id="companySelect" onchange="onCompanySelect()">
+      <option value="">— select broker first —</option>
+    </select>
   </div>
 
-  <div class="tab" id="tab3">
+  <div id="existingClientCard" style="display:none">
+    <div class="card card-green" id="existingClientSummary"></div>
+    <div class="card card-yellow"><b>Tip:</b> For existing clients, typically only the Effective Date changes each enrollment period. All other settings will pre-fill in the next steps.</div>
+  </div>
+
+  <div id="newClientForm" style="display:none">
+    <hr class="divider">
+    <div class="card card-blue"><b>New Client Setup</b> — fill in company details below.</div>
     <div class="field">
-      <label class="lbl">Group Onboarding Classification</label>
+      <label class="lbl">Status</label>
       <div class="radio-group">
-        <label><input type="radio" name="groupType" value="existing" onchange="onGroupTypeChange('existing')" /> Existing Group with an Active PPS Tracker</label>
-        <label><input type="radio" name="groupType" value="new" onchange="onGroupTypeChange('new')" /> New Group without a PPS Template Workbook</label>
+        <label><input type="radio" name="clientStatus" value="Active" checked /> Active — visible in enrollment widget</label>
+        <label><input type="radio" name="clientStatus" value="Inactive" /> Inactive — hidden from widget</label>
       </div>
     </div>
-
-    <div id="newGroupCard" style="display:none">
-      <div class="pps-card">
-        <b>Action Required — Initialize New PPS File:</b>
-        <ol>
-          <li>Open the master PPS template:<br>
-              <a href="https://docs.google.com/spreadsheets/d/1G36w4u6A5YRw-JPSOLKdU93PXsjPtkRUa8Yyp-O47xw/edit?gid=0#gid=0" target="_blank" style="color:#1a73e8; font-weight:bold;">Open Master PPS Template</a>
-          </li>
-          <li>Clone it into your tracking drive: <b>File → Make a copy</b></li>
-          <li>Rename the copy to this client's company name</li>
-          <li style="color:#c5221f; font-weight:bold;">Configure benefit headers in Row 6 only. Do not touch default columns.</li>
-          <li>Copy the Sheet ID from the new file's URL.</li>
-        </ol>
-      </div>
+    <div class="field"><label class="lbl">Company / Group Name</label>
+      <input id="companyNew" type="text" placeholder="City of Refuge" /></div>
+    <div class="field"><label class="lbl">Group ID <span style="font-weight:400;text-transform:none;letter-spacing:0">— assigned by Recuro</span></label>
+      <input id="groupIdNew" type="text" placeholder="Leave blank until Recuro provides" />
+      <p class="hint">Re-run Setup later to fill this in — it updates, does not duplicate.</p>
     </div>
-
-    <div id="existingGroupCard" style="display:none">
-      <div class="pps-card">
-        <b>Connect Existing Group Tracker:</b>
-        <ol>
-          <li>Open the group's existing PPS workbook</li>
-          <li>Copy the Sheet ID from the URL (the long string between /d/ and /edit)</li>
-        </ol>
-      </div>
-    </div>
-
-    <div class="field" id="ppsIdField" style="display:none">
-      <label class="lbl">Target PPS Workbook Sheet ID</label>
-      <input id="ppsWorkbookId" type="text" placeholder="Paste Sheet ID here" />
-      <p class="hint">Leave blank if PPS lives in this same workbook.</p>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-ghost"   onclick="prev(3)">← Back</button>
-      <button class="btn btn-primary" onclick="next(3)">Next →</button>
+    <div class="field"><label class="lbl">Company Logo URL</label>
+      <input id="companyLogoNew" type="text" placeholder="Paste GHL media link after upload" />
+      <p class="hint">📤 GHL → Media Library → Upload company logo → right-click → Copy Link → paste above.</p>
     </div>
   </div>
 
-  <div class="tab" id="tab4">
-    <div class="field">
-      <label class="lbl">Pay Frequency</label>
-      <select id="payFreq">
-        <option value="52">Weekly (52/year)</option>
-        <option value="26" selected>Bi-Weekly (26/year)</option>
-        <option value="24">Semi-Monthly (24/year)</option>
-        <option value="12">Monthly (12/year)</option>
-      </select>
-    </div>
-    <div class="field" style="margin-top:14px;">
-      <label class="lbl" style="color:#1a73e8;">Money to Leave in Paycheck ($)</label>
-      <input id="leaveInPaycheck" type="number" min="0" placeholder="0" />
-      <p class="hint">Reduces the per-employee build budget by this amount during auto-enroll. The Remaining Formula column still shows the full allotment minus all premiums.</p>
-    </div>
-    <p class="lbl" style="margin-top:14px">PPS Column Mapping</p>
-    <div id="ppsMapBox" class="info-card">Loading PPS columns…</div>
-    <div class="btn-row">
-      <button class="btn btn-ghost"   onclick="prev(4)">← Back</button>
-      <button class="btn btn-primary" onclick="next(4)">Next →</button>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="prev(2)">← Back</button>
+    <button class="btn btn-primary" onclick="next(2)">Next →</button>
+  </div>
+</div>
+
+<!-- ═══ TAB 3: RATES & DATES ═══ -->
+<div class="tab" id="tab3">
+  <div class="field"><label class="lbl">Rate Tables Sheet ID</label>
+    <input id="rateSheetId" type="text" placeholder="1ABCdef…" onblur="onRateIdChange()" /></div>
+  <div class="field"><label class="lbl">STD Benefit Period</label>
+    <select id="stdLabel"><option value="">— enter Rate Sheet ID first —</option></select>
+    <p class="hint" id="stdHint">Auto-loads from the rate sheet's Short Term Disability tab.</p>
+  </div>
+  <hr class="divider">
+  <div class="field"><label class="lbl">Enrollment Cutoff</label>
+    <input id="enrollmentCutoff" type="text" placeholder="MM/DD/YYYY" /></div>
+  <div class="row2">
+    <div class="field"><label class="lbl">Effective Date</label>
+      <input id="effectiveDate" type="text" placeholder="MM/DD/YYYY" /></div>
+    <div class="field"><label class="lbl">Sign Date</label>
+      <input id="signDate" type="text" placeholder="MM/DD/YYYY" /></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="prev(3)">← Back</button>
+    <button class="btn btn-primary" onclick="next(3)">Next →</button>
+  </div>
+</div>
+
+<!-- ═══ TAB 4: PPS ═══ -->
+<div class="tab" id="tab4">
+  <div class="field">
+    <label class="lbl">PPS Workbook</label>
+    <div class="radio-group">
+      <label><input type="radio" name="groupType" value="existing" onchange="onGroupTypeChange('existing')" /> Existing Group — connect existing PPS tracker</label>
+      <label><input type="radio" name="groupType" value="new" onchange="onGroupTypeChange('new')" /> New Group — create PPS from template</label>
     </div>
   </div>
 
-  <div class="tab" id="tab5">
-    <p class="lbl">Savings Data (optional)</p>
-    <textarea id="savingsRaw" placeholder="Jane&#9;Smith&#9;$54.50"></textarea>
-    <p class="lbl" style="margin-top:14px">Salary Data (optional)</p>
-    <textarea id="salaryRaw" placeholder="Smith&#9;Jane&#9;$48,000"></textarea>
-    <div class="btn-row">
-      <button class="btn btn-ghost"   onclick="prev(5)">← Back</button>
-      <button class="btn btn-primary" id="saveBtn" onclick="doSave()">Save &amp; Import →</button>
+  <div id="newGroupCard" style="display:none">
+    <div class="card card-blue">
+      <b>Create a new PPS Tracker from the master template:</b><br>
+      Click below — it will copy the template, name it after this client, and auto-fill the Sheet ID.
+    </div>
+    <button class="btn btn-sm" onclick="doCreatePPS()" style="width:100%;margin-bottom:10px" id="createPPSBtn">📋 Create PPS from Template</button>
+    <div id="ppsCreateMsg" style="font-size:11px;margin-bottom:8px;display:none"></div>
+  </div>
+
+  <div id="existingGroupCard" style="display:none">
+    <div class="card card-blue">
+      <b>Connect existing PPS tracker:</b><br>
+      Open the group's PPS workbook → copy the Sheet ID from the URL (long string between /d/ and /edit).
     </div>
   </div>
 
-  <div id="status"></div>
+  <div class="field" id="ppsIdField" style="display:none">
+    <label class="lbl">PPS Workbook Sheet ID</label>
+    <input id="ppsWorkbookId" type="text" placeholder="Paste Sheet ID here" />
+    <p class="hint">Leave blank if PPS lives in this same workbook.</p>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="prev(4)">← Back</button>
+    <button class="btn btn-primary" onclick="next(4)">Next →</button>
+  </div>
+</div>
+
+<!-- ═══ TAB 5: PAY & MAPPING ═══ -->
+<div class="tab" id="tab5">
+  <div class="field"><label class="lbl">Pay Frequency</label>
+    <select id="payFreq">
+      <option value="52">Weekly (52/year)</option>
+      <option value="26" selected>Bi-Weekly (26/year)</option>
+      <option value="24">Semi-Monthly (24/year)</option>
+      <option value="12">Monthly (12/year)</option>
+    </select>
+  </div>
+  <div class="field"><label class="lbl" style="color:#1a73e8">Money to Leave in Paycheck ($)</label>
+    <input id="leaveInPaycheck" type="number" min="0" placeholder="0" />
+    <p class="hint">Reduces per-employee build budget. Remaining Formula still shows full allotment minus premiums.</p>
+  </div>
+  <hr class="divider">
+  <p class="lbl">PPS Column Mapping</p>
+  <div id="ppsMapBox" class="info-card">Loading PPS columns…</div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="prev(5)">← Back</button>
+    <button class="btn btn-primary" onclick="next(5)">Next →</button>
+  </div>
+</div>
+
+<!-- ═══ TAB 6: IMPORT ═══ -->
+<div class="tab" id="tab6">
+  <p class="lbl">Savings Data <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#5f6368">(optional)</span></p>
+  <textarea id="savingsRaw" placeholder="Jane&#9;Smith&#9;$54.50"></textarea>
+  <p class="lbl" style="margin-top:12px">Salary Data <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#5f6368">(optional)</span></p>
+  <textarea id="salaryRaw" placeholder="Smith&#9;Jane&#9;$48,000"></textarea>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="prev(6)">← Back</button>
+    <button class="btn btn-primary" id="saveBtn" onclick="doSave()">Save &amp; Import →</button>
+  </div>
+</div>
+
+<div id="status"></div>
 
 <script>
-  var current    = 1;
-  var TOTAL_TABS = 5;
-  var ppsCols    = [];
+  var current     = 1;
+  var TOTAL_TABS  = 6;
+  var ppsCols     = [];
   var ppsDetected = null;
+  var selectedBrokerId   = '';
+  var selectedCompany    = null; // null = new, object = existing
+  var isNewClient        = false;
+
+  // ── On load: populate brokers, pre-fill existing config ──
+  google.script.run.withSuccessHandler(function(r) {
+    var sel = document.getElementById('brokerSelect');
+    sel.innerHTML = '<option value="">— Select broker —</option>';
+    (r.brokers || []).forEach(function(b) {
+      sel.innerHTML += '<option value="' + esc(b.id) + '">' + esc(b.name) + '</option>';
+    });
+    sel.innerHTML += '<option value="__new__">➕ Set up a new broker</option>';
+    document.getElementById('brokerHint').textContent = (r.brokers||[]).length + ' broker(s) loaded.';
+    if (r.error) document.getElementById('brokerHint').textContent = 'Error: ' + r.error;
+  }).withFailureHandler(function(e) {
+    document.getElementById('brokerHint').textContent = 'Failed to load brokers: ' + (e.message||e);
+  }).loadBrokersForWizard();
 
   google.script.run.withSuccessHandler(function(c) {
-    var setIf = function(id, v) {
-      var el = document.getElementById(id);
-      if (el && !el.value && v !== '' && v != null) el.value = v;
-    };
-    setIf('company',          c.company);
-    setIf('groupId',          c.groupId);
-    setIf('enrollmentCutoff', c.enrollmentCutoff);
-    setIf('effectiveDate',    c.effectiveDate);
-    setIf('signDate',         c.signDate);
-    setIf('rateSheetId',      c.rateSheetId);
-    setIf('ppsWorkbookId',    c.ppsWorkbookId);
-    setIf('leaveInPaycheck',  c.leaveInPaycheck);
-
-    if (c.payFreq) document.getElementById('payFreq').value = String(c.payFreq);
-    if (document.getElementById('rateSheetId').value) onRateIdChange();
-    if (c.stdLabel) setTimeout(function() {
-      var sel = document.getElementById('stdLabel');
-      for (var i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value === c.stdLabel) { sel.selectedIndex = i; break; }
+    window.__savedConfig = c;
+    window.__savedPPSMapping = c.ppsMapping;
+    // Pre-select broker if saved
+    if (c.brokerId) {
+      var sel = document.getElementById('brokerSelect');
+      for (var i=0;i<sel.options.length;i++) {
+        if (sel.options[i].value === c.brokerId) { sel.selectedIndex = i; break; }
       }
-    }, 800);
-
+      selectedBrokerId = c.brokerId;
+    }
+    // Pre-fill rate/date/pay fields from saved config
+    setIfEmpty('rateSheetId',      c.rateSheetId);
+    setIfEmpty('enrollmentCutoff', c.enrollmentCutoff);
+    setIfEmpty('effectiveDate',    c.effectiveDate);
+    setIfEmpty('signDate',         c.signDate);
+    setIfEmpty('leaveInPaycheck',  c.leaveInPaycheck);
+    if (c.payFreq) document.getElementById('payFreq').value = String(c.payFreq);
+    if (c.rateSheetId) onRateIdChange();
+    if (c.stdLabel) {
+      setTimeout(function() {
+        var s = document.getElementById('stdLabel');
+        for (var i=0;i<s.options.length;i++) {
+          if (s.options[i].value===c.stdLabel){s.selectedIndex=i;break;}
+        }
+      }, 900);
+    }
     if (c.ppsWorkbookId) {
+      setIfEmpty('ppsWorkbookId', c.ppsWorkbookId);
       document.querySelectorAll('input[name="groupType"]').forEach(function(r) {
-        if (r.value === 'existing') r.checked = true;
+        if (r.value==='existing') r.checked=true;
       });
       onGroupTypeChange('existing');
     }
-    window.__savedPPSMapping = c.ppsMapping;
   }).loadCurrentConfig();
 
+  function setIfEmpty(id, v) {
+    var el = document.getElementById(id);
+    if (el && !el.value && v !== '' && v != null) el.value = v;
+  }
+
+  // ── Broker tab ──
+  function onBrokerSelect() {
+    var v = document.getElementById('brokerSelect').value;
+    document.getElementById('newBrokerForm').style.display = (v === '__new__') ? 'block' : 'none';
+    if (v && v !== '__new__') {
+      selectedBrokerId = v;
+      document.getElementById('brokerHint').textContent = 'Selected: ' + v;
+    }
+  }
+
+  function autoSlugBrokerId() {
+    var name = document.getElementById('brokerBrandName').value;
+    var slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    document.getElementById('brokerIdNew').value = slug;
+  }
+
+  function saveNewBroker() {
+    var form = {
+      brandName:    document.getElementById('brokerBrandName').value.trim(),
+      brokerId:     document.getElementById('brokerIdNew').value.trim(),
+      primary:      document.getElementById('brokerPrimary').value.trim(),
+      secondary:    document.getElementById('brokerSecondary').value.trim(),
+      enrollUrl:    document.getElementById('brokerEnrollUrl').value.trim(),
+      customizeUrl: document.getElementById('brokerCustomizeUrl').value.trim(),
+      logoUrl:      document.getElementById('brokerLogoUrl').value.trim(),
+    };
+    if (!form.brokerId) { alert('Broker ID is required.'); return; }
+    var msg = document.getElementById('brokerSaveMsg');
+    msg.textContent = 'Saving…'; msg.style.display = 'block'; msg.style.color = '#5f6368';
+    google.script.run
+      .withSuccessHandler(function(r) {
+        if (r.ok) {
+          msg.textContent = r.message; msg.style.color = '#137333';
+          selectedBrokerId = form.brokerId;
+          // Add to dropdown
+          var sel = document.getElementById('brokerSelect');
+          var opt = document.createElement('option');
+          opt.value = form.brokerId; opt.textContent = form.brandName || form.brokerId; opt.selected = true;
+          sel.insertBefore(opt, sel.lastElementChild);
+          document.getElementById('newBrokerForm').style.display = 'none';
+        } else {
+          msg.textContent = 'Error: ' + r.error; msg.style.color = '#c5221f';
+        }
+      })
+      .withFailureHandler(function(e) { msg.textContent = 'Failed: '+(e.message||e); msg.style.color='#c5221f'; })
+      .saveBrokerConfig(JSON.stringify(form));
+  }
+
+  // ── Company tab ──
+  function loadCompaniesForBroker(brokerId) {
+    var sel = document.getElementById('companySelect');
+    sel.innerHTML = '<option value="">Loading…</option>';
+    document.getElementById('brokerLabel').textContent = '— ' + brokerId;
+    google.script.run
+      .withSuccessHandler(function(r) {
+        if (r.error) { sel.innerHTML = '<option value="">Error: '+esc(r.error)+'</option>'; return; }
+        sel.innerHTML = '<option value="">— Select company —</option>';
+        (r.companies||[]).forEach(function(c) {
+          var tag = c.status === 'Active' ? ' ✓' : ' (inactive)';
+          sel.innerHTML += '<option value="' + esc(c.name) + '" data-config="' + esc(JSON.stringify(c)) + '">' + esc(c.name) + tag + '</option>';
+        });
+        sel.innerHTML += '<option value="__new__">➕ New Client</option>';
+      })
+      .withFailureHandler(function(e) { sel.innerHTML = '<option value="">Failed: '+(e.message||e)+'</option>'; })
+      .loadCompaniesForBroker(brokerId);
+  }
+
+  function onCompanySelect() {
+    var sel = document.getElementById('companySelect');
+    var v   = sel.value;
+    var existCard = document.getElementById('existingClientCard');
+    var newForm   = document.getElementById('newClientForm');
+    existCard.style.display = 'none'; newForm.style.display = 'none';
+    isNewClient = false; selectedCompany = null;
+
+    if (v === '__new__') {
+      isNewClient = true;
+      newForm.style.display = 'block';
+    } else if (v) {
+      var opt = sel.options[sel.selectedIndex];
+      try { selectedCompany = JSON.parse(opt.getAttribute('data-config') || '{}'); } catch(e) { selectedCompany = {}; }
+      var statusTag = selectedCompany.status === 'Active'
+        ? '<span class="tag tag-active">Active</span>'
+        : '<span class="tag tag-inactive">Inactive</span>';
+      document.getElementById('existingClientSummary').innerHTML =
+        '<b>' + esc(selectedCompany.name||v) + '</b>' + statusTag + '<br>' +
+        (selectedCompany.groupId ? 'Group ID: <b>' + esc(selectedCompany.groupId) + '</b><br>' : '') +
+        (selectedCompany.effectiveDate ? 'Effective: <b>' + esc(selectedCompany.effectiveDate) + '</b><br>' : '') +
+        (selectedCompany.enrollmentCutoff ? 'Cutoff: <b>' + esc(selectedCompany.enrollmentCutoff) + '</b>' : '');
+      existCard.style.display = 'block';
+      // Pre-fill rate/date fields from master row
+      setIfEmpty('rateSheetId',      selectedCompany.rateSheetId);
+      setIfEmpty('effectiveDate',    selectedCompany.effectiveDate);
+      setIfEmpty('enrollmentCutoff', selectedCompany.enrollmentCutoff);
+    }
+  }
+
+  // ── PPS tab ──
   function onGroupTypeChange(type) {
-    document.getElementById('newGroupCard').style.display      = type === 'new'      ? 'block' : 'none';
-    document.getElementById('existingGroupCard').style.display = type === 'existing' ? 'block' : 'none';
+    document.getElementById('newGroupCard').style.display      = type==='new'      ? 'block' : 'none';
+    document.getElementById('existingGroupCard').style.display = type==='existing' ? 'block' : 'none';
     document.getElementById('ppsIdField').style.display        = 'block';
   }
 
-  function showTab(n) {
-    for (var i = 1; i <= TOTAL_TABS; i++) {
-      document.getElementById('tab' + i).classList.toggle('active', i === n);
-      var s = document.getElementById('s' + i);
-      if (s) {
-        s.className = 'step';
-        if (i < n) s.classList.add('done');
-        if (i === n) s.classList.add('active');
-      }
-    }
-    current = n;
-    if (n === 4 && ppsCols.length === 0) loadPPSCols();
+  function doCreatePPS() {
+    var company = val('companyNew') || (selectedCompany && selectedCompany.name) || val('company') || 'Client';
+    var btn = document.getElementById('createPPSBtn');
+    var msg = document.getElementById('ppsCreateMsg');
+    btn.disabled = true; btn.textContent = '⏳ Creating PPS…';
+    msg.style.display = 'none';
+    google.script.run
+      .withSuccessHandler(function(r) {
+        btn.disabled = false; btn.textContent = '📋 Create PPS from Template';
+        msg.style.display = 'block';
+        if (r.ok) {
+          document.getElementById('ppsWorkbookId').value = r.id;
+          msg.innerHTML = '✓ Created: <a href="' + r.url + '" target="_blank" style="color:#1a73e8">' + esc(r.name||r.id) + '</a><br>ID auto-filled below.';
+          msg.style.color = '#137333';
+        } else {
+          msg.textContent = 'Error: ' + (r.error||'unknown'); msg.style.color = '#c5221f';
+        }
+      })
+      .withFailureHandler(function(e) {
+        btn.disabled=false; btn.textContent='📋 Create PPS from Template';
+        msg.textContent='Failed: '+(e.message||e); msg.style.color='#c5221f'; msg.style.display='block';
+      })
+      .createPPSFromTemplate(company);
   }
 
-  function next(from) { if (!validateTab(from)) return; showTab(from + 1); }
-  function prev(from) { showTab(from - 1); }
+  // ── Navigation ──
+  function showTab(n) {
+    for (var i=1;i<=TOTAL_TABS;i++) {
+      document.getElementById('tab'+i).classList.toggle('active', i===n);
+      var s = document.getElementById('s'+i);
+      if (s) { s.className='step'; if(i<n) s.classList.add('done'); if(i===n) s.classList.add('active'); }
+    }
+    current = n;
+    if (n===5 && ppsCols.length===0) loadPPSCols();
+  }
+
+  function next(from) { if (!validateTab(from)) return; showTab(from+1); }
+  function prev(from) { showTab(from-1); }
 
   function validateTab(n) {
     var err = '';
-    if (n === 1) {
-      if (!val('company'))                  err = 'Company name is required.';
+    if (n===1) {
+      var bv = document.getElementById('brokerSelect').value;
+      if (!bv || bv==='__new__') err = 'Select a broker or save a new one first.';
+      else selectedBrokerId = bv;
+      if (!err) loadCompaniesForBroker(selectedBrokerId);
+    }
+    if (n===2) {
+      var cv = document.getElementById('companySelect').value;
+      if (!cv) err = 'Select a company or choose New Client.';
+      if (!err && isNewClient && !val('companyNew')) err = 'Company name is required for new clients.';
+    }
+    if (n===3) {
+      if (!val('rateSheetId'))      err = 'Rate Tables Sheet ID is required.';
+      if (!err && !val('stdLabel')) err = 'Select an STD benefit period.';
       if (!err && !val('enrollmentCutoff')) err = 'Enrollment Cutoff is required.';
       if (!err && !val('effectiveDate'))    err = 'Effective Date is required.';
       if (!err && !val('signDate'))         err = 'Sign Date is required.';
     }
-    if (n === 2) {
-      if (!val('rateSheetId')) err = 'Rate Tables Sheet ID is required.';
-      if (!err && !val('stdLabel')) err = 'Select an STD benefit period.';
-    }
-    if (n === 3) {
+    if (n===4) {
       if (!document.querySelector('input[name="groupType"]:checked'))
-        err = 'Please pick New or Existing group.';
+        err = 'Select New Group or Existing Group.';
     }
     if (err) { setStatus(err, 'err-bg'); return false; }
-    hideStatus();
-    return true;
+    hideStatus(); return true;
   }
 
-  function val(id) {
-    var el = document.getElementById(id);
-    return el ? (el.value || '').trim() : '';
-  }
+  function val(id) { var el=document.getElementById(id); return el?(el.value||'').trim():''; }
 
   function onRateIdChange() {
     var id = val('rateSheetId'); if (!id) return;
@@ -552,117 +874,103 @@ function _buildWizardHTML() {
     hint.textContent = 'Loading STD options…';
     google.script.run
       .withSuccessHandler(function(r) {
-        if (r.error) { hint.textContent = 'Error: ' + r.error; return; }
+        if (r.error) { hint.textContent='Error: '+r.error; return; }
         var sel = document.getElementById('stdLabel');
         sel.innerHTML = '<option value="">— select —</option>' +
-          r.options.map(function(o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+          r.options.map(function(o){return '<option value="'+esc(o)+'">'+esc(o)+'</option>';}).join('');
         hint.textContent = r.options.length + ' option(s) found.';
       })
-      .withFailureHandler(function(e) { hint.textContent = 'Failed: ' + (e.message || e); })
+      .withFailureHandler(function(e){ hint.textContent='Failed: '+(e.message||e); })
       .loadSTDOptionsForWizard(id);
   }
 
   function loadPPSCols() {
     document.getElementById('ppsMapBox').textContent = 'Loading PPS columns…';
     google.script.run.withSuccessHandler(function(r) {
-      if (r.error) { document.getElementById('ppsMapBox').textContent = 'Error: ' + r.error; return; }
-      ppsCols     = r.columns  || [];
-      ppsDetected = r.detected || null;
-      renderPPSMap();
+      if (r.error) { document.getElementById('ppsMapBox').textContent='Error: '+r.error; return; }
+      ppsCols=r.columns||[]; ppsDetected=r.detected||null; renderPPSMap();
     }).loadPPSColumnsForWizard();
   }
 
   function ddOpts(selected) {
-    var html = '<option value="">— not mapped —</option>';
-    ppsCols.forEach(function(c) {
-      html += '<option value="' + esc(c) + '"' + (c === selected ? ' selected' : '') + '>' + esc(c) + '</option>';
-    });
+    var html='<option value="">— not mapped —</option>';
+    ppsCols.forEach(function(c){ html+='<option value="'+esc(c)+'"'+(c===selected?' selected':'')+'>'+esc(c)+'</option>'; });
     return html;
   }
 
   function renderPPSMap() {
-    var box  = document.getElementById('ppsMapBox');
-    box.style.cssText = 'background:#fff;padding:6px 8px;border:1px solid #e0e0e0';
-    var saved = window.__savedPPSMapping || null;
-    var savedPrem = {}, savedTL = {}, savedSSN = '';
-    if (saved) {
-      (saved.premium || []).forEach(function(p) { savedPrem[p.src] = p.dst; });
-      (saved.tl      || []).forEach(function(t) {
-        if (t.slot === -1) savedTL.consolidated = t.dst;
-        else savedTL['slot' + t.slot] = t.dst;
-      });
-      savedSSN = saved.ssnLast4Dst || '';
+    var box=document.getElementById('ppsMapBox');
+    box.style.cssText='background:#fff;padding:6px 8px;border:1px solid #e0e0e0';
+    var saved=window.__savedPPSMapping||null;
+    var savedPrem={},savedTL={},savedSSN='';
+    if(saved){
+      (saved.premium||[]).forEach(function(p){savedPrem[p.src]=p.dst;});
+      (saved.tl||[]).forEach(function(t){if(t.slot===-1)savedTL.consolidated=t.dst;else savedTL['slot'+t.slot]=t.dst;});
+      savedSSN=saved.ssnLast4Dst||'';
     }
-    if (!saved && ppsDetected) {
-      (ppsDetected.premiumMappings  || []).forEach(function(m) { if (m.matchedDst) savedPrem[m.src] = m.matchedDst; });
-      (ppsDetected.tlMappings       || []).forEach(function(m, i) { if (m.matchedDst) savedTL['slot' + i] = m.matchedDst; });
-      if (ppsDetected.consolidatedTLDst) savedTL.consolidated = ppsDetected.consolidatedTLDst;
-      savedSSN = ppsDetected.ssnLast4Matched || '';
+    if(!saved&&ppsDetected){
+      (ppsDetected.premiumMappings||[]).forEach(function(m){if(m.matchedDst)savedPrem[m.src]=m.matchedDst;});
+      (ppsDetected.tlMappings||[]).forEach(function(m,i){if(m.matchedDst)savedTL['slot'+i]=m.matchedDst;});
+      if(ppsDetected.consolidatedTLDst)savedTL.consolidated=ppsDetected.consolidatedTLDst;
+      savedSSN=ppsDetected.ssnLast4Matched||'';
     }
-    var rows = mapRow('SSN Last 4 → PPS', 'ssn_last4', savedSSN);
-    [
-      { src: 'AE Premium Amount',   label: 'Accident'          },
-      { src: 'CI Premium Amount',   label: 'Critical Illness'  },
-      { src: 'Life Premium Amount', label: 'Whole Life'        },
-      { src: 'HI Premium Amount',   label: 'Hospital Indemnity'},
-      { src: 'DI Premium Amount',   label: 'Disability / STD'  },
-    ].forEach(function(p, i) {
-      rows += mapRow(p.label, 'prem_' + i + '__' + esc(p.src), savedPrem[p.src] || '');
-    });
-    var hasConsolidated = ppsCols.indexOf('Term Life After Tax') !== -1;
-    var hasSpecific     = ppsCols.indexOf('Term Life 10 Yr After Tax')    !== -1 ||
-                          ppsCols.indexOf('Term Life 20 Yr After Tax')    !== -1 ||
-                          ppsCols.indexOf('Term Life To Age 70 After Tax') !== -1;
-    if (hasSpecific || !hasConsolidated) {
-      ['10 Year','20 Year','To Age 70'].forEach(function(lbl, slot) {
-        rows += mapRow('Term Life — ' + lbl, 'tl_' + slot, savedTL['slot' + slot] || '');
-      });
-    } else {
-      rows += mapRow('Term Life (single col)', 'tl_consolidated', savedTL.consolidated || '');
-    }
-    box.innerHTML = rows;
+    var rows=mapRow('SSN Last 4 → PPS','ssn_last4',savedSSN);
+    [{src:'AE Premium Amount',label:'Accident'},{src:'CI Premium Amount',label:'Critical Illness'},{src:'Life Premium Amount',label:'Whole Life'},{src:'HI Premium Amount',label:'Hospital Indemnity'},{src:'DI Premium Amount',label:'Disability / STD'}]
+      .forEach(function(p,i){rows+=mapRow(p.label,'prem_'+i+'__'+esc(p.src),savedPrem[p.src]||'');});
+    var hasCons=ppsCols.indexOf('Term Life After Tax')!==-1;
+    var hasSpc=ppsCols.indexOf('Term Life 10 Yr After Tax')!==-1||ppsCols.indexOf('Term Life 20 Yr After Tax')!==-1||ppsCols.indexOf('Term Life To Age 70 After Tax')!==-1;
+    if(hasSpc||!hasCons){['10 Year','20 Year','To Age 70'].forEach(function(lbl,slot){rows+=mapRow('Term Life — '+lbl,'tl_'+slot,savedTL['slot'+slot]||'');});}
+    else{rows+=mapRow('Term Life (single col)','tl_consolidated',savedTL.consolidated||'');}
+    box.innerHTML=rows;
   }
 
-  function mapRow(label, id, selected) {
-    return '<div class="map-row"><div class="map-lbl">' + esc(label) +
-      '</div><select id="' + id + '">' + ddOpts(selected) + '</select></div>';
+  function mapRow(label,id,selected){
+    return '<div class="map-row"><div class="map-lbl">'+esc(label)+'</div><select id="'+id+'">'+ddOpts(selected)+'</select></div>';
   }
 
-  function collectPPSMapping() {
-    var gv = function(id) { var el = document.getElementById(id); return el ? (el.value || '').trim() : ''; };
-    var premium = [];
+  function collectPPSMapping(){
+    var gv=function(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';};
+    var premium=[];
     ['AE Premium Amount','CI Premium Amount','Life Premium Amount','HI Premium Amount','DI Premium Amount']
-      .forEach(function(src, i) {
-        var dst = gv('prem_' + i + '__' + src);
-        if (dst) premium.push({ src: src, dst: dst });
-      });
-    var tl = [], c = gv('tl_consolidated');
-    if (c) {
-      tl.push({ slot: -1, src: 'consolidated', dst: c });
+      .forEach(function(src,i){var dst=gv('prem_'+i+'__'+src);if(dst)premium.push({src:src,dst:dst});});
+    var tl=[],c=gv('tl_consolidated');
+    if(c){tl.push({slot:-1,src:'consolidated',dst:c});}
+    else{['tl_0','tl_1','tl_2'].forEach(function(id,i){tl.push({slot:i,src:['TL Premium','TL Premium 2','TL Premium 3'][i],dst:gv(id)});});}
+    return{ssnLast4Dst:gv('ssn_last4'),premium:premium,tl:tl};
+  }
+
+  function resolveFormValues() {
+    // Determine company/groupId/logo/status from new vs existing client
+    var company, groupId, companyLogoUrl, clientStatus;
+    if (isNewClient) {
+      company        = val('companyNew');
+      groupId        = val('groupIdNew');
+      companyLogoUrl = val('companyLogoNew');
+      var statusEl   = document.querySelector('input[name="clientStatus"]:checked');
+      clientStatus   = statusEl ? statusEl.value : 'Active';
     } else {
-      ['tl_0','tl_1','tl_2'].forEach(function(id, i) {
-        tl.push({ slot: i, src: ['TL Premium','TL Premium 2','TL Premium 3'][i], dst: gv(id) });
-      });
+      company        = selectedCompany ? selectedCompany.name : '';
+      groupId        = selectedCompany ? (selectedCompany.groupId||'') : '';
+      companyLogoUrl = selectedCompany ? (selectedCompany.companyLogoUrl||'') : '';
+      clientStatus   = selectedCompany ? (selectedCompany.status||'Active') : 'Active';
     }
-    return { ssnLast4Dst: gv('ssn_last4'), premium: premium, tl: tl };
+    return { company: company, groupId: groupId, companyLogoUrl: companyLogoUrl, clientStatus: clientStatus };
   }
 
   function doSave() {
     hideStatus();
-    var btn = document.getElementById('saveBtn');
-    btn.disabled = true; btn.textContent = 'Saving…';
+    var btn=document.getElementById('saveBtn');
+    btn.disabled=true; btn.textContent='Saving…';
+    var resolved = resolveFormValues();
     google.script.run
-      .withSuccessHandler(function(html) {
-        setStatus(html, 'ok-bg');
-        btn.disabled = false; btn.textContent = 'Save & Import →';
-      })
-      .withFailureHandler(function(err) {
-        setStatus('Error: ' + (err.message || err), 'err-bg');
-        btn.disabled = false; btn.textContent = 'Save & Import →';
-      })
+      .withSuccessHandler(function(html){ setStatus(html,'ok-bg'); btn.disabled=false; btn.textContent='Save & Import →'; })
+      .withFailureHandler(function(err){ setStatus('Error: '+(err.message||err),'err-bg'); btn.disabled=false; btn.textContent='Save & Import →'; })
       .saveSetupAndImport(JSON.stringify({
-        company:          val('company'),
-        groupId:          val('groupId'),
+        company:          resolved.company,
+        groupId:          resolved.groupId,
+        companyLogoUrl:   resolved.companyLogoUrl,
+        clientStatus:     resolved.clientStatus,
+        brokerId:         selectedBrokerId,
         enrollmentCutoff: val('enrollmentCutoff'),
         effectiveDate:    val('effectiveDate'),
         signDate:         val('signDate'),
@@ -677,16 +985,9 @@ function _buildWizardHTML() {
       }));
   }
 
-  function setStatus(html, cls) {
-    var s = document.getElementById('status');
-    s.innerHTML = html; s.className = cls; s.style.display = 'block';
-  }
-  function hideStatus() { document.getElementById('status').style.display = 'none'; }
-  function esc(s) {
-    return String(s || '').replace(/[&<>"']/g, function(c) {
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
+  function setStatus(html,cls){var s=document.getElementById('status');s.innerHTML=html;s.className=cls;s.style.display='block';}
+  function hideStatus(){document.getElementById('status').style.display='none';}
+  function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 </script>
 </body></html>`;
 }
