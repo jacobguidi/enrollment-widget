@@ -919,7 +919,7 @@
           </div>
         </div>
         <div class="pkg-body">
-          <div class="pkg-section-lbl">Included in your package</div>
+          <div class="pkg-section-lbl" id="pkg-included-lbl">Here's what's included in your package</div>
           <ul class="benefits-list">
             <li id="bft-accident">
               <div class="bft-icon">
@@ -1623,6 +1623,12 @@
     if (headline) headline.textContent = company + ' Employer Sponsored';
     const subLine = document.getElementById('pkg-sub-line');
     if (subLine) subLine.style.display = 'block';
+    const includedLbl = document.getElementById('pkg-included-lbl');
+    if (includedLbl) {
+      includedLbl.textContent = firstName
+        ? firstName + ', here\'s what\'s included in your package'
+        : 'Here\'s what\'s included in your package';
+    }
   }
 
   async function applyCompanyLogo(company) {
