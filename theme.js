@@ -90,7 +90,7 @@
     }
     if (cfg.logoUrl) {
       document.querySelectorAll(
-        'img[src*="filesafe.space"], img[src*="thrivebg"], img[data-broker-logo]'
+        'img[src*="filesafe.space"]:not([data-company-logo]), img[src*="thrivebg"]:not([data-company-logo]), img[data-broker-logo]'
       ).forEach(img => {
         img.src = cfg.logoUrl;
         if (cfg.brand) img.alt = cfg.brand;
