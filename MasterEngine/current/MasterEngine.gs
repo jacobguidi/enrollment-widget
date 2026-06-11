@@ -1305,9 +1305,12 @@ function pushDemographicToGHL() {
 
     CUSTOM_FIELD_BINDINGS.forEach(b => {
       if (colMap[b.sheet] === undefined) return;
-      pushCF(b.ghl, row[colMap[b.sheet]]);
+      let val = row[colMap[b.sheet]];
+      if (typeof val === 'number') val = Math.round(val * 100) / 100;
+      pushCF(b.ghl, val);
     });
     pushCF('Plan Builder Sheet ID', ssId);
+    pushCF('Build ID', ssId);
 
     if (customFields.length) body.customFields = customFields;
 
