@@ -1265,7 +1265,7 @@
               Review all options with a live advisor
             </li>
           </ul>
-          <a href="https://go.thrivebg.com/widget/booking/kPUxJNrPuRdtq8VjgGTV" target="_blank" rel="noopener" class="path-cta secondary">
+          <a href="https://go.thrivebg.com/widget/booking/kPUxJNrPuRdtq8VjgGTV" target="_blank" rel="noopener" class="path-cta secondary" data-broker-cta="customize">
             Schedule a Customization Call
           </a>
         </div>
@@ -1471,6 +1471,15 @@
       });
       url.searchParams.set('submission_source', submissionSource); // always overwrite/set
       link.href = url.toString();
+    });
+    document.querySelectorAll('[data-broker-cta="customize"]').forEach(function(link) {
+      try {
+        const url = new URL(link.href);
+        params.forEach(function(value, key) {
+          url.searchParams.set(key, value);
+        });
+        link.href = url.toString();
+      } catch(e) {}
     });
 
     // Nothing else to do if no params were passed
