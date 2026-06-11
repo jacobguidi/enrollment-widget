@@ -1307,6 +1307,9 @@ function pushDemographicToGHL() {
       if (colMap[b.sheet] === undefined) return;
       let val = row[colMap[b.sheet]];
       if (typeof val === 'number') val = Math.round(val * 100) / 100;
+      if (val instanceof Date && !isNaN(val.getTime())) {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone(), 'MMMM d, yyyy');
+      }
       pushCF(b.ghl, val);
     });
     pushCF('Plan Builder Sheet ID', ssId);
