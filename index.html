@@ -549,7 +549,7 @@
         if (rows.length < 2) return;
         const h = rows[0].map(v => v.trim().toLowerCase());
         const col = name => h.findIndex(v => v === name.toLowerCase());
-        const iB = col('broker id'), iP = col('primary'), iS = col('secondary'), iL = col('logo url');
+        const iB = col('broker id'), iP = col('primary'), iS = col('secondary'), iL = col('logo url'), iFU = col('customized form url');
         const row = rows.slice(1).find(r => (r[iB]||'').trim().toLowerCase() === broker.toLowerCase());
         if (!row) return;
         const isHex = v => /^#[0-9a-f]{6}$/i.test((v||'').trim());
@@ -564,11 +564,13 @@
         if (isHex(p)) { root.style.setProperty('--forest', p); root.style.setProperty('--forest-d', dk(p,.15)); root.style.setProperty('--forest-lt', lt(p,.92)); }
         if (isHex(s)) { root.style.setProperty('--teal', s); root.style.setProperty('--teal-lt', lt(s,.92)); }
         if (logo) document.querySelectorAll('img[data-broker-logo]').forEach(img => { img.src = logo; });
+        if (iFU >= 0 && row[iFU]) BROKER_FORM_URL = row[iFU].trim();
       } catch(e) { console.warn('[Theme]', e.message); }
     }
 
     // Populated at load from DIRECTORY_SHEET_ID; falls back to FALLBACK_COMPANIES
     let COMPANIES = {};
+    let BROKER_FORM_URL = '';
 
     const FALLBACK_COMPANIES = {
       'Shadescrest Health Care Center': {
@@ -2438,7 +2440,7 @@
         benefit_summary: contactNotes,
       });
       const companyCfg  = COMPANIES[S.company] || {};
-      const baseFormUrl = companyCfg.formUrl || 'https://go.thrivebg.com/widget/form/Y5QvdwL7DDeNDVs6MyNl';
+      const baseFormUrl = companyCfg.formUrl || BROKER_FORM_URL || 'https://go.thrivebg.com/widget/form/Y5QvdwL7DDeNDVs6MyNl';
       const formSrc     = `${baseFormUrl}?${params.toString()}`;
       const btnRow = document.getElementById('submitBtnRow');
       if (btnRow) btnRow.style.display = 'none';

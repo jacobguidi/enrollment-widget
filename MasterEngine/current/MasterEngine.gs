@@ -373,9 +373,9 @@ function saveBrokerConfig(formJSON) {
     let sh         = masterSS.getSheetByName('Brokers');
     if (!sh) {
       sh = masterSS.insertSheet('Brokers');
-      sh.getRange(1,1,1,7).setValues([['Broker ID','Brand Name','Primary','Secondary','Logo URL','Enroll URL','Customize URL']]).setFontWeight('bold');
+      sh.getRange(1,1,1,12).setValues([['Broker ID','Brand Name','Primary','Secondary','Logo URL','Enroll URL','Customize URL','Customized Form URL','Advisor Booking URL','Support Email','Support Phone','Website URL']]).setFontWeight('bold');
     }
-    sh.appendRow([form.brokerId||'', form.brandName||'', form.primary||'', form.secondary||'', form.logoUrl||'', form.enrollUrl||'', form.customizeUrl||'']);
+    sh.appendRow([form.brokerId||'', form.brandName||'', form.primary||'', form.secondary||'', form.logoUrl||'', form.enrollUrl||'', form.customizeUrl||'', form.customizedFormUrl||'', form.advisorBookingUrl||'', form.supportEmail||'', form.supportPhone||'', form.websiteUrl||'']);
     return { ok: true, message: '✓ Broker "' + (form.brandName||form.brokerId) + '" added to Master Workbook.' };
   } catch (e) { return { ok: false, error: e.message }; }
 }
@@ -487,10 +487,22 @@ function _buildWizardHTML() {
       <input id="brokerEnrollUrl" type="text" placeholder="https://go.broker.com/enroll" /></div>
     <div class="field"><label class="lbl">Customize URL <span style="font-weight:400;text-transform:none;letter-spacing:0">— leave blank to use Enroll URL</span></label>
       <input id="brokerCustomizeUrl" type="text" placeholder="https://go.broker.com/customize" /></div>
+    <div class="field"><label class="lbl">Customized Form URL <span style="font-weight:400;text-transform:none;letter-spacing:0">— final consent form at end of enrollment widget</span></label>
+      <input id="brokerCustomizedFormUrl" type="text" placeholder="https://go.broker.com/widget/form/..." /></div>
     <div class="field"><label class="lbl">Broker Logo URL</label>
       <input id="brokerLogoUrl" type="text" placeholder="Paste GHL media link after upload" />
       <p class="hint">📤 Upload logo in GHL → Media Library → Upload → right-click image → Copy Link → paste above.</p>
     </div>
+    <div class="field"><label class="lbl">Advisor Booking URL <span style="font-weight:400;text-transform:none;letter-spacing:0">— advisor call scheduling link</span></label>
+      <input id="brokerAdvisorBookingUrl" type="text" placeholder="https://go.broker.com/widget/booking/..." /></div>
+    <div class="row2">
+      <div class="field"><label class="lbl">Support Email</label>
+        <input id="brokerSupportEmail" type="text" placeholder="support@broker.com" /></div>
+      <div class="field"><label class="lbl">Support Phone</label>
+        <input id="brokerSupportPhone" type="text" placeholder="(555) 000-0000" /></div>
+    </div>
+    <div class="field"><label class="lbl">Website URL</label>
+      <input id="brokerWebsiteUrl" type="text" placeholder="https://www.broker.com" /></div>
     <button class="btn btn-sm" onclick="saveNewBroker()" style="width:100%;margin-bottom:4px">Save Broker to Master →</button>
     <div id="brokerSaveMsg" style="font-size:11px;color:#137333;display:none;margin-top:4px"></div>
   </div>
@@ -726,9 +738,14 @@ function _buildWizardHTML() {
       brokerId:     document.getElementById('brokerIdNew').value.trim(),
       primary:      document.getElementById('brokerPrimary').value.trim(),
       secondary:    document.getElementById('brokerSecondary').value.trim(),
-      enrollUrl:    document.getElementById('brokerEnrollUrl').value.trim(),
-      customizeUrl: document.getElementById('brokerCustomizeUrl').value.trim(),
-      logoUrl:      document.getElementById('brokerLogoUrl').value.trim(),
+      enrollUrl:          document.getElementById('brokerEnrollUrl').value.trim(),
+      customizeUrl:       document.getElementById('brokerCustomizeUrl').value.trim(),
+      customizedFormUrl:  document.getElementById('brokerCustomizedFormUrl').value.trim(),
+      logoUrl:            document.getElementById('brokerLogoUrl').value.trim(),
+      advisorBookingUrl:  document.getElementById('brokerAdvisorBookingUrl').value.trim(),
+      supportEmail:       document.getElementById('brokerSupportEmail').value.trim(),
+      supportPhone:       document.getElementById('brokerSupportPhone').value.trim(),
+      websiteUrl:         document.getElementById('brokerWebsiteUrl').value.trim(),
     };
     if (!form.brokerId) { alert('Broker ID is required.'); return; }
     var msg = document.getElementById('brokerSaveMsg');

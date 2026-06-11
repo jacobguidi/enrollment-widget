@@ -54,6 +54,10 @@
     const iBrand     = col('brand name');
     const iEnrollUrl = col('enroll url');
     const iCustomUrl = col('customize url');
+    const iAdvisor   = col('advisor booking url');
+    const iEmail     = col('support email');
+    const iPhone     = col('support phone');
+    const iWebsite   = col('website url');
 
     const row = rows.slice(1).find(r =>
       (r[iBroker] || '').trim().toLowerCase() === broker.toLowerCase()
@@ -67,7 +71,11 @@
       logoUrl   : iLogo      >= 0 ? (row[iLogo]      || '').trim() : '',
       brand     : iBrand     >= 0 ? (row[iBrand]     || '').trim() : '',
       enrollUrl,
-      customUrl : iCustomUrl >= 0 ? (row[iCustomUrl] || '').trim() : enrollUrl,
+      customUrl         : iCustomUrl >= 0 ? (row[iCustomUrl] || '').trim() : enrollUrl,
+      advisorBookingUrl : iAdvisor   >= 0 ? (row[iAdvisor]   || '').trim() : '',
+      supportEmail      : iEmail     >= 0 ? (row[iEmail]     || '').trim() : '',
+      supportPhone      : iPhone     >= 0 ? (row[iPhone]     || '').trim() : '',
+      websiteUrl        : iWebsite   >= 0 ? (row[iWebsite]   || '').trim() : '',
     };
   }
 
@@ -116,6 +124,30 @@
         const url = new URL(cfg.customUrl);
         pageParams.forEach((v, k) => url.searchParams.set(k, v));
         a.href = url.toString();
+      });
+    }
+    if (cfg.advisorBookingUrl) {
+      document.querySelectorAll('[data-broker-cta="advisor"]').forEach(a => {
+        a.href = cfg.advisorBookingUrl;
+      });
+    }
+    if (cfg.supportEmail) {
+      document.querySelectorAll('[data-broker-email]').forEach(a => {
+        a.href = 'mailto:' + cfg.supportEmail;
+        if (a.textContent.includes('@')) a.textContent = cfg.supportEmail;
+      });
+    }
+    if (cfg.supportPhone) {
+      document.querySelectorAll('[data-broker-phone]').forEach(a => {
+        a.href = 'tel:' + cfg.supportPhone.replace(/[^0-9]/g, '');
+        if (a.textContent.trim().startsWith('(') || a.textContent.trim().match(/^\d/)) {
+          a.textContent = cfg.supportPhone;
+        }
+      });
+    }
+    if (cfg.websiteUrl) {
+      document.querySelectorAll('[data-broker-website]').forEach(a => {
+        a.href = cfg.websiteUrl;
       });
     }
   }
