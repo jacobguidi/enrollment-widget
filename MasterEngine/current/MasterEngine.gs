@@ -302,7 +302,7 @@ function registerWithMaster() {
 function loadBrokersForWizard() {
   try {
     const masterSS    = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
-    const sh          = masterSS.getSheetByName('Broker Config');
+    const sh          = masterSS.getSheetByName('Brokers');
     if (!sh) return { brokers: [] };
     const data    = sh.getDataRange().getValues();
     if (data.length < 2) return { brokers: [] };
@@ -361,9 +361,9 @@ function saveBrokerConfig(formJSON) {
   try {
     const form     = JSON.parse(formJSON);
     const masterSS = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
-    let sh         = masterSS.getSheetByName('Broker Config');
+    let sh         = masterSS.getSheetByName('Brokers');
     if (!sh) {
-      sh = masterSS.insertSheet('Broker Config');
+      sh = masterSS.insertSheet('Brokers');
       sh.getRange(1,1,1,7).setValues([['Broker ID','Brand Name','Primary','Secondary','Logo URL','Enroll URL','Customize URL']]).setFontWeight('bold');
     }
     sh.appendRow([form.brokerId||'', form.brandName||'', form.primary||'', form.secondary||'', form.logoUrl||'', form.enrollUrl||'', form.customizeUrl||'']);
@@ -456,12 +456,12 @@ function _buildWizardHTML() {
     <select id="brokerSelect" onchange="onBrokerSelect()">
       <option value="">Loading brokers…</option>
     </select>
-    <p class="hint" id="brokerHint">Loads from Master Clients → Broker Config tab.</p>
+    <p class="hint" id="brokerHint">Loads from Master Clients → Brokers tab.</p>
   </div>
 
   <div id="newBrokerForm" style="display:none">
     <hr class="divider">
-    <div class="card card-blue" style="margin-bottom:12px"><b>New Broker Setup</b> — this will add a row to the Broker Config tab in the Master Workbook.</div>
+    <div class="card card-blue" style="margin-bottom:12px"><b>New Broker Setup</b> — this will add a row to the Brokers tab in the Master Workbook.</div>
     <div class="row2">
       <div class="field"><label class="lbl">Brand Name</label>
         <input id="brokerBrandName" type="text" placeholder="Acme Benefits" oninput="autoSlugBrokerId()" /></div>
