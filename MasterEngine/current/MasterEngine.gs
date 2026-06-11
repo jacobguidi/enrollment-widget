@@ -299,6 +299,15 @@ function registerWithMaster() {
 // ============================================================
 // §3b  WIZARD BACKEND — Broker + Company loaders
 // ============================================================
+function debugMasterWorkbook() {
+  const ss = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
+  return {
+    id:    MASTER_WORKBOOK_ID,
+    name:  ss.getName(),
+    tabs:  ss.getSheets().map(s => s.getName()),
+  };
+}
+
 function loadBrokersForWizard() {
   try {
     const masterSS    = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
