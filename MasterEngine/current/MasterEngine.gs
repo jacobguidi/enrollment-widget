@@ -373,9 +373,26 @@ function saveBrokerConfig(formJSON) {
     let sh         = masterSS.getSheetByName('Brokers');
     if (!sh) {
       sh = masterSS.insertSheet('Brokers');
-      sh.getRange(1,1,1,12).setValues([['Broker ID','Brand Name','Primary','Secondary','Logo URL','Enroll URL','Customize URL','Customized Form URL','Advisor Booking URL','Support Email','Support Phone','Website URL']]).setFontWeight('bold');
+      sh.getRange(1,1,1,12).setValues([['Broker ID','Primary','Secondary','Logo URL','Brand Name','Enroll URL','Customize URL','Customized Form URL','Advisor Booking URL','Support Email','Support Phone','Website URL']]).setFontWeight('bold');
     }
-    sh.appendRow([form.brokerId||'', form.brandName||'', form.primary||'', form.secondary||'', form.logoUrl||'', form.enrollUrl||'', form.customizeUrl||'', form.customizedFormUrl||'', form.advisorBookingUrl||'', form.supportEmail||'', form.supportPhone||'', form.websiteUrl||'']);
+    // Map form values by header name so column order in sheet doesn't matter
+    const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => h.toString().trim().toLowerCase());
+    const fieldMap = {
+      'broker id':           form.brokerId          || '',
+      'brand name':          form.brandName         || '',
+      'primary':             form.primary           || '',
+      'secondary':           form.secondary         || '',
+      'logo url':            form.logoUrl           || '',
+      'enroll url':          form.enrollUrl         || '',
+      'customize url':       form.customizeUrl      || '',
+      'customized form url': form.customizedFormUrl || '',
+      'advisor booking url': form.advisorBookingUrl || '',
+      'support email':       form.supportEmail      || '',
+      'support phone':       form.supportPhone      || '',
+      'website url':         form.websiteUrl        || '',
+    };
+    const row = headers.map(h => fieldMap.hasOwnProperty(h) ? fieldMap[h] : '');
+    sh.appendRow(row);
     return { ok: true, message: '✓ Broker "' + (form.brandName||form.brokerId) + '" added to Master Workbook.' };
   } catch (e) { return { ok: false, error: e.message }; }
 }
