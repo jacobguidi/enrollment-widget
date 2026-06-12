@@ -925,7 +925,7 @@
           <div class="pkg-value-row">
             <div class="pkg-val" id="pkg-val-main">$185</div>
             <div class="pkg-val-meta">
-              <span class="mo">/mo value</span>
+              <span class="mo">/mo in benefits</span>
               <span class="pkg-badge">You pay $0</span>
             </div>
           </div>
@@ -990,7 +990,7 @@
           </ul>
           <div class="card-btns">
             <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="btn-card-p" data-broker-cta="enroll">
-              Accept My Package
+              Claim My Benefits
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7H11.5M8 3.5L11.5 7L8 10.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
             <a href="https://gothrivebg.com/custom" target="_blank" rel="noopener" class="btn-card-s" data-broker-cta="customize">Customize My Package</a>
@@ -1256,7 +1256,7 @@
             </li>
           </ul>
           <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="path-cta primary" data-broker-cta="enroll">
-            Accept My Package
+            Claim My Benefits
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7H11.5M8 3.5L11.5 7L8 10.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -1364,7 +1364,7 @@
     <p>Skipping it means leaving free coverage — and free money — behind.</p>
     <div class="bottom-cta-btns">
       <a href="https://gothrivebg.com/opt-in" target="_blank" rel="noopener" class="btn-white" data-broker-cta="enroll">
-        Accept My Package
+        Claim My Benefits
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="#1F5C42" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
@@ -1642,11 +1642,10 @@
     // Card overline → company name
     const lbl = document.getElementById('pkg-lbl-main');
     if (lbl) lbl.textContent = company;
-    // Card: "[Company] Employer Sponsored" + "Benefits Package"
     const headline = document.getElementById('pkg-headline');
-    if (headline) headline.textContent = 'Employer Sponsored';
+    if (headline) headline.textContent = company + ' Benefits Package';
     const subLine = document.getElementById('pkg-sub-line');
-    if (subLine) subLine.style.display = 'block';
+    if (subLine) subLine.style.display = 'none';
     const includedLbl = document.getElementById('pkg-included-lbl');
     if (includedLbl) {
       includedLbl.textContent = firstName
