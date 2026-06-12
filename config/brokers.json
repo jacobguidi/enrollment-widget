@@ -1,0 +1,28 @@
+{
+  "tbg": {
+    "brand": "Thrive Benefits",
+    "primary": "#1F5C42",
+    "secondary": "#2DB89E",
+    "logoUrl": "https://assets.cdn.filesafe.space/AD8AWa0PN7eiGQ8HXJv6/media/69824c297cf44b5808b1e0bd.svg",
+    "enrollUrl": "https://go.thrivebg.com/widget/form/FLaqqZj4EO1W4v5EGgX9",
+    "customizeUrl": "https://thrivebenefits.group/enrollment-widget-apps-script",
+    "customizedFormUrl": "",
+    "advisorBookingUrl": "https://go.thrivebg.com/widget/booking/TV36HEb3Jtseksy1LpEJ",
+    "supportEmail": "jacob@thrivebg.com",
+    "supportPhone": "(423) 910-9717",
+    "websiteUrl": "https://www.thrivebg.com"
+  },
+  "usa": {
+    "brand": "United School Associates",
+    "primary": "#1E5FBE",
+    "secondary": "#E8232A",
+    "logoUrl": "https://assets.cdn.filesafe.space/AD8AWa0PN7eiGQ8HXJv6/media/6a2ae582ea26507ded145a6a.svg",
+    "enrollUrl": "https://go.thrivebg.com/widget/form/A2nQD6DU2ydHv6oBT4HC",
+    "customizeUrl": "https://school-associates.group/widget",
+    "customizedFormUrl": "https://go.thrivebg.com/widget/form/pgrpqdJacu6yOt814fZt",
+    "advisorBookingUrl": "",
+    "supportEmail": "info@usa4you.com",
+    "supportPhone": "1 (844) USA-4YOU",
+    "websiteUrl": "https://usa4you.com"
+  }
+}
