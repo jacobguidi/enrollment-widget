@@ -551,7 +551,7 @@
       font-size: 15px; font-weight: 800; color: var(--black);
       margin-bottom: 7px; letter-spacing: -.01em;
     }
-    .suppl-card p { font-size: 13px; color: var(--body-gray); line-height: 1.55; }
+    .suppl-card p { font-size: 13px; color: var(--body-gray); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .suppl-included {
       display: inline-flex; align-items: center; gap: 5px;
       margin-top: 12px; font-size: 11.5px; font-weight: 600; color: var(--forest);
@@ -578,7 +578,7 @@
       font-size: 15px; font-weight: 800; color: var(--black);
       margin-bottom: 5px; letter-spacing: -.01em;
     }
-    .wellness-card p { font-size: 13px; color: var(--body-gray); line-height: 1.55; }
+    .wellness-card p { font-size: 13px; color: var(--body-gray); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .wellness-card .tag {
       display: inline-block; margin-top: 8px;
       font-size: 11px; font-weight: 700; color: var(--teal);
@@ -765,16 +765,6 @@
       .edu-header { grid-template-columns: 1fr; gap: 36px; }
       .edu-header .income-card { display: none; }
       .edu-cards { grid-template-columns: 1fr; }
-      /* Mobile card collapse */
-      .suppl-card, .wellness-card { cursor: pointer; }
-      .suppl-card p, .suppl-card .suppl-included,
-      .wellness-card p, .wellness-card .tag { display: none; }
-      .suppl-card.expanded p, .suppl-card.expanded .suppl-included,
-      .wellness-card.expanded p, .wellness-card.expanded .tag { display: block; }
-      .suppl-card h3::after, .wellness-card h3::after {
-        content: ' +'; font-size: 13px; color: var(--teal); font-weight: 500;
-      }
-      .suppl-card.expanded h3::after, .wellness-card.expanded h3::after { content: ' −'; }
       .suppl-grid { grid-template-columns: 1fr 1fr; }
       .wellness-grid { grid-template-columns: 1fr; }
       .paths-grid { grid-template-columns: 1fr; max-width: 460px; }
@@ -1400,12 +1390,6 @@
       heading.textContent = tabName === 'wellness' ? "What's Included" : 'Customizable';
     }
   }
-  // ── Mobile benefit card collapse ─────────────────────
-  document.querySelectorAll('.suppl-card, .wellness-card').forEach(function(card) {
-    card.addEventListener('click', function() {
-      if (window.innerWidth <= 960) this.classList.toggle('expanded');
-    });
-  });
   // ── FAQ accordion ─────────────────────────────────────
   function toggleFaq(id) {
     const item = document.getElementById(id);
@@ -1651,13 +1635,12 @@
     // Hero badge
     const badge = document.getElementById('hero-badge-entity');
     if (badge) badge.textContent = company;
-    // Card overline → company name
     const lbl = document.getElementById('pkg-lbl-main');
-    if (lbl) lbl.textContent = company;
+    if (lbl) lbl.style.display = 'none';
     const headline = document.getElementById('pkg-headline');
-    if (headline) headline.textContent = company + ' Benefits Package';
+    if (headline) headline.textContent = company;
     const subLine = document.getElementById('pkg-sub-line');
-    if (subLine) subLine.style.display = 'none';
+    if (subLine) { subLine.textContent = 'Benefits Package'; subLine.style.display = 'block'; }
     const includedLbl = document.getElementById('pkg-included-lbl');
     if (includedLbl) {
       includedLbl.textContent = firstName
