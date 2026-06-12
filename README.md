@@ -158,11 +158,19 @@ tbg-enrollment-system/
 │   └── previous_versions/
 │       └── Enrollment_Widget_YYYY-MM-DD_vN.html
 │
-└── Consolidator/
+├── Consolidator/
+│   ├── current/
+│   │   └── Consolidator.gs
+│   └── previous_versions/
+│       └── Consolidator_YYYY-MM-DD_vN.gs
+│
+└── MemberPortal/
+    ├── README.md                      ← deploy + GHL wiring guide
     ├── current/
-    │   └── Consolidator.gs
+    │   ├── MemberPortal.gs
+    │   └── MemberPortal.html
     └── previous_versions/
-        └── Consolidator_YYYY-MM-DD_vN.gs
+        └── MemberPortal_YYYY-MM-DD_vN.gs / .html
 ```
 
 ---
@@ -520,6 +528,25 @@ If any tab fails to load, that benefit uses embedded fallback rate tables. A rat
 5. GHL automation fires → sends `benefit_summary` payload → POSTs to `WEBHOOK_URL`
 6. MasterEngine `doPost()` receives it → writes back to Plan Builder workbook
 
+#### Developer Mode
+
+Append `&dev=1` to any widget URL to enable troubleshooting messages hidden from regular users:
+
+```
+https://jacobguidi.github.io/enrollment-widget/?broker=usa&primary=%231E5FBE&secondary=%23E8232A&dev=1
+```
+
+**What `dev=1` shows:**
+- "Live rates loaded from [Company] (accident, hospital, ci, disability, ...)" badge on Step 2
+- "✓ Rates loaded" / "⚠ Sample rates" badges on individual benefit cards
+- Whole Life raw CSV debug panel at the bottom of Step 2
+
+Regular users never have `?dev=1` in their URL so they never see these messages.
+
+For deeper rate debugging, open browser console (F12) and inspect `window._debugRates` for per-tab load status.
+
+---
+
 #### URL Parameters (pre-fill from GHL)
 
 The widget accepts these URL parameters to pre-fill the form:
@@ -599,6 +626,19 @@ const PPS_DATA_START  = 7;    // PPS data rows start on row 7
 | Monthly Recuro file | 5th of each month at 6am | `generateRecuroFile()` |
 
 Run `createTriggers()` once manually to install. Re-running it safely deletes and recreates both triggers.
+
+---
+
+### Member Portal
+
+**Files:** `MemberPortal/current/MemberPortal.gs` + `MemberPortal/current/MemberPortal.html`
+**Type:** Standalone Apps Script web app (separate project from MasterEngine)
+**Deployed:** Web app — Execute as Me, access Anyone; embedded in GHL via iframe or linked from email
+**Purpose:** Member-facing benefits dashboard — policy cards from the Auto Enroll Sheet, MyAssurity claims card, Recuro wellness card
+
+- Auth: HMAC-signed magic links (`?cid=&pb=&sig=`), secret in `PORTAL_SECRET` script property
+- `pushPortalLinksToGHL()` writes each contact's signed URL to the GHL custom field **Member Portal Link**
+- Full deploy + GHL wiring guide: `MemberPortal/README.md`
 
 ---
 
