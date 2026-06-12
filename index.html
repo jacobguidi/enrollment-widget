@@ -549,6 +549,7 @@
     // Publish separately: same sheet → "Broker Config" tab → CSV
     const BROKER_CONFIG_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?gid=606899757&single=true&output=csv';
     const WHOLE_EMP_MAX_BENEFIT_DEFAULT = 75000;
+    const DEV_MODE = new URLSearchParams(window.location.search).get('dev') === '1';
 
     // ─── Apply broker theme from Broker Config tab ─
     async function applyBrokerThemeFromConfig(broker) {
@@ -1718,9 +1719,9 @@
       }
       if (key === 'critical') {
         const ciLoaded = LOADED_RATES && LOADED_RATES.ci;
-        const ciSrcBadge = ciLoaded
+        const ciSrcBadge = DEV_MODE ? (ciLoaded
           ? `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
-          : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`;
+          : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`) : '';
         html += `<div class="ew-card-note" style="margin-top:14px;margin-bottom:10px">Critical Illness coverage pays a lump sum on diagnosis.${ciSrcBadge}</div>`;
         let ciAmounts = [];
         if (ciLoaded && Array.isArray(ciLoaded.benefitAmounts) && ciLoaded.benefitAmounts.length > 0) {
@@ -1795,9 +1796,9 @@
       }
       if (key === 'wholeEmp') {
         const wlEmpLoaded = LOADED_RATES && LOADED_RATES.wholeEmp;
-        const wlSrcBadge = wlEmpLoaded
+        const wlSrcBadge = DEV_MODE ? (wlEmpLoaded
           ? `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
-          : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates — tab not found</span>`;
+          : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates — tab not found</span>`) : '';
         html += `<div class="ew-card-note" style="margin-top:14px">🍃 Employee coverage only — permanent, builds cash value over time.${wlSrcBadge}</div>`;
         let bSteps;
         if (wlEmpLoaded && Array.isArray(LOADED_RATES.wholeEmp.benefitAmounts) && LOADED_RATES.wholeEmp.benefitAmounts.length > 0) {
@@ -1856,9 +1857,9 @@
         html += `
           <div class="ew-card-note" style="margin-top:14px;margin-bottom:4px">
             💚 Permanent coverage for your spouse using the same rate schedule as your own policy.
-            ${wlEmpLoaded
+            ${DEV_MODE ? (wlEmpLoaded
               ? `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
-              : `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`
+              : `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`) : ''
             }
           </div>
           <div class="ew-card-note" style="background:#fef9c3;border:1px solid #fef08a;color:#78350f;margin-top:8px">
@@ -1917,6 +1918,7 @@
       if (!head) return;
       const existing = head.querySelector('.ew-rate-badge');
       if (existing) existing.remove();
+      if (!DEV_MODE) return;
       const isLive = RATES_SOURCE === 'sheet';
       const badge = document.createElement('div');
       badge.className = 'ew-rate-badge ' + (isLive ? 'live' : 'fbk');
@@ -2676,12 +2678,14 @@
       document.querySelector('.ew-wrap').appendChild(panel);
     }
 
-    // Auto-render WL debug panel whenever Step 2 loads
-    const _origRenderAllCards = renderAllCards;
-    renderAllCards = function() {
-      _origRenderAllCards();
-      renderWLDebugPanel();
-    };
+    // Auto-render WL debug panel whenever Step 2 loads (dev mode only)
+    if (DEV_MODE) {
+      const _origRenderAllCards = renderAllCards;
+      renderAllCards = function() {
+        _origRenderAllCards();
+        renderWLDebugPanel();
+      };
+    }
   </script>
 </body>
 </html>
