@@ -893,7 +893,7 @@
 <div class="builder-breakout">
 <div class="progress-bar" id="progressBar"></div>
 <div class="enroll-banner">
-  <p><strong><span data-company-name="">Open Enrollment Is Open</span>.</strong> Your package is ready — accept before the window closes.</p>
+  <p><strong><span data-company-name="">Open Enrollment Is Open</span>.</strong> Your package is ready — <span id="banner-cutoff">accept before the window closes.</span></p>
 </div>
 <section class="hero">
   <div class="hero-grid">
@@ -1657,29 +1657,58 @@
       if (rows.length < 2) return;
 
       const headers = rows[0].map(h => h.trim().toLowerCase());
-      const iName = headers.findIndex(h => h === 'company name');
-      const iLogo = headers.findIndex(h => h === 'company logo');
-      if (iName < 0 || iLogo < 0) return;
+      const iName   = headers.findIndex(h => h === 'company name');
+      const iLogo   = headers.findIndex(h => h === 'company logo');
+      const iCutoff = headers.findIndex(h => h === 'enrollment cutoff');
+      if (iName < 0) return;
 
       const row = rows.slice(1).find(r =>
         (r[iName]||'').trim().toLowerCase() === company.trim().toLowerCase()
       );
-      const logoUrl = row ? (row[iLogo]||'').trim() : '';
-      if (!logoUrl) return;
+      if (!row) return;
 
-      // Show large logo in hero, hide the text pill
-      const img  = document.getElementById('hero-company-logo-img');
-      const wrap = document.getElementById('hero-company-logo-wrap');
-      const pill = document.getElementById('hero-badge-pill');
-      if (img && wrap) {
-        img.src = logoUrl;
-        img.alt = company;
-        wrap.style.display = 'block';
-        if (pill) pill.style.display = 'none';
+      const logoUrl   = iLogo   >= 0 ? (row[iLogo]  ||'').trim() : '';
+      const cutoffRaw = iCutoff >= 0 ? (row[iCutoff]||'').trim() : '';
+
+      if (logoUrl) {
+        const img  = document.getElementById('hero-company-logo-img');
+        const wrap = document.getElementById('hero-company-logo-wrap');
+        const pill = document.getElementById('hero-badge-pill');
+        if (img && wrap) {
+          img.src = logoUrl;
+          img.alt = company;
+          wrap.style.display = 'block';
+          if (pill) pill.style.display = 'none';
+        }
+      }
+
+      if (cutoffRaw) {
+        const cutoff = new Date(cutoffRaw);
+        if (!isNaN(cutoff)) startCutoffCountdown(cutoff);
       }
     } catch(e) {
       console.warn('[CoBrand]', e.message);
     }
+  }
+
+  function startCutoffCountdown(cutoff) {
+    const el = document.getElementById('banner-cutoff');
+    if (!el) return;
+    function fmt(ms) {
+      if (ms <= 0) { el.textContent = 'enrollment window has closed.'; return; }
+      const d = Math.floor(ms / 86400000);
+      const h = Math.floor((ms % 86400000) / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      if (d > 0) el.textContent = 'window closes in ' + d + 'd ' + h + 'h ' + m + 'm.';
+      else       el.textContent = 'window closes in ' + h + 'h ' + m + 'm ' + s + 's.';
+    }
+    fmt(cutoff - Date.now());
+    const iv = setInterval(function() {
+      const rem = cutoff - Date.now();
+      fmt(rem);
+      if (rem <= 0) clearInterval(iv);
+    }, 1000);
   }
 
   function init() {
