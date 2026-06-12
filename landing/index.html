@@ -765,6 +765,16 @@
       .edu-header { grid-template-columns: 1fr; gap: 36px; }
       .edu-header .income-card { display: none; }
       .edu-cards { grid-template-columns: 1fr; }
+      /* Mobile card collapse */
+      .suppl-card, .wellness-card { cursor: pointer; }
+      .suppl-card p, .suppl-card .suppl-included,
+      .wellness-card p, .wellness-card .tag { display: none; }
+      .suppl-card.expanded p, .suppl-card.expanded .suppl-included,
+      .wellness-card.expanded p, .wellness-card.expanded .tag { display: block; }
+      .suppl-card h3::after, .wellness-card h3::after {
+        content: ' +'; font-size: 13px; color: var(--teal); font-weight: 500;
+      }
+      .suppl-card.expanded h3::after, .wellness-card.expanded h3::after { content: ' −'; }
       .suppl-grid { grid-template-columns: 1fr 1fr; }
       .wellness-grid { grid-template-columns: 1fr; }
       .paths-grid { grid-template-columns: 1fr; max-width: 460px; }
@@ -1086,14 +1096,14 @@
 <section class="benefits-section" id="benefits">
   <div class="benefits-header">
     <div>
-      <h2 class="section-headline" id="benefits-heading" style="margin-bottom: 0;">Benefits You Can Customize</h2>
+      <h2 class="section-headline" id="benefits-heading" style="margin-bottom: 0;">What's Included</h2>
     </div>
     <div class="tab-toggle">
-      <button class="tab-btn active" onclick="switchTab('supplemental', this)">Supplementals</button>
-      <button class="tab-btn" onclick="switchTab('wellness', this)">Thrive Care</button>
+      <button class="tab-btn active" onclick="switchTab('wellness', this)">What's Included</button>
+      <button class="tab-btn" onclick="switchTab('supplemental', this)">Customizable</button>
     </div>
   </div>
-  <div class="tab-panel active" id="tab-supplemental">
+  <div class="tab-panel" id="tab-supplemental">
     <div class="suppl-grid">
       <div class="suppl-card">
         <div class="suppl-card-top">
@@ -1157,7 +1167,7 @@
       </div>
     </div>
   </div>
-  <div class="tab-panel" id="tab-wellness">
+  <div class="tab-panel active" id="tab-wellness">
     <div class="wellness-grid">
       <div class="wellness-card">
         <div class="wellness-icon">
@@ -1391,9 +1401,15 @@
     btn.classList.add('active');
     const heading = document.getElementById('benefits-heading');
     if (heading) {
-      heading.textContent = tabName === 'wellness' ? "What's Included" : 'Benefits You Can Customize';
+      heading.textContent = tabName === 'wellness' ? "What's Included" : 'Customizable';
     }
   }
+  // ── Mobile benefit card collapse ─────────────────────
+  document.querySelectorAll('.suppl-card, .wellness-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      if (window.innerWidth <= 960) this.classList.toggle('expanded');
+    });
+  });
   // ── FAQ accordion ─────────────────────────────────────
   function toggleFaq(id) {
     const item = document.getElementById(id);
