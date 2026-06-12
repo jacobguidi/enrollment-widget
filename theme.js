@@ -1,10 +1,6 @@
 (function () {
-  // ── Directory: company list ───────────────────
-  const DIR_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?output=csv';
-
-  // ── Broker Config tab: one row per broker ─────
-  // Publish separately: Sheets → File → Share → Publish to web → "Broker Config" tab → CSV
-  const BROKER_CONFIG_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9_K7L4VsiykK_3wQT4I5vAyzLIdqjn9meayzoaQmLfa_IWmrNc9_C511zSVxqgAhMoCR8a1Xv_YWI/pub?gid=606899757&single=true&output=csv';
+  // ── Broker config — fetched from repo JSON ────
+  const BROKERS_URL = 'https://raw.githubusercontent.com/jacobguidi/enrollment-widget/main/config/brokers.json';
 
   // ── Color helpers ─────────────────────────────
   function hexToRgb(h) {
@@ -18,64 +14,24 @@
   function hexToRgba(hex, a) { const [r,g,b]=hexToRgb(hex); return `rgba(${r},${g},${b},${a})`; }
   function isHex(v) { return /^#[0-9a-f]{6}$/i.test((v||'').trim()); }
 
-  // ── Minimal CSV parser ────────────────────────
-  function parseCSV(text) {
-    return text.trim().replace(/\r/g,'').split('\n').map(line => {
-      const row=[]; let cur='', inQ=false;
-      for (let i=0; i<line.length; i++) {
-        const c = line[i];
-        if (c==='"') { inQ=!inQ; }
-        else if (c===',' && !inQ) { row.push(cur.trim()); cur=''; }
-        else { cur+=c; }
-      }
-      row.push(cur.trim());
-      return row;
-    });
-  }
-
-  // ── Fetch broker config row ───────────────────
+  // ── Fetch broker config from JSON ────────────
   async function fetchBrokerConfig(broker) {
-    if (!BROKER_CONFIG_URL || BROKER_CONFIG_URL.startsWith('YOUR_')) {
-      console.warn('[Theme] Broker Config URL not set — skipping theme');
-      return null;
-    }
-    const resp = await fetch(BROKER_CONFIG_URL);
-    if (!resp.ok) throw new Error(`Broker Config fetch failed: HTTP ${resp.status}`);
-    const rows = parseCSV(await resp.text());
-    if (rows.length < 2) return null;
-
-    const headers = rows[0].map(v => v.trim().toLowerCase());
-    const col = name => headers.findIndex(v => v === name.toLowerCase());
-
-    const iBroker    = col('broker id');
-    const iPrimary   = col('primary');
-    const iSecond    = col('secondary');
-    const iLogo      = col('logo url');
-    const iBrand     = col('brand name');
-    const iEnrollUrl = col('enroll url');
-    const iCustomUrl = col('customize url');
-    const iAdvisor   = col('advisor booking url');
-    const iEmail     = col('support email');
-    const iPhone     = col('support phone');
-    const iWebsite   = col('website url');
-
-    const row = rows.slice(1).find(r =>
-      (r[iBroker] || '').trim().toLowerCase() === broker.toLowerCase()
-    );
-    if (!row) { console.warn('[Theme] No broker config row found for:', broker); return null; }
-
-    const enrollUrl = iEnrollUrl >= 0 ? (row[iEnrollUrl] || '').trim() : '';
+    const resp = await fetch(BROKERS_URL);
+    if (!resp.ok) throw new Error(`Brokers fetch failed: HTTP ${resp.status}`);
+    const data = await resp.json();
+    const cfg = data[broker.toLowerCase()];
+    if (!cfg) { console.warn('[Theme] No broker config found for:', broker); return null; }
     return {
-      primary   : iPrimary   >= 0 ? (row[iPrimary]   || '').trim() : '',
-      secondary : iSecond    >= 0 ? (row[iSecond]    || '').trim() : '',
-      logoUrl   : iLogo      >= 0 ? (row[iLogo]      || '').trim() : '',
-      brand     : iBrand     >= 0 ? (row[iBrand]     || '').trim() : '',
-      enrollUrl,
-      customUrl         : iCustomUrl >= 0 ? (row[iCustomUrl] || '').trim() : enrollUrl,
-      advisorBookingUrl : iAdvisor   >= 0 ? (row[iAdvisor]   || '').trim() : '',
-      supportEmail      : iEmail     >= 0 ? (row[iEmail]     || '').trim() : '',
-      supportPhone      : iPhone     >= 0 ? (row[iPhone]     || '').trim() : '',
-      websiteUrl        : iWebsite   >= 0 ? (row[iWebsite]   || '').trim() : '',
+      primary           : cfg.primary           || '',
+      secondary         : cfg.secondary         || '',
+      logoUrl           : cfg.logoUrl           || '',
+      brand             : cfg.brand             || '',
+      enrollUrl         : cfg.enrollUrl         || '',
+      customUrl         : cfg.customizeUrl      || cfg.enrollUrl || '',
+      advisorBookingUrl : cfg.advisorBookingUrl || '',
+      supportEmail      : cfg.supportEmail      || '',
+      supportPhone      : cfg.supportPhone      || '',
+      websiteUrl        : cfg.websiteUrl        || '',
     };
   }
 
