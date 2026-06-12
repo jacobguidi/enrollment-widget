@@ -84,14 +84,14 @@
     const root = document.documentElement;
     const pageParams = new URLSearchParams(window.location.search);
 
-    if (isHex(cfg.primary)) {
+    if (isHex(cfg.primary) && !pageParams.get('primary')) {
       root.style.setProperty('--forest',    cfg.primary);
       root.style.setProperty('--forest-d',  darken(cfg.primary, 0.15));
       root.style.setProperty('--forest-lt', lighten(cfg.primary, 0.92));
       const tm = document.querySelector('meta[name="theme-color"]');
       if (tm) tm.content = cfg.primary;
     }
-    if (isHex(cfg.secondary)) {
+    if (isHex(cfg.secondary) && !pageParams.get('secondary')) {
       root.style.setProperty('--teal',     cfg.secondary);
       root.style.setProperty('--teal-lt',  lighten(cfg.secondary, 0.92));
       root.style.setProperty('--teal-mid', hexToRgba(cfg.secondary, 0.13));
