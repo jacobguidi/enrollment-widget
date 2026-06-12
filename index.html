@@ -143,6 +143,30 @@
       color: var(--black); line-height: 1.2; margin-bottom: 2px;
     }
     .ew-bcard-sub { font-size: 12px; color: var(--body-gray); }
+    .ew-learn-btn {
+      background: none; border: none; padding: 0;
+      font-size: 12px; font-weight: 600; color: var(--teal);
+      cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+      font-family: var(--font-body);
+    }
+    .ew-learn-btn:hover { color: var(--forest); }
+    .ew-bcard-back-face { padding: 4px 2px 8px; }
+    .ew-bcard-back-text { font-size: 14px; color: var(--body-gray); line-height: 1.65; margin-bottom: 16px; }
+    .ew-bcard-back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-head); font-size: 13px; font-weight: 700;
+      color: var(--forest); background: var(--forest-lt);
+      border: none; border-radius: 8px; padding: 9px 16px;
+      cursor: pointer; transition: background .15s;
+    }
+    .ew-bcard-back-btn:hover { background: #c6dfd4; }
+    @keyframes ewCardFlip {
+      0%   { transform: rotateY(0deg);  opacity: 1; }
+      45%  { transform: rotateY(90deg); opacity: 0; }
+      55%  { transform: rotateY(90deg); opacity: 0; }
+      100% { transform: rotateY(0deg);  opacity: 1; }
+    }
+    .ew-bcard--flipping { animation: ewCardFlip 0.38s ease forwards; }
     .ew-bcard-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
     .ew-bcard-rate {
       font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--forest);
@@ -1463,13 +1487,13 @@
     const ALL_TIERS   = ['employee','employee_spouse','employee_children','family'];
     const TIERED_KEYS = ['accident','critical','hospital','term'];
     const CARDS_META  = {
-      accident:    { title:'Accident Expense',        icon:'🩹', sub:'Covers unexpected accidents & injuries' },
-      critical:    { title:'Critical Illness',        icon:'❤️‍🩹', sub:'Lump-sum benefit for serious diagnoses' },
-      hospital:    { title:'Hospital Indemnity',      icon:'🏥', sub:'Daily cash benefit during hospital stays' },
-      disability:  { title:'Short-Term Disability',  icon:'🛡️', sub:'Weekly income replacement when you can\'t work' },
-      term:        { title:'Term Life',               icon:'🌿', sub:'Affordable coverage for a defined term' },
-      wholeEmp:    { title:'Whole Life — You',        icon:'🍃', sub:'Permanent employee coverage that builds cash value' },
-      wholeSpouse: { title:'Whole Life — Spouse',    icon:'💚', sub:'Permanent coverage for your spouse · subject to underwriting' }
+      accident:    { title:'Accident Expense',       icon:'🩹', sub:'', learn:'Pays you cash when you\'re injured — ER visits, fractures, follow-up care, physical therapy. Works alongside your major medical, not instead of it.' },
+      critical:    { title:'Critical Illness',       icon:'❤️‍🩹', sub:'', learn:'If you\'re diagnosed with cancer, a heart attack, stroke, or another covered illness, you receive a lump-sum cash payment directly. Use it for bills, treatment costs, or time off work.' },
+      hospital:    { title:'Hospital Indemnity',     icon:'🏥', sub:'', learn:'When you\'re admitted to the hospital overnight, this pays you a flat cash benefit — regardless of what your other insurance covers. It goes directly to you.' },
+      disability:  { title:'Short-Term Disability',  icon:'🛡️', sub:'', learn:'If you can\'t work due to an illness or injury, this replaces a portion of your weekly income. Paid directly to you — not to a doctor or hospital.' },
+      term:        { title:'Term Life',              icon:'🌿', sub:'', learn:'Life insurance for a defined period. If something happens to you while covered, your beneficiaries receive the full benefit amount. Portable and straightforward.' },
+      wholeEmp:    { title:'Whole Life — You',       icon:'🍃', sub:'', learn:'Unlike term, this never expires. It also builds cash value over time that you can borrow against. Coverage for life, plus a slow-growing financial asset.' },
+      wholeSpouse: { title:'Whole Life — Spouse',   icon:'💚', sub:'', learn:'The same permanent whole life coverage extended to your spouse. Builds cash value the same way. Requires carrier approval before taking effect.' }
     };
     const fmt   = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
     const money = n => Math.round((n + Number.EPSILON)*100)/100;
@@ -1722,7 +1746,7 @@
         const ciSrcBadge = DEV_MODE ? (ciLoaded
           ? `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
           : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`) : '';
-        html += `<div class="ew-card-note" style="margin-top:14px;margin-bottom:10px">Critical Illness coverage pays a lump sum on diagnosis.${ciSrcBadge}</div>`;
+        if (DEV_MODE && ciSrcBadge) html += `<div class="ew-card-note" style="margin-top:14px;margin-bottom:10px">${ciSrcBadge}</div>`;
         let ciAmounts = [];
         if (ciLoaded && Array.isArray(ciLoaded.benefitAmounts) && ciLoaded.benefitAmounts.length > 0) {
           ciAmounts = ciLoaded.benefitAmounts.slice().sort((a,c)=>a-c);
@@ -1748,7 +1772,6 @@
         </div>`;
       }
       if (key === 'disability') {
-        html += `<div class="ew-card-note" style="margin-top:14px">🛡️ Employee-only coverage — designed to protect your income.</div>`;
         const period = b.period || getDefaultDisabilityPeriod();
         const periodLabels = { '13wk':'13 Weeks', '26wk':'26 Weeks', '52wk':'52 Weeks' };
         const availPeriods = getAvailableDisabilityPeriods();
@@ -1799,7 +1822,7 @@
         const wlSrcBadge = DEV_MODE ? (wlEmpLoaded
           ? `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
           : `<span style="display:inline-block;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates — tab not found</span>`) : '';
-        html += `<div class="ew-card-note" style="margin-top:14px">🍃 Employee coverage only — permanent, builds cash value over time.${wlSrcBadge}</div>`;
+        if (DEV_MODE && wlSrcBadge) html += `<div class="ew-card-note" style="margin-top:14px">${wlSrcBadge}</div>`;
         let bSteps;
         if (wlEmpLoaded && Array.isArray(LOADED_RATES.wholeEmp.benefitAmounts) && LOADED_RATES.wholeEmp.benefitAmounts.length > 0) {
           bSteps = LOADED_RATES.wholeEmp.benefitAmounts.slice().sort((a,c)=>a-c);
@@ -1855,13 +1878,6 @@
           : 'Enable your own Whole Life benefit to unlock higher spouse amounts.';
 
         html += `
-          <div class="ew-card-note" style="margin-top:14px;margin-bottom:4px">
-            💚 Permanent coverage for your spouse using the same rate schedule as your own policy.
-            ${DEV_MODE ? (wlEmpLoaded
-              ? `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">✓ Rates loaded</span>`
-              : `<span style="display:inline-block;margin-left:4px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:10px;font-weight:600;vertical-align:middle">⚠ Sample rates</span>`) : ''
-            }
-          </div>
           <div class="ew-card-note" style="background:#fef9c3;border:1px solid #fef08a;color:#78350f;margin-top:8px">
             ⚠️ <strong>Subject to underwriting.</strong> All spouse benefit amounts require carrier approval before coverage is effective. ${empBenefitNote}
           </div>
@@ -1897,19 +1913,25 @@
       else                     rateHTML = `<span style="font-size:12px">—</span>`;
       return `
         <div class="ew-bcard ${isOn?'on':'off'}" id="card-${key}">
-          <div class="ew-bcard-header">
-            <div class="ew-bcard-icon">${meta.icon}</div>
-            <div class="ew-bcard-title-area">
-              <div class="ew-bcard-title">${meta.title}</div>
-              <div class="ew-bcard-sub">${meta.sub}</div>
+          <div class="ew-bcard-front-face">
+            <div class="ew-bcard-header">
+              <div class="ew-bcard-icon">${meta.icon}</div>
+              <div class="ew-bcard-title-area">
+                <div class="ew-bcard-title">${meta.title}</div>
+                <button class="ew-learn-btn" onclick="flipCard('${key}')">Learn More</button>
+              </div>
+              <div class="ew-bcard-right">
+                <div class="ew-bcard-rate">${rateHTML}</div>
+                <button class="ew-toggle ${isOn?'on':''}" aria-label="Toggle ${meta.title}"
+                  onclick="toggleBenefit('${key}')"></button>
+              </div>
             </div>
-            <div class="ew-bcard-right">
-              <div class="ew-bcard-rate">${rateHTML}</div>
-              <button class="ew-toggle ${isOn?'on':''}" aria-label="Toggle ${meta.title}"
-                onclick="toggleBenefit('${key}')"></button>
-            </div>
+            ${isOn ? `<div class="ew-bcard-body">${renderCardBody(key)}</div>` : ''}
           </div>
-          ${isOn ? `<div class="ew-bcard-body">${renderCardBody(key)}</div>` : ''}
+          <div class="ew-bcard-back-face" style="display:none">
+            <p class="ew-bcard-back-text">${meta.learn}</p>
+            <button class="ew-bcard-back-btn" onclick="unflipCard('${key}')">← Go Back &amp; Select Coverage</button>
+          </div>
         </div>`;
     }
 
@@ -1933,6 +1955,27 @@
       renderRateBadge();
       document.getElementById('cardList').innerHTML =
         Object.keys(S.benefits).map(k => renderCard(k)).join('');
+    }
+
+    function flipCard(key) {
+      const card = document.getElementById('card-' + key);
+      if (!card) return;
+      card.classList.add('ew-bcard--flipping');
+      setTimeout(function() {
+        card.querySelector('.ew-bcard-front-face').style.display = 'none';
+        card.querySelector('.ew-bcard-back-face').style.display = 'block';
+        card.classList.remove('ew-bcard--flipping');
+      }, 190);
+    }
+    function unflipCard(key) {
+      const card = document.getElementById('card-' + key);
+      if (!card) return;
+      card.classList.add('ew-bcard--flipping');
+      setTimeout(function() {
+        card.querySelector('.ew-bcard-back-face').style.display = 'none';
+        card.querySelector('.ew-bcard-front-face').style.display = '';
+        card.classList.remove('ew-bcard--flipping');
+      }, 190);
     }
 
     function reRenderCard(key) {
