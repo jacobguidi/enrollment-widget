@@ -1472,35 +1472,151 @@ function testGHLConnection() {
 }
 
 // ============================================================
-// §9  WEBHOOK — doPost (Widget Customization / Concurrency Protected)
+// §9  WEBHOOK — QUEUE INTAKE (doPost) + DRAIN WORKER
 // ============================================================
-  function doPost(e) {
-    const lock = LockService.getScriptLock();
-    try {
-      if (!lock.tryLock(30000)) {
-        return _jsonOut({ ok:false, error:'System busy. Try again.' });
-      }
-      if (!e || !e.postData || !e.postData.contents) throw new Error('Empty POST body');
-      const payload = JSON.parse(e.postData.contents);
+// doPost appends the raw payload to the Webhook Queue tab in the
+// Master Workbook (appendRow is atomic, so concurrent bursts cannot
+// clobber each other) and returns 200 immediately. A time-driven
+// trigger calls drainWebhookQueue() every minute and processes rows
+// one at a time.
+//
+// Status checkpoints per row:  queued -> ae_done -> demo_done -> done
+// A worker killed mid-row leaves the last completed checkpoint, so
+// the next drain resumes from there instead of redoing finished
+// stages. Terminal states: done, failed (after QUEUE_MAX_RETRIES),
+// duplicate.
+//
+// One-time setup: run setupWebhookQueueTrigger() from the editor.
 
-      const expected = PropertiesService.getScriptProperties().getProperty('WEBHOOK_SECRET');
-      if (expected && payload.secret !== expected) {
-        return _jsonOut({ ok:false, error:'Unauthorized' });
-      }
+const WEBHOOK_QUEUE_TAB     = 'Webhook Queue';
+const QUEUE_MAX_RETRIES     = 3;
+const QUEUE_DRAIN_BUDGET_MS = 270000; // stop picking new rows ~4.5 min in
 
-      // Route: GHL form submission with benefit_summary text vs structured widget payload
-      const result = (payload.benefit_summary && !payload.benefits)
-        ? syncFromBenefitSummary(payload)
-        : syncCustomizedEmployee(payload);
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) throw new Error('Empty POST body');
+    const raw     = e.postData.contents;
+    const payload = JSON.parse(raw);
 
-      return _jsonOut({ ok:true, ...result });                                                                                                                                     
-    } catch (err) {
-      console.error('doPost error:', err);
-      return _jsonOut({ ok:false, error:String(err.message || err) });
-    } finally {
-      lock.releaseLock();                                                                                                                                                          
+    const expected = PropertiesService.getScriptProperties().getProperty('WEBHOOK_SECRET');
+    if (expected && payload.secret !== expected) {
+      return _jsonOut({ ok:false, error:'Unauthorized' });
     }
+
+    const key = _queueIdempotencyKey(payload, raw);
+    _getWebhookQueueSheet().appendRow([new Date(), key, 'queued', 0, '', raw, '', '', '']);
+    return _jsonOut({ ok:true, queued:true, key:key });
+  } catch (err) {
+    console.error('doPost error:', err);
+    return _jsonOut({ ok:false, error:String(err.message || err) });
   }
+}
+
+function _getWebhookQueueSheet() {
+  const ss = SpreadsheetApp.openById(MASTER_WORKBOOK_ID);
+  let sh = ss.getSheetByName(WEBHOOK_QUEUE_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(WEBHOOK_QUEUE_TAB);
+    sh.getRange(1, 1, 1, 9).setValues([[
+      'Received At', 'Key', 'Status', 'Retries', 'Last Error',
+      'Payload', 'Started At', 'Completed At', 'Result'
+    ]]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function _queueIdempotencyKey(payload, raw) {
+  const m   = payload.match || {};
+  const who = String(payload.contact_id || m.contactId || payload.email || m.email || 'unknown')
+    .trim().toLowerCase();
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, raw)
+    .map(function(b) { return ((b & 0xff) + 0x100).toString(16).slice(1); }).join('');
+  return who + ':' + digest.slice(0, 12);
+}
+
+function setupWebhookQueueTrigger() {
+  ScriptApp.getProjectTriggers()
+    .filter(function(t) { return t.getHandlerFunction() === 'drainWebhookQueue'; })
+    .forEach(function(t) { ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('drainWebhookQueue').timeBased().everyMinutes(1).create();
+  Logger.log('Queue drain trigger installed (every minute).');
+}
+
+function drainWebhookQueue() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(0)) return; // another drain is already running
+  const started = Date.now();
+  try {
+    const sh   = _getWebhookQueueSheet();
+    const last = sh.getLastRow();
+    if (last < 2) return;
+    const rows = sh.getRange(2, 1, last - 1, 9).getValues();
+
+    const doneKeys = {};
+    rows.forEach(function(r) { if (String(r[2]) === 'done') doneKeys[r[1]] = true; });
+
+    for (let i = 0; i < rows.length; i++) {
+      if (Date.now() - started > QUEUE_DRAIN_BUDGET_MS) break;
+
+      const status = String(rows[i][2]);
+      if (status !== 'queued' && status !== 'ae_done' && status !== 'demo_done') continue;
+
+      const rowNum = i + 2;
+      const key    = rows[i][1];
+
+      if (status === 'queued' && doneKeys[key]) {
+        sh.getRange(rowNum, 3).setValue('duplicate');
+        sh.getRange(rowNum, 8).setValue(new Date());
+        continue;
+      }
+
+      sh.getRange(rowNum, 7).setValue(new Date());
+
+      let payload;
+      try {
+        payload = JSON.parse(rows[i][5]);
+      } catch (parseErr) {
+        _queueRowFailed(sh, rowNum, rows[i], 'Bad payload JSON: ' + parseErr.message);
+        continue;
+      }
+
+      try {
+        const result = _processQueuedPayload(payload, status, function(stage) {
+          sh.getRange(rowNum, 3).setValue(stage);
+          SpreadsheetApp.flush();
+        });
+        sh.getRange(rowNum, 3).setValue('done');
+        sh.getRange(rowNum, 8).setValue(new Date());
+        sh.getRange(rowNum, 9).setValue(JSON.stringify(result).slice(0, 500));
+        doneKeys[key] = true;
+      } catch (err) {
+        _queueRowFailed(sh, rowNum, rows[i], String(err.message || err));
+      }
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function _queueRowFailed(sh, rowNum, row, msg) {
+  const retries = (Number(row[3]) || 0) + 1;
+  sh.getRange(rowNum, 4).setValue(retries);
+  sh.getRange(rowNum, 5).setValue(msg.slice(0, 300));
+  if (retries >= QUEUE_MAX_RETRIES) {
+    sh.getRange(rowNum, 3).setValue('failed');
+    sh.getRange(rowNum, 8).setValue(new Date());
+  }
+  console.error('Webhook queue row ' + rowNum + ' failed (attempt ' + retries + '): ' + msg);
+}
+
+function _processQueuedPayload(payload, fromStatus, checkpoint) {
+  const normalized = (payload.benefit_summary && !payload.benefits)
+    ? _normalizeBenefitSummaryPayload(payload)
+    : payload;
+  return _runCustomizedSyncStaged(normalized, fromStatus, checkpoint);
+}
+
 
 function doGet() {
   return _jsonOut({ ok: true, service: 'TBG Widget Sync Engine', ts: new Date().toISOString() });
@@ -1566,29 +1682,58 @@ function parseBenefitSummary(text) {
     return benefits;
   }
 
-  function syncFromBenefitSummary(payload) {
+  function _normalizeBenefitSummaryPayload(payload) {
     const raw = payload.benefit_summary || payload.benefitSummary || '';
-    const summary = raw.replace(/\\n/g, '\n');   // ← fixes literal \n
+    const summary = raw.replace(/\\n/g, '\n');   // fixes literal \n
     if (!summary.trim()) throw new Error('No benefit_summary in payload');
-    const normalized = {
+    return {
       spreadsheetId: payload.spreadsheetId || null,
       match: payload.match || {
         contactId: payload.contact_id || '',
         email:     payload.email      || '',
-        firstName: payload.first_name || '',                                                                                                                                       
+        firstName: payload.first_name || '',
         lastName:  payload.last_name  || ''
       },
       benefits:      parseBenefitSummary(summary),
       benefitSummary: summary,
-      totalMonthly:  payload.total_monthly || 0                                                                                                                                    
+      totalMonthly:  payload.total_monthly || 0
     };
-    return syncCustomizedEmployee(normalized);
+  }
+
+  function syncFromBenefitSummary(payload) {
+    return syncCustomizedEmployee(_normalizeBenefitSummaryPayload(payload));
   }
 
 // ============================================================
 // §10  WEBHOOK HELPERS
 // ============================================================
 function syncCustomizedEmployee(payload) {
+  return _runCustomizedSyncStaged(payload, 'queued', function() {});
+}
+
+function _findAERowBySSN(wsAE, ssn) {
+  const aeHeaders = wsAE.getRange(1, 1, 1, wsAE.getLastColumn()).getValues()[0];
+  const aeColMap  = buildColumnMap(aeHeaders);
+  const aeWidth   = wsAE.getLastColumn();
+  const aeLastRow = wsAE.getLastRow();
+  if (aeLastRow < 2) throw new Error('Auto Enroll Sheet has no data rows.');
+  const aeData = wsAE.getRange(2, 1, aeLastRow - 1, aeWidth).getValues();
+  for (let i = 0; i < aeData.length; i++) {
+    const rel = String(aeData[i][aeColMap['Relation']] || '').toUpperCase().trim();
+    if (rel !== 'EE') continue;
+    if (padSSN(String(aeData[i][aeColMap['Employee SSN']] || '')) === ssn) {
+      while (aeData[i].length < aeWidth) aeData[i].push('');
+      return { aeColMap: aeColMap, aeWidth: aeWidth, aeRowIdx: i, aeRow: aeData[i] };
+    }
+  }
+  throw new Error('Employee not found on Auto Enroll Sheet by SSN ' + ssn);
+}
+
+// Staged sync used by the webhook queue. fromStatus is the last
+// completed checkpoint ('queued' = nothing done yet); checkpoint(stage)
+// is called after each stage commits so the queue row records progress.
+// Stage order: Auto Enroll -> Demographic -> PPS.
+function _runCustomizedSyncStaged(payload, fromStatus, checkpoint) {
   const props = PropertiesService.getScriptProperties();
   const payFreqGlobal = parsePayFrequency(props.getProperty('PAY_FREQUENCY')) || 26;
 
@@ -1606,6 +1751,7 @@ function syncCustomizedEmployee(payload) {
   const wbConfig = getConfig(ss);
   const payFreq  = Number(wbConfig['Pay Frequency']) || payFreqGlobal;
 
+  // Shared prelude: match the employee on Demographic (read-only).
   const demHeaders = wsDem.getRange(1, 1, 1, wsDem.getLastColumn()).getValues()[0];
   const demColMap  = buildColumnMap(demHeaders);
   const demLastRow = wsDem.getLastRow();
@@ -1649,71 +1795,71 @@ function syncCustomizedEmployee(payload) {
   if (!ssn) throw new Error('Matched Demographic row has no valid SSN lookup token.');
 
   const isAutomaticOptIn = (payload.event === 'opt_in');
-  demData[demRowIdx][0] = isAutomaticOptIn ? 'Yes' : 'Customized';
+  const skipAE   = (fromStatus === 'ae_done' || fromStatus === 'demo_done');
+  const skipDemo = (fromStatus === 'demo_done');
 
-  if (demColMap['Benefits Package'] !== undefined && payload.benefitSummary) {
-    demData[demRowIdx][demColMap['Benefits Package']] = payload.benefitSummary;
-  }
-  if (demContactCol !== undefined && wantCID && !demData[demRowIdx][demContactCol]) {
-    demData[demRowIdx][demContactCol] = wantCID;
-  }
-  wsDem.getRange(demRowIdx + 2, 1, 1, demHeaders.length).setValues([demData[demRowIdx]]);
+  // ── Stage 1: Auto Enroll Sheet ──
+  let aeRowNum = null;
+  if (!skipAE) {
+    const hdrCheck = buildColumnMap(wsAE.getRange(1, 1, 1, wsAE.getLastColumn()).getValues()[0]);
+    ['Remaining Formula', 'Benefit Package'].forEach(function(name) {
+      if (hdrCheck[name] === undefined) {
+        const hdrs = wsAE.getRange(1, 1, 1, wsAE.getLastColumn()).getValues()[0];
+        wsAE.getRange(1, hdrs.length + 1).setValue(name);
+        hdrCheck[name] = hdrs.length;
+      }
+    });
 
-  const aeHeaders = wsAE.getRange(1, 1, 1, wsAE.getLastColumn()).getValues()[0];
-  const aeColMap  = buildColumnMap(aeHeaders);
-  const ensureAECol = (name) => {
-    if (aeColMap[name] === undefined) {
-      const hdrs = wsAE.getRange(1, 1, 1, wsAE.getLastColumn()).getValues()[0];
-      wsAE.getRange(1, hdrs.length + 1).setValue(name);
-      aeColMap[name] = hdrs.length;
+    const ae = _findAERowBySSN(wsAE, ssn);
+    const aeRow    = ae.aeRow;
+    const aeColMap = ae.aeColMap;
+
+    if (!isAutomaticOptIn) {
+      _clearPlanFields(aeRow, aeColMap);
+      _writePlansFromPayload(aeRow, aeColMap, payload);
     }
-  };
-  ensureAECol('Remaining Formula');
-  ensureAECol('Benefit Package');
 
-  const aeWidth   = wsAE.getLastColumn();
-  const aeLastRow = wsAE.getLastRow();
-  if (aeLastRow < 2) throw new Error('Auto Enroll Sheet has no data rows.');
-  const aeData    = wsAE.getRange(2, 1, aeLastRow - 1, aeWidth).getValues();
+    const num = (v) => (typeof v === 'number' ? v : parseFloat(v) || 0);
+    const allot = num(aeRow[aeColMap['Allotments']]);
+    const used =
+      num(aeRow[aeColMap['TL Premium 3']])        + num(aeRow[aeColMap['TL Premium 2']]) +
+      num(aeRow[aeColMap['TL Premium']])          + num(aeRow[aeColMap['Life Premium Amount']]) +
+      (aeColMap['Spouse Life Premium Amount'] !== undefined ? num(aeRow[aeColMap['Spouse Life Premium Amount']]) : 0) +
+      num(aeRow[aeColMap['HI Premium Amount']])   + num(aeRow[aeColMap['CI Premium Amount']]) +
+      num(aeRow[aeColMap['DI Premium Amount']])   + num(aeRow[aeColMap['AE Premium Amount']]);
 
-  let aeRowIdx = -1;
-  for (let i = 0; i < aeData.length; i++) {
-    const rel = String(aeData[i][aeColMap['Relation']] || '').toUpperCase().trim();
-    if (rel !== 'EE') continue;
-    if (padSSN(String(aeData[i][aeColMap['Employee SSN']] || '')) === ssn) { aeRowIdx = i; break; }
-  }
-  if (aeRowIdx === -1) throw new Error('Employee not found on Auto Enroll Sheet by SSN ' + ssn);
-  while (aeData[aeRowIdx].length < aeWidth) aeData[aeRowIdx].push('');
+    if (aeColMap['Remaining Formula'] !== undefined) aeRow[aeColMap['Remaining Formula']] = allot - used;
+    if (aeColMap['Benefit Package'] !== undefined && payload.benefitSummary) {
+      aeRow[aeColMap['Benefit Package']] = payload.benefitSummary;
+    }
 
-  const aeRow = aeData[aeRowIdx];
-
-  if (!isAutomaticOptIn) {
-    _clearPlanFields(aeRow, aeColMap);
-    _writePlansFromPayload(aeRow, aeColMap, payload);
+    wsAE.getRange(ae.aeRowIdx + 2, 1, 1, ae.aeWidth).setValues([aeRow]);
+    aeRowNum = ae.aeRowIdx + 2;
+    checkpoint('ae_done');
   }
 
-  const num = (v) => (typeof v === 'number' ? v : parseFloat(v) || 0);
-  const allot = num(aeRow[aeColMap['Allotments']]);
-  const used =
-    num(aeRow[aeColMap['TL Premium 3']])        + num(aeRow[aeColMap['TL Premium 2']]) +
-    num(aeRow[aeColMap['TL Premium']])          + num(aeRow[aeColMap['Life Premium Amount']]) +
-    (aeColMap['Spouse Life Premium Amount'] !== undefined ? num(aeRow[aeColMap['Spouse Life Premium Amount']]) : 0) +
-    num(aeRow[aeColMap['HI Premium Amount']])   + num(aeRow[aeColMap['CI Premium Amount']]) +
-    num(aeRow[aeColMap['DI Premium Amount']])   + num(aeRow[aeColMap['AE Premium Amount']]);
-    
-  if (aeColMap['Remaining Formula'] !== undefined) aeRow[aeColMap['Remaining Formula']] = allot - used;
-  if (aeColMap['Benefit Package'] !== undefined && payload.benefitSummary) {
-    aeRow[aeColMap['Benefit Package']] = payload.benefitSummary;
+  // ── Stage 2: Demographic ──
+  if (!skipDemo) {
+    demData[demRowIdx][0] = isAutomaticOptIn ? 'Yes' : 'Customized';
+    if (demColMap['Benefits Package'] !== undefined && payload.benefitSummary) {
+      demData[demRowIdx][demColMap['Benefits Package']] = payload.benefitSummary;
+    }
+    if (demContactCol !== undefined && wantCID && !demData[demRowIdx][demContactCol]) {
+      demData[demRowIdx][demContactCol] = wantCID;
+    }
+    wsDem.getRange(demRowIdx + 2, 1, 1, demHeaders.length).setValues([demData[demRowIdx]]);
+    checkpoint('demo_done');
   }
 
-  wsAE.getRange(aeRowIdx + 2, 1, 1, aeWidth).setValues([aeRow]);
-
-  const flagForPPS = isAutomaticOptIn ? demData[demRowIdx][0].toLowerCase() : 'yes';                                                                                               
-  const ppsResult = _syncOneEmployeeToPPS(wsPPS, aeColMap, aeRow, ssn, payFreq, flagForPPS);
+  // ── Stage 3: PPS ── (always re-reads the AE row from the sheet so a
+  // resumed run sees what Stage 1 wrote on a previous pass)
+  const aeFinal = _findAERowBySSN(wsAE, ssn);
+  const flagForPPS = isAutomaticOptIn ? String(demData[demRowIdx][0]).toLowerCase() : 'yes';
+  const ppsResult = _syncOneEmployeeToPPS(wsPPS, aeFinal.aeColMap, aeFinal.aeRow, ssn, payFreq, flagForPPS);
 
   return {
     matchedBy, contactId: wantCID || null, email: wantEm || null, ssn,
-    spreadsheet: ssId, aeRow: aeRowIdx + 2, demRow: demRowIdx + 2,
+    spreadsheet: ssId, aeRow: aeRowNum || (aeFinal.aeRowIdx + 2), demRow: demRowIdx + 2,
     pps: ppsResult, payFreqUsed: payFreq, totalMonthly: payload.totalMonthly || null,
   };
 }
