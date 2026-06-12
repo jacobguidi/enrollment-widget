@@ -2324,7 +2324,7 @@
           renderAllCards();
           updateStickyBar();
           updateAllotmentBanner();
-          window.scrollTo(0, 0);
+          scrollParentToTop();
           notifyHeight();
           return;
         }
@@ -2348,7 +2348,7 @@
 
       if (target === 2) renderAllCards();
       if (target === 3) { renderDependentSection(); renderBeneList(); updatePctBar(); renderSummary(); }
-      window.scrollTo(0, 0);
+      scrollParentToTop();
       notifyHeight();
     }
 
@@ -2408,6 +2408,10 @@
     // ─────────────────────────────────────────────
     // ALERTS
     // ─────────────────────────────────────────────
+    function scrollParentToTop() {
+      window.scrollTo(0, 0);
+      window.parent.postMessage({ type: 'scrollTop' }, '*');
+    }
     function showAlert(id, msg) {
       const el = document.getElementById(id);
       if (el) { el.textContent = msg; el.classList.add('show'); }
@@ -2423,8 +2427,7 @@
       const err = validateStep3();
       if (err) {
         showAlert('p3Alert', err);
-        const alertEl = document.getElementById('p3Alert');
-        if (alertEl) alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        scrollParentToTop();
         return;
       }
       renderSummary();
