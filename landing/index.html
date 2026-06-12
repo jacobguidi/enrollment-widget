@@ -888,9 +888,33 @@
       content-visibility: auto;
       contain-intrinsic-size: auto 600px;
     }
+    /* ── Broker logo placements ── */
+    .broker-logo-desktop {
+      position: fixed; top: 16px; right: 24px; z-index: 9999;
+      width: 120px; height: 48px;
+      background: #fff; border-radius: 10px; padding: 8px 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.12);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .broker-logo-desktop img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+    .broker-logo-mobile { display: none; }
+    @media (max-width: 960px) {
+      .broker-logo-desktop { display: none; }
+      .broker-logo-mobile {
+        display: flex; align-items: center; justify-content: center;
+        width: 100%; height: 72px;
+        background: #fff; border-radius: 14px; padding: 10px 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        margin-bottom: 18px;
+      }
+      .broker-logo-mobile img { max-width: 100%; max-height: 52px; object-fit: contain; display: block; }
+    }
   </style>
 </head>
 <body>
+<div class="broker-logo-desktop" id="brokerLogoDesktop" style="display:none">
+  <img src="" alt="" data-broker-logo id="brokerLogoDesktopImg" />
+</div>
 <div class="builder-breakout">
 <div class="progress-bar" id="progressBar"></div>
 <div class="enroll-banner">
@@ -919,6 +943,9 @@
       </p>
     </div>
     <div class="hero-right">
+      <div class="broker-logo-mobile" id="brokerLogoMobile" style="display:none">
+        <img src="" alt="" data-broker-logo id="brokerLogoMobileImg" />
+      </div>
       <div class="pkg-card">
         <div class="pkg-header">
           <div class="pkg-lbl" id="pkg-lbl-main">A Typical Pre-Built Package</div>

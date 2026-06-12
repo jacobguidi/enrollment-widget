@@ -106,6 +106,10 @@
       document.querySelectorAll('.logo-mark').forEach(el => {
         el.innerHTML = `<img src="${cfg.logoUrl}" alt="${cfg.brand}" style="height:100%;width:100%;object-fit:contain;border-radius:inherit">`;
       });
+      const desktop = document.getElementById('brokerLogoDesktop');
+      const mobile  = document.getElementById('brokerLogoMobile');
+      if (desktop) desktop.style.display = 'flex';
+      if (mobile)  mobile.style.display  = 'flex';
     }
     if (cfg.brand) {
       document.querySelectorAll('[data-broker-brand]').forEach(el => {
