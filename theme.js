@@ -1,6 +1,6 @@
 (function () {
   // ── Broker config — fetched from repo JSON ────
-  const BROKERS_URL = 'https://raw.githubusercontent.com/jacobguidi/enrollment-widget/main/config/brokers.json';
+  const BROKERS_URL = 'https://raw.githubusercontent.com/jacobguidi/enrollment-widget/test/config/brokers.json';
 
   // ── Color helpers ─────────────────────────────
   function hexToRgb(h) {
