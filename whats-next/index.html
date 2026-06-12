@@ -4,6 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>You're Enrolled — What Happens Next | Thrive Benefits</title>
+  <script>
+    (function(){
+      var p=new URLSearchParams(location.search),pr=p.get('primary'),se=p.get('secondary');
+      var isHex=function(v){return v&&/^#[0-9a-f]{6}$/i.test(v.trim());};
+      var dk=function(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return '#'+[r*(1-a),g*(1-a),b*(1-a)].map(function(v){return Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0');}).join('');};
+      var lt=function(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return '#'+[r+(255-r)*a,g+(255-g)*a,b+(255-b)*a].map(function(v){return Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0');}).join('');};
+      var root=document.documentElement;
+      if(isHex(pr)){root.style.setProperty('--forest',pr);root.style.setProperty('--forest-d',dk(pr,.15));root.style.setProperty('--forest-lt',lt(pr,.92));}
+      if(isHex(se)){root.style.setProperty('--teal',se);root.style.setProperty('--teal-lt',lt(se,.92));root.style.setProperty('--teal-mid','rgba('+parseInt(se.slice(1,3),16)+','+parseInt(se.slice(3,5),16)+','+parseInt(se.slice(5,7),16)+',.13)');}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap" />
